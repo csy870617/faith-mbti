@@ -804,21 +804,22 @@ function renderQuestion() {
 
 /* 6. 결과 계산 */
 function calculateResult() {
-  // 각 글자별 점수 (세부 점수용)
+  // ✅ 세부 점수용: 내가 클릭한 값 그대로 합산 (1~5)
   const scores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
-  // 각 축별 점수 (그래프용, -20 ~ +20 정도 범위)
+
+  // ✅ 축/유형 계산용: 중심(3) 기준으로 얼마나 치우쳤는지 (±)
   const axisScores = { EI: 0, SN: 0, TF: 0, JP: 0 };
 
   originalQuestions.forEach((q) => {
     const v = answers[q.id];
-    if (!v) return; // 건너뛴 문항은 0점
+    if (!v) return; // 건너뛴 문항은 계산 제외
 
-    const centered = v - 3; // 1~5 → -2 ~ +2 (3은 중립)
+    // 1) 세부 점수: 선택한 점수 그대로 누적
+    scores[q.side] += v; // 예: E문항 5개에서 5,4,3,2,1 누르면 E = 15
 
-    // 글자별 점수 누적
-    scores[q.side] += centered;
+    // 2) 축 점수: 타입/그래프용 (중립 3에서 얼마나 벗어났나)
+    const centered = v - 3; // 1~5 → -2 ~ +2
 
-    // 축별 점수(+는 앞 글자 쪽, -는 뒤 글자 쪽)
     if (q.axis === "EI") {
       axisScores.EI += q.side === "E" ? centered : -centered;
     } else if (q.axis === "SN") {
@@ -830,7 +831,7 @@ function calculateResult() {
     }
   });
 
-  // 축 점수를 기준으로 최종 유형 결정
+  // ✅ 축 점수를 기준으로 최종 유형 결정 (이 부분은 그대로 유지)
   const type =
     (axisScores.EI >= 0 ? "E" : "I") +
     (axisScores.SN >= 0 ? "S" : "N") +
@@ -964,16 +965,12 @@ function renderAxisUpgraded(axisScores) {
 /* 10. 세부 점수 */
 function renderDetailScores(scores) {
   const container = document.getElementById("detail-score-list");
-  const maxAbs = 10; // 한 글자당 이론상 최대 점수 (5문항 × 2점)
+  const maxScore = 25; // 문항 5개 × 최고 5점 = 25점
   let html = "";
 
   ["E", "I", "S", "N", "T", "F", "J", "P"].forEach((k) => {
-    const raw = scores[k] || 0;        // 원래 점수(±값)
-    const v = Math.abs(raw);           // 화면에는 항상 +로 표시
-    const percent = Math.min(
-      100,
-      Math.round((v / maxAbs) * 100)   // 그래프도 +값 기준
-    );
+    const v = scores[k] || 0; // 내가 클릭한 점수들의 합 (항상 0~25)
+    const percent = Math.min(100, Math.round((v / maxScore) * 100));
 
     html += `
       <div class="detail-score-row">
@@ -987,6 +984,7 @@ function renderDetailScores(scores) {
 
   container.innerHTML = html;
 }
+
 
 /* 11. 유형 관계 보기 */
 function similarityScore(a, b) {
