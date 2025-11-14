@@ -536,3 +536,12 @@ main {
 #skip-btn {
   margin-left: auto;
 }
+.dev-btn {
+  margin-top: 8px;
+  background: #05ac58;
+  color: #ffffff;
+  box-shadow: none;
+}
+.dev-btn:hover {
+  opacity: 0.8;
+}
