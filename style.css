@@ -73,7 +73,7 @@ main {
 .intro {
   display: grid;
   grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-  gap: 24px;
+  gap: 26px;
 }
 @media (max-width: 768px) {
   .intro {
@@ -106,7 +106,7 @@ main {
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
-  font-size: 11px;
+  font-size: 13px;
   border-radius: 999px;
   background: #eef2ff;
   color: #4f46e5;
@@ -126,7 +126,7 @@ main {
   border: 1px solid #e5e7eb;
 }
 .card-title {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   margin-bottom: 10px;
   display: flex;
@@ -138,7 +138,7 @@ main {
 }
 .card-list {
   list-style: none;
-  font-size: 13px;
+  font-size: 15px;
   color: #4b5563;
   display: grid;
   gap: 6px;
@@ -567,7 +567,7 @@ body {
   font-size: var(--font-size-title-main);
   font-weight: 800;
   letter-spacing: -0.03em;
-  margin-bottom: 12px;
+  margin-bottom: 13px;
 }
 
 #intro-section .intro-subtitle,
@@ -713,6 +713,6 @@ body {
 #go-result-btn,
 #restart-btn,
 #share-btn {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 550;
 }
