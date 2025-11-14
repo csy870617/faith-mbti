@@ -551,11 +551,11 @@ body {
 /* === 타이포그래피 리디자인: 전역 설정 === */
 :root {
   /* 기본 폰트 크기 세팅 (1rem 기준) */
-  --font-size-body: 17px;
+  --font-size-body: 18px;
   --font-size-title-main: 28px;  /* 메인 제목 */
   --font-size-title-sub: 20px;   /* 섹션 제목 */
   --font-size-heading: 20px;     /* 카드/블록 제목 */
-  --font-size-label: 16px;       /* 작은 라벨/보조 텍스트 */
+  --font-size-label: 18px;       /* 작은 라벨/보조 텍스트 */
 }
 
 body {
@@ -573,8 +573,8 @@ body {
 #intro-section .intro-subtitle,
 #intro-section p {
   font-size: var(--font-size-title-sub);
-  font-weight: 500;
-  color: #4b5563;
+  font-weight: 540;
+  color: #46484d;
 }
 /* 질문 헤더 (문항 번호 / 진행률) */
 #progress-label {
