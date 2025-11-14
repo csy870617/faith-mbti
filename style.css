@@ -545,3 +545,174 @@ main {
 .dev-btn:hover {
   opacity: 0.8;
 }
+body {
+  font-size: 18px !important;
+}
+/* === 타이포그래피 리디자인: 전역 설정 === */
+:root {
+  /* 기본 폰트 크기 세팅 (1rem 기준) */
+  --font-size-body: 17px;
+  --font-size-title-main: 28px;  /* 메인 제목 */
+  --font-size-title-sub: 20px;   /* 섹션 제목 */
+  --font-size-heading: 20px;     /* 카드/블록 제목 */
+  --font-size-label: 16px;       /* 작은 라벨/보조 텍스트 */
+}
+
+body {
+  font-size: var(--font-size-body);
+  line-height: 1.7;
+}
+/* 인트로 페이지 타이포그래피 */
+#intro-section h1 {
+  font-size: var(--font-size-title-main);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 12px;
+}
+
+#intro-section .intro-subtitle,
+#intro-section p {
+  font-size: var(--font-size-title-sub);
+  font-weight: 500;
+  color: #4b5563;
+}
+/* 질문 헤더 (문항 번호 / 진행률) */
+#progress-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+/* 질문 코드: Q1, Q2... */
+#question-code {
+  font-size: 15px;
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+/* 질문 본문 */
+#question-text {
+  font-size: var(--font-size-heading); /* 20px */
+  font-weight: 600;
+  color: #111827;
+  margin-top: 4px;
+}
+
+/* 1~5 선택 버튼 숫자 */
+.scale-pill {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* 이전 / 건너뛰기 버튼 글자 */
+#back-btn,
+#skip-btn {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* 내 유형 코드 (ENFJ 등) */
+#result-code {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+/* 내 유형 이름 (감동의 인도자 · The Inspirer) */
+#result-name {
+  font-size: var(--font-size-title-sub); /* 24px */
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+/* 한 줄 요약 */
+#result-summary {
+  font-size: 17px;
+  color: #374151;
+  margin-top: 10px;
+}
+
+/* 배지들 (강점 키워드) */
+#result-badges .badge {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* 특징 / 성장 포인트 리스트 */
+#result-features li,
+#result-growth li {
+  font-size: 15px;
+}
+
+/* 강점/약점/주의 문장 */
+#result-strength,
+#result-weakness,
+#result-warning {
+  font-size: 15px;
+}
+
+/* 추천 사역 리스트 */
+#result-ministries li {
+  font-size: 15px;
+}
+/* 성경 인물 토글 버튼 */
+#bible-toggle-btn {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* 성경 인물 박스 */
+#bible-character {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+#bible-verse {
+  font-size: 15px;
+  color: #374151;
+}
+
+/* 오늘의 말씀 버튼 */
+#today-verse-btn {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* 오늘의 말씀 내용 */
+#today-verse-box-ref {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+#today-verse-box-text {
+  font-size: 16px;
+}
+
+#today-verse-box-apply {
+  font-size: 14px;
+  color: #4b5563;
+}
+/* 유형 관계 제목들 */
+.match-item-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.match-item-sub {
+  font-size: 14px;
+  color: #4b5563;
+}
+
+/* 다른 유형 버튼(ENFJ, ENTJ… ) */
+.btn-type {
+  font-size: 14px;
+  font-weight: 350;
+}
+/* 주요 CTA 버튼들 */
+#start-btn,
+#go-result-btn,
+#restart-btn,
+#share-btn {
+  font-size: 13px;
+  font-weight: 550;
+}
