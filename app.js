@@ -9,57 +9,69 @@
 
 /* 1. 질문 데이터 (40문항) */
 const originalQuestions = [
-  // E / I
-  { id: "EI_E1", text: "좋은 이야기가 생기면 “누구에게 먼저 말할까?”가 가장 먼저 떠오른다.", axis: "EI", side: "E" },
-  { id: "EI_E2", text: "하루 동안 사람을 거의 못 만나면 마음이 조금 허전해진다.", axis: "EI", side: "E" },
-  { id: "EI_E3", text: "모임이 예정되어 있으면 피곤해도 마음이 열린다.", axis: "EI", side: "E" },
-  { id: "EI_E4", text: "고민은 혼자보다는 누군가에게 털어놓는 편이 훨씬 편하다.", axis: "EI", side: "E" },
-  { id: "EI_E5", text: "여러 사람 속에서는 오히려 생각이 더 잘 정리될 때가 있다.", axis: "EI", side: "E" },
+  // E / I — 관계 에너지, 나눔 스타일
+  { id: "EI_E1", text: "예배가 끝나면 ‘오늘 은혜 나눌 사람 누구 없나?’ 하며 자연스럽게 사람을 찾는다.", axis: "EI", side: "E" },
+  { id: "EI_I1", text: "예배가 끝나면 사람들과 섞이기보다 조용히 혼자 여운을 느끼고 싶다.", axis: "EI", side: "I" },
 
-  { id: "EI_I1", text: "혼자 있는 시간이 부족하면 마음이 쉽게 지쳐버린다.", axis: "EI", side: "I" },
-  { id: "EI_I2", text: "대화가 많은 날은 조용한 시간이 반드시 필요하다.", axis: "EI", side: "I" },
-  { id: "EI_I3", text: "중요한 생각은 마음속에서 충분히 익은 뒤에야 말이 된다.", axis: "EI", side: "I" },
-  { id: "EI_I4", text: "시끌벅적함보다 차분한 공간에서 집중이 잘 된다.", axis: "EI", side: "I" },
-  { id: "EI_I5", text: "감정과 감동도 홀로 정리되는 시간이 있어야 편안하다.", axis: "EI", side: "I" },
+  { id: "EI_E2", text: "새로운 소그룹에 들어가면 어색한 분위기를 풀려고 먼저 말을 거는 편이다.", axis: "EI", side: "E" },
+  { id: "EI_I2", text: "새로운 소그룹에 들어가면 먼저 분위기를 지켜보다가 천천히 참여하는 편이다.", axis: "EI", side: "I" },
 
-  // S / N
-  { id: "SN_S1", text: "계획을 들으면 “구체적으로 무엇을 하면 될까?”가 먼저 궁금하다.", axis: "SN", side: "S" },
-  { id: "SN_S2", text: "익숙한 루틴이 흐트러지면 은근히 불편하다.", axis: "SN", side: "S" },
-  { id: "SN_S3", text: "눈앞의 일을 하나씩 정리해야 마음이 안정된다.", axis: "SN", side: "S" },
-  { id: "SN_S4", text: "‘새로움’보다 ‘확실함’이 더 믿음직스럽다.", axis: "SN", side: "S" },
-  { id: "SN_S5", text: "사실은 직접 확인해야 비로소 안심된다.", axis: "SN", side: "S" },
+  { id: "EI_E3", text: "하루에 사람을 거의 못 만나면 ‘누군가와 얘기하고 싶다’는 생각이 든다.", axis: "EI", side: "E" },
+  { id: "EI_I3", text: "사람을 많이 만난 날에는 반드시 혼자만의 충전 시간이 필요하다.", axis: "EI", side: "I" },
 
-  { id: "SN_N1", text: "단순한 상황에서도 전체 흐름이 먼저 보인다.", axis: "SN", side: "N" },
-  { id: "SN_N2", text: "반복되는 방식보다 의미와 방향이 더 중요하다.", axis: "SN", side: "N" },
-  { id: "SN_N3", text: "“앞으로 이렇게 될 것 같다”라는 생각이 자주 떠오른다.", axis: "SN", side: "N" },
-  { id: "SN_N4", text: "계획보다 순간 떠오르는 영감이 매력적으로 느껴질 때가 있다.", axis: "SN", side: "N" },
-  { id: "SN_N5", text: "세부보다 목적과 의도가 먼저 잡혀야 마음이 편하다.", axis: "SN", side: "N" },
+  { id: "EI_E4", text: "신앙 고민이 생기면 혼자 결정하기보다 누군가와 상의하고 싶다.", axis: "EI", side: "E" },
+  { id: "EI_I4", text: "신앙 고민이 생기면 먼저 내 안에서 충분히 정리한 뒤에 나누고 싶다.", axis: "EI", side: "I" },
 
-  // T / F
-  { id: "TF_T1", text: "누군가 고민을 말하면 해결책이 먼저 떠오른다.", axis: "TF", side: "T" },
-  { id: "TF_T2", text: "기준이 분명하면 혼란스러운 상황도 금세 정리된다.", axis: "TF", side: "T" },
-  { id: "TF_T3", text: "논리적으로 맞지 않으면 분위기가 좋아도 마음이 걸린다.", axis: "TF", side: "T" },
-  { id: "TF_T4", text: "갈등이 생기면 ‘누가 맞는가’를 먼저 생각하게 된다.", axis: "TF", side: "T" },
-  { id: "TF_T5", text: "감정 표현보다 사실관계를 먼저 알고 싶다.", axis: "TF", side: "T" },
+  { id: "EI_E5", text: "새로운 사역 제안이 오면 ‘재밌겠다, 해보자!’라는 마음이 먼저 든다.", axis: "EI", side: "E" },
+  { id: "EI_I5", text: "새로운 사역 제안이 오면 나와 맞는지, 감당 가능할지부터 조용히 따져보는 편이다.", axis: "EI", side: "I" },
 
-  { id: "TF_F1", text: "말하지 않아도 누군가의 표정을 금세 읽는다.", axis: "TF", side: "F" },
-  { id: "TF_F2", text: "문제가 생기면 “누가 힘들까?”라는 생각이 앞선다.", axis: "TF", side: "F" },
-  { id: "TF_F3", text: "말할 때 상대의 마음이 다치지 않도록 먼저 생각한다.", axis: "TF", side: "F" },
-  { id: "TF_F4", text: "옳은 일이라도 상처가 생길 것 같으면 망설여진다.", axis: "TF", side: "F" },
-  { id: "TF_F5", text: "분위기가 따뜻하게 유지되면 하루가 더 가벼워진다.", axis: "TF", side: "F" },
+  // S / N — 현실 vs 의미, 현재 vs 미래
+  { id: "SN_S1", text: "설교를 들을 때 구체적으로 ‘내 일상에서 무엇을 바꿔야 할지’가 먼저 떠오른다.", axis: "SN", side: "S" },
+  { id: "SN_N1", text: "설교를 들을 때 ‘이 말씀이 우리 공동체에 어떤 그림을 그릴까’를 먼저 떠올린다.", axis: "SN", side: "N" },
 
-  // J / P
-  { id: "JP_J1", text: "해야 할 일이 남아 있으면 마음속에 작은 알림이 계속 울린다.", axis: "JP", side: "J" },
-  { id: "JP_J2", text: "계획이 정리되면 절반은 이미 끝난 것처럼 느껴진다.", axis: "JP", side: "J" },
-  { id: "JP_J3", text: "갑작스러운 일정 변경이 마음의 평화를 흔들곤 한다.", axis: "JP", side: "J" },
-  { id: "JP_J4", text: "마감 이전에 일을 끝내두는 것이 편안하다.", axis: "JP", side: "J" },
-  { id: "JP_J5", text: "규칙이나 흐름이 정해져 있을 때 일이 더 수월하다.", axis: "JP", side: "J" },
+  { id: "SN_S2", text: "하나님을 경험할 때 작은 사건과 현실 상황의 변화를 통해 체감하는 편이다.", axis: "SN", side: "S" },
+  { id: "SN_N2", text: "하나님을 경험할 때 마음속 깊은 생각과 영감, 그림으로 더 강하게 느끼는 편이다.", axis: "SN", side: "N" },
 
-  { id: "JP_P1", text: "즉흥적인 변화가 있는 날이 오히려 더 활기차다.", axis: "JP", side: "P" },
-  { id: "JP_P2", text: "선택지는 많을수록 마음이 자유롭다.", axis: "JP", side: "P" },
-  { id: "JP_P3", text: "해야 할 일이 있어도 느낌이 오는 순간 집중이 잘 된다.", axis: "JP", side: "P" },
-  { id: "JP_P4", text: "계획을 바꾸는 일이 자연스럽고 때로는 더 재미있다.", axis: "JP", side: "P" },
-  { id: "JP_P5", text: "시간이 촉박해질수록 집중력이 더 높아진다.", axis: "JP", side: "P" },
+  { id: "SN_S3", text: "새로운 사역 이야기를 들으면 우선 일정, 장소, 역할 같은 구체적인 정보를 알고 싶다.", axis: "SN", side: "S" },
+  { id: "SN_N3", text: "새로운 사역 이야기를 들으면 그 사역이 가진 방향성과 의미가 먼저 궁금하다.", axis: "SN", side: "N" },
+
+  { id: "SN_S4", text: "기도할 때 당장 눈앞의 현실 문제들을 하나씩 올려드리는 편이다.", axis: "SN", side: "S" },
+  { id: "SN_N4", text: "기도할 때 하나님이 이끄실 미래의 방향과 그림을 상상하며 기도하는 편이다.", axis: "SN", side: "N" },
+
+  { id: "SN_S5", text: "공동체에서 ‘지금 당장 필요한 것’을 채우는 실질적 섬김에 마음이 끌린다.", axis: "SN", side: "S" },
+  { id: "SN_N5", text: "공동체에서 ‘앞으로 어떻게 자라나면 좋을지’를 고민하며 비전을 나누는 데 마음이 끌린다.", axis: "SN", side: "N" },
+
+  // T / F — 기준 vs 마음
+  { id: "TF_T1", text: "누군가 어려움을 나누면 그 상황을 어떻게 해결할지 방법이 먼저 떠오른다.", axis: "TF", side: "T" },
+  { id: "TF_F1", text: "누군가 어려움을 나누면 얼마나 마음이 힘들었을지 먼저 공감부터 된다.", axis: "TF", side: "F" },
+
+  { id: "TF_T2", text: "갈등 상황이 생기면 ‘무엇이 옳고 공정한가’를 먼저 생각한다.", axis: "TF", side: "T" },
+  { id: "TF_F2", text: "갈등 상황이 생기면 ‘누가 상처받지 않을까’를 먼저 생각한다.", axis: "TF", side: "F" },
+
+  { id: "TF_T3", text: "말씀을 들을 때 내용의 논리와 구조를 정리하는 편이다.", axis: "TF", side: "T" },
+  { id: "TF_F3", text: "말씀을 들을 때 하나님의 마음과 감정이 어떻게 느껴지는지가 더 크게 다가온다.", axis: "TF", side: "F" },
+
+  { id: "TF_T4", text: "사역 회의에서 비효율적이거나 비논리적인 부분이 보이면 바로잡고 싶다.", axis: "TF", side: "T" },
+  { id: "TF_F4", text: "사역 회의에서 사람들의 감정과 분위기가 상하지 않는 것이 더 중요하게 느껴진다.", axis: "TF", side: "F" },
+
+  { id: "TF_T5", text: "도움을 요청받았을 때 지금 내가 할 수 있는지 현실적인 가능성을 먼저 판단한다.", axis: "TF", side: "T" },
+  { id: "TF_F5", text: "도움을 요청받았을 때 거절하면 상대가 상처받지 않을까를 먼저 떠올린다.", axis: "TF", side: "F" },
+
+  // J / P — 계획 vs 유연
+  { id: "JP_J1", text: "큐티나 기도는 가능한 한 일정한 시간과 장소를 정해두고 지키는 편이 편하다.", axis: "JP", side: "J" },
+  { id: "JP_P1", text: "큐티나 기도는 정해진 틀보다 상황과 느낌에 맞게 자유롭게 하는 편이 더 편하다.", axis: "JP", side: "P" },
+
+  { id: "JP_J2", text: "사역 준비를 할 때 체크리스트를 만들어 하나씩 완수하는 게 마음이 놓인다.", axis: "JP", side: "J" },
+  { id: "JP_P2", text: "사역 준비를 할 때 대략적인 그림만 잡고 상황에 맞춰 유연하게 맞추는 편이다.", axis: "JP", side: "P" },
+
+  { id: "JP_J3", text: "모임 시간이나 계획이 갑자기 바뀌면 스트레스를 좀 받는 편이다.", axis: "JP", side: "J" },
+  { id: "JP_P3", text: "모임 시간이나 계획이 갑자기 바뀌어도 ‘뭐, 그렇지’ 하며 금방 적응하는 편이다.", axis: "JP", side: "P" },
+
+  { id: "JP_J4", text: "신앙생활에서도 계획적으로 목표를 세우고 체크하는 것이 중요하다고 느낀다.", axis: "JP", side: "J" },
+  { id: "JP_P4", text: "신앙생활에서도 계획보다 그때그때 주어지는 기회와 흐름을 따라가는 편이다.", axis: "JP", side: "P" },
+
+  { id: "JP_J5", text: "한 주를 돌아볼 때 무엇을 얼마나 완료했는지가 중요하게 느껴진다.", axis: "JP", side: "J" },
+  { id: "JP_P5", text: "한 주를 돌아볼 때 어떤 경험과 만남이 있었는지가 더 중요하게 느껴진다.", axis: "JP", side: "P" },
 ];
 
 /* 2. 16유형 결과 데이터 */
@@ -952,12 +964,17 @@ function renderAxisUpgraded(axisScores) {
 /* 10. 세부 점수 */
 function renderDetailScores(scores) {
   const container = document.getElementById("detail-score-list");
-  const maxAbs = 10;
+  const maxAbs = 10; // 한 글자당 이론상 최대 점수 (5문항 × 2점)
   let html = "";
 
   ["E", "I", "S", "N", "T", "F", "J", "P"].forEach((k) => {
-    const v = scores[k];
-    const percent = Math.min(100, Math.round((Math.abs(v) / maxAbs) * 100));
+    const raw = scores[k] || 0;        // 원래 점수(±값)
+    const v = Math.abs(raw);           // 화면에는 항상 +로 표시
+    const percent = Math.min(
+      100,
+      Math.round((v / maxAbs) * 100)   // 그래프도 +값 기준
+    );
+
     html += `
       <div class="detail-score-row">
         <div class="detail-score-label">${k} (${v})</div>
@@ -1126,4 +1143,28 @@ skipBtn.addEventListener("click", () => {
 restartBtn.addEventListener("click", () => {
   resultSection.classList.add("hidden");
   introSection.classList.remove("hidden");
+});
+// 개발용: 바로 결과 보기 버튼
+const goResultBtn = document.getElementById("go-result-btn");
+
+goResultBtn.addEventListener("click", () => {
+  // 임의 응답 생성 (40문항 자동 중립 처리)
+  originalQuestions.forEach(q => {
+    answers[q.id] = 3; // 중립값
+  });
+
+  const { type, scores, axisScores } = calculateResult();
+  myResultType = type;
+  myScores = scores;
+  currentViewType = type;
+
+  introSection.classList.add("hidden");
+  testSection.classList.add("hidden");
+  resultSection.classList.remove("hidden");
+
+  renderResult(type);
+  renderAxisUpgraded(axisScores);
+  renderDetailScores(scores);
+  renderMatchCards(type);
+  buildOtherTypesGrid();
 });
