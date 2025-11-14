@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>Faith-MBTI 신앙 유형 테스트</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div class="app">
+    <!-- HEADER -->
+    <header>
+      <div class="logo">
+        <span class="logo-badge">🕊</span>
+        Faith-MBTI
+      </div>
+      <div class="logo-sub">하나님을 만나는 나만의 신앙 유형 테스트</div>
+    </header>
+
+    <main>
+      <!-- ■■■ Intro 화면 ■■■ -->
+      <section id="intro-section" class="intro">
+        <div>
+          <h1 class="intro-title">
+            당신의 <span class="intro-highlight">신앙 유형</span>은 무엇인가요?
+          </h1>
+          <p class="intro-text">
+            이 테스트는 MBTI의 인식·판단 구조를 바탕으로, “하나님을 어떻게 만나고, 사랑을 어떻게 표현하는지”를 살펴보는 신앙 유형 검사입니다. 정답은 없고, 서로를 더 잘 알아가기 위한 작은 안내서입니다.
+          </p>
+
+          <div class="intro-tags">
+            <span class="tag"><span class="tag-dot"></span> 40문항 · 7~10분</span>
+            <span class="tag"><span class="tag-dot"></span> 16가지 Faith-MBTI 유형</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <div class="card-title">
+              <span class="card-title-emoji">✨</span>
+              이 테스트로 알 수 있는 것
+            </div>
+            <ul class="card-list">
+              <li>나는 어떤 방식으로 하나님을 경험할까?</li>
+              <li>공동체에서 나의 영적 강점은 무엇인가?</li>
+              <li>나는 어떤 부분을 성장시키면 좋을까?</li>
+            </ul>
+            <button class="start-btn" id="start-btn">
+              테스트 시작하기 <span>›</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ■■■ Test 화면 ■■■ -->
+      <section id="test-section" class="hidden">
+        <div class="progress-wrapper">
+          <div class="progress-header">
+            <span id="progress-label">문항 1 / 40</span>
+            <span id="axis-label" style="visibility:hidden;"></span>
+          </div>
+          <div class="progress-bar">
+            <div id="progress-fill" class="progress-fill"></div>
+          </div>
+        </div>
+
+        <div class="question-card">
+          <div id="question-code" class="question-code">Q1</div>
+          <div id="question-text" class="question-text">질문 텍스트</div>
+
+          <div class="question-sub">
+            마음에 가장 <strong>자연스럽게</strong> 느껴지는 쪽을 선택해 주세요.
+          </div>
+
+          <div class="scale">
+            <div class="scale-labels">
+              <span>전혀 아니다</span>
+              <span>매우 그렇다</span>
+            </div>
+            <div id="scale-inputs" class="scale-inputs"></div>
+          </div>
+
+          <div class="nav-buttons">
+            <button id="back-btn" class="btn">‹ 이전</button>
+            <button id="skip-btn" class="btn">건너뛰기</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ■■■ Result 화면 ■■■ -->
+      <section id="result-section" class="hidden">
+        <div class="type-pill">나의 Faith-MBTI 유형</div>
+
+        <div class="result-layout">
+          <!-- ■■■ 좌측 메인 ■■■ -->
+          <div class="result-main-column">
+
+            <!-- 메인 카드 -->
+            <div class="result-card">
+              <div id="result-code" class="result-main-title">XXXX</div>
+              <div id="result-name" class="result-main-name">유형 이름</div>
+              <p id="result-summary" class="result-main-summary"></p>
+
+              <div id="result-badges" class="result-badges"></div>
+
+              <!-- 캐릭터 -->
+              <div id="character-block">
+                <div id="character-emoji">🙂</div>
+                <div>
+                  <div id="character-title" class="character-title"></div>
+                  <div id="character-text" class="character-text"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4축 그래프 -->
+            <div class="result-card">
+              <h3 class="card-title">나의 4축 성향 분포</h3>
+              <div id="axis-upgraded"></div>
+            </div>
+
+            <!-- 세부 점수 -->
+            <div class="result-card">
+              <h3 class="card-title">세부 점수</h3>
+              <div id="detail-score-list"></div>
+            </div>
+          </div>
+
+          <!-- ■■■ 우측 사이드 ■■■ -->
+          <div class="result-side-column">
+
+            <!-- 신앙 특징 -->
+            <div class="result-card">
+              <h3 class="card-title">🌿 이 유형의 신앙적 특징</h3>
+              <ul id="result-features"></ul>
+            </div>
+
+            <!-- 강점/약점 -->
+            <div class="result-card">
+              <h3 class="card-title">💪 강점 & 🔎 약점</h3>
+              <div id="result-strength"></div>
+              <div id="result-weakness" class="gray"></div>
+            </div>
+
+            <!-- 주의할 점 -->
+            <div class="result-card">
+              <h3 class="card-title">⚠️ 주의할 점</h3>
+              <div id="result-warning" class="gray"></div>
+            </div>
+
+            <!-- 잘 맞는 사역 -->
+            <div class="result-card">
+              <h3 class="card-title">⛪ 잘 맞는 사역</h3>
+              <ul id="result-ministries"></ul>
+            </div>
+
+            <!-- 성장 포인트 -->
+            <div class="result-card">
+              <h3 class="card-title">🧭 성장 포인트</h3>
+              <ul id="result-growth"></ul>
+            </div>
+
+            <!-- 📖 성경 인물 (버튼으로 열림) -->
+            <div class="result-card">
+              <h3 class="card-title">📖 성경 인물</h3>
+              <button id="bible-toggle-btn" class="btn-primary small">📖 성경 인물 보기</button>
+
+              <div id="bible-box" class="hidden verse-box">
+                <div id="bible-character" class="verse-ref"></div>
+                <div id="bible-verse" class="verse-text small-hint"></div>
+              </div>
+            </div>
+
+            <!-- 오늘의 말씀 -->
+            <div class="result-card">
+              <h3 class="card-title">🎲 오늘의 말씀</h3>
+              <button id="today-verse-btn" class="btn-primary small">오늘의 말씀 보기</button>
+
+              <div id="today-verse-box" class="hidden verse-box">
+                <div id="today-verse-box-ref" class="verse-ref"></div>
+                <div id="today-verse-box-text" class="verse-text"></div>
+                <div id="today-verse-box-apply" class="verse-apply"></div>
+              </div>
+            </div>
+
+            <!-- 유형 관계 보기 -->
+            <div class="result-card">
+              <h3 class="card-title">유형 관계 보기</h3>
+              <div class="small-hint">
+                나와 비슷한 친구, 나를 균형 있게 도와줄 반대 친구를 떠올려 보세요.
+              </div>
+
+              <div class="match-card">
+                <div class="match-title">함께 사역하면 좋은 유형</div>
+                <div id="match-top2" class="match-list"></div>
+              </div>
+
+              <div class="match-card">
+                <div class="match-title">균형을 도와줄 반대 유형</div>
+                <div id="match-opposite" class="match-list"></div>
+              </div>
+            </div>
+
+            <!-- 다른 유형 보기 -->
+            <div class="result-card">
+              <h3 class="card-title">다른 유형 보기</h3>
+              <div class="small-hint">다른 유형 설명과 비교해볼 수 있어요.</div>
+              <div id="other-types-grid"></div>
+            </div>
+
+            <!-- 푸터 -->
+            <div class="result-footer">
+              <div class="gray">
+                이 결과는 성향 이해를 돕는 도구이며,<br />
+                우리는 언제든지 성령 안에서 변화되고 성장할 수 있습니다.
+              </div>
+              <div class="result-footer-right">
+                <button id="share-btn" class="btn-secondary">공유</button>
+                <button id="restart-btn" class="btn-secondary">다시 검사</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

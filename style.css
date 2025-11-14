@@ -1,0 +1,538 @@
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* GLOBAL */
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+    "Noto Sans KR", sans-serif;
+  background: radial-gradient(circle at top, #f3f0ff, #f8fafc);
+  color: #111827;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+}
+.hidden {
+  display: none !important;
+}
+.app {
+  width: 100%;
+  max-width: 960px;
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.12);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* HEADER */
+header {
+  padding: 20px 28px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 20px;
+}
+.logo-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #4f46e5, #a855f7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 16px;
+}
+.logo-sub {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* MAIN */
+main {
+  padding: 24px 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* INTRO */
+.intro {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 24px;
+}
+@media (max-width: 768px) {
+  .intro {
+    grid-template-columns: 1fr;
+  }
+}
+.intro-title {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.intro-highlight {
+  background: linear-gradient(120deg, #4f46e5, #a855f7);
+  -webkit-background-clip: text;
+  color: transparent;
+}
+.intro-text {
+  font-size: 14px;
+  color: #4b5563;
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+.intro-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #4f46e5;
+}
+.tag-dot {
+  width: 6px;
+  height: 6px;
+  background: #4f46e5;
+  border-radius: 999px;
+}
+
+/* 카드 */
+.card {
+  border-radius: 18px;
+  background: radial-gradient(circle at top left, #eef2ff, #f9fafb);
+  padding: 18px;
+  border: 1px solid #e5e7eb;
+}
+.card-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.card-title-emoji {
+  font-size: 16px;
+}
+.card-list {
+  list-style: none;
+  font-size: 13px;
+  color: #4b5563;
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.card-list li::before {
+  content: "•";
+  color: #6366f1;
+  margin-right: 6px;
+}
+
+/* 버튼 */
+.start-btn {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #4f46e5, #a855f7);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 14px 30px rgba(79, 70, 229, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  transition: 0.12s ease;
+}
+.start-btn:hover {
+  transform: translateY(-1px);
+  opacity: 0.96;
+}
+.btn {
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  padding: 7px 14px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: 0.12s;
+}
+.btn-primary {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #4f46e5, #a855f7);
+  color: #fff;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+}
+.btn-primary.small {
+  padding: 6px 12px;
+  font-size: 11px;
+}
+.btn-secondary {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  font-size: 11px;
+}
+
+/* TEST 화면 */
+.progress-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #6b7280;
+}
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.progress-fill {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #4f46e5, #a855f7);
+  transition: width 0.2s ease-out;
+}
+.question-card {
+  margin-top: 6px;
+  border-radius: 18px;
+  padding: 18px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  display: grid;
+  gap: 14px;
+}
+.question-code {
+  font-size: 11px;
+  color: #9ca3af;
+  letter-spacing: 0.18em;
+  font-weight: 600;
+}
+.question-text {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+.question-sub {
+  font-size: 12px;
+  color: #6b7280;
+}
+.scale {
+  display: grid;
+  gap: 8px;
+}
+.scale-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #6b7280;
+}
+.scale-inputs {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+.scale-option input {
+  display: none;
+}
+.scale-pill {
+  padding: 6px 0;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  font-size: 11px;
+  cursor: pointer;
+  text-align: center;
+  transition: 0.12s;
+}
+.scale-option input:checked + .scale-pill {
+  border-color: #4f46e5;
+  background: #eef2ff;
+  color: #3730a3;
+  font-weight: 600;
+}
+
+/* RESULT 레이아웃 */
+.type-pill {
+  padding: 4px 8px;
+  background: #eef2ff;
+  color: #4f46e5;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  margin-bottom: 10px;
+}
+
+.result-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 16px;
+}
+@media (max-width: 768px) {
+  .result-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.result-main-column,
+.result-side-column {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.result-card {
+  border-radius: 16px;
+  padding: 14px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  font-size: 12px;
+}
+
+.result-main-title {
+  font-size: 26px;
+  font-weight: 800;
+}
+.result-main-name {
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+.result-main-summary {
+  margin-top: 6px;
+  font-size: 13px;
+  color: #4b5563;
+  line-height: 1.7;
+}
+
+/* 뱃지 */
+.result-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.badge {
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  font-size: 11px;
+}
+
+/* 캐릭터 */
+#character-block {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+}
+#character-emoji {
+  font-size: 26px;
+}
+.character-title {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+.character-text {
+  font-size: 12px;
+  color: #4b5563;
+}
+
+/* 리스트 */
+.result-card ul {
+  list-style: none;
+  display: grid;
+  gap: 4px;
+}
+.result-card li::before {
+  content: "›";
+  color: #6366f1;
+  margin-right: 6px;
+}
+
+/* 성경 인물 / 오늘의 말씀 (공통 박스) */
+.verse-box {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px dashed #e5e7eb;
+  font-size: 12px;
+  margin-top: 8px;
+}
+.verse-ref {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.verse-text {
+  margin-bottom: 4px;
+}
+.verse-apply {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+/* 4축 그래프 */
+.axis-row {
+  margin-bottom: 10px;
+}
+.axis-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #6b7280;
+  margin-bottom: 2px;
+}
+.axis-score {
+  font-size: 11px;
+  margin-bottom: 4px;
+}
+.axis-bar-bg {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  overflow: hidden;
+}
+.axis-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4f46e5, #a855f7);
+}
+
+/* 세부 점수 */
+.detail-score-row {
+  margin-bottom: 8px;
+}
+.detail-score-label {
+  font-size: 11px;
+  color: #4b5563;
+  margin-bottom: 2px;
+}
+.detail-score-bar-bg {
+  width: 100%;
+  height: 4px;
+  background: #e5e7eb;
+  border-radius: 999px;
+}
+.detail-score-bar-fill {
+  height: 100%;
+  background: #a855f7;
+  border-radius: 999px;
+}
+
+/* 유형 관계 보기 */
+.match-card {
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  margin-top: 6px;
+}
+.match-title {
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.match-list {
+  display: grid;
+  gap: 4px;
+}
+.match-item {
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: #edf3ff;
+  font-size: 11px;
+}
+.match-item-opposite {
+  background: #fcf3f8; /* ← 반대 유형 박스 색 (연한 핑크) */
+  border: 1px solid #fcf1f7;
+}
+.match-item-title {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.match-item-sub {
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+/* 다른 유형 보기 */
+#other-types-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.btn-type {
+  padding: 6px 8px;
+  font-size: 11px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  cursor: pointer;
+}
+.btn-type.active {
+  background: #111827;
+  color: #fff;
+}
+
+/* FOOTER */
+.result-footer {
+  font-size: 12px;
+  color: #6b7280;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+.result-footer-right {
+  display: flex;
+  gap: 6px;
+}
+/* 질문 카드 내 네비게이션 버튼 정렬 */
+.nav-buttons {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+/* 건너뛰기 버튼을 오른쪽 끝으로 이동 */
+#skip-btn {
+  margin-left: auto;
+}
