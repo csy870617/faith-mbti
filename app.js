@@ -1168,15 +1168,12 @@ function isKakaoInApp() {
   return /KAKAOTALK/i.test(navigator.userAgent || "");
 }
 
-// 카카오톡 인앱 브라우저 감지
-function isKakaoInApp() {
-  return /KAKAOTALK/i.test(navigator.userAgent || "");
-}
+// 위쪽 어딘가에 이미 있을 것:
+// const shareBtn = document.getElementById("share-btn");
 
-// 결과 공유 버튼
 if (shareBtn) {
   shareBtn.addEventListener("click", async () => {
-    // 결과가 아직 계산되지 않았다면
+    // 결과가 아직 없으면 막기
     if (!myResultType || !typeResults || !typeResults[myResultType]) {
       alert("먼저 검사를 완료한 뒤, 결과를 공유해 주세요.");
       return;
@@ -1192,38 +1189,43 @@ if (shareBtn) {
       `당신의 신앙 유형은 무엇인가요?\n` +
       baseUrl;
 
-    // 1) 카카오 인앱 + Kakao SDK 초기화 → 카카오톡으로 직접 공유
-    try {
-      if (isKakaoInApp() && window.Kakao && Kakao.isInitialized()) {
-        Kakao.Link.sendDefault({
-          objectType: "feed",
-          content: {
-            title: "FAITH-MBTI 신앙 유형 테스트",
-            description: `나의 Faith-MBTI 유형은 ${myResultType} (${nameKo} · ${nameEn}) 입니다.\n당신의 신앙 유형은 무엇인가요?`,
-            imageUrl: baseUrl + "images/thumbnail.jpg",
-            link: {
-              mobileWebUrl: baseUrl,
-              webUrl: baseUrl,
-            },
-          },
-          buttons: [
-            {
-              title: "나도 FAITH-MBTI 검사하기",
+    // ✅ 1) 카카오 인앱 브라우저인 경우 → "카톡 → 카톡 공유"만 사용 (클립보드 X)
+    if (isKakaoInApp()) {
+      if (window.Kakao && Kakao.isInitialized && Kakao.isInitialized()) {
+        try {
+          Kakao.Link.sendDefault({
+            objectType: "feed",
+            content: {
+              title: "FAITH-MBTI 신앙 유형 테스트",
+              description: `나의 Faith-MBTI 유형은 ${myResultType} (${nameKo} · ${nameEn}) 입니다.\n당신의 신앙 유형은 무엇인가요?`,
+              imageUrl: baseUrl + "images/thumbnail.jpg",
               link: {
                 mobileWebUrl: baseUrl,
                 webUrl: baseUrl,
               },
             },
-          ],
-        });
-        return; // 카카오 공유까지 끝났으면 여기서 종료
+            buttons: [
+              {
+                title: "나도 FAITH-MBTI 검사하기",
+                link: {
+                  mobileWebUrl: baseUrl,
+                  webUrl: baseUrl,
+                },
+              },
+            ],
+          });
+        } catch (err) {
+          console.error("Kakao Link 공유 오류:", err);
+          alert("카카오톡 공유 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.");
+        }
+      } else {
+        // 인앱인데 SDK가 없거나 init 안 된 경우에도 "클립보드로 빠지지 않게"
+        alert("카카오톡 인앱 브라우저에서는 카카오 공유만 지원해요.\n자바스크립트 키 설정과 도메인 등록을 다시 확인해 주세요.");
       }
-    } catch (err) {
-      console.error("Kakao Link 공유 오류:", err);
-      // 실패해도 아래 기본 공유로 이어지게 둠
+      return; // 👈 카카오 인앱에서는 여기서 끝! 아래 기본 공유/클립보드로 안 내려감
     }
 
-    // 2) 일반 브라우저 → 기본 공유 시트
+    // ✅ 2) 일반 브라우저 → 기본 공유 시트
     if (navigator.share) {
       try {
         await navigator.share({
@@ -1237,7 +1239,7 @@ if (shareBtn) {
       }
     }
 
-    // 3) 그 외 환경 → 클립보드 복사
+    // ✅ 3) 일반 브라우저 중 공유 시트도 안 되면 → 그때만 클립보드
     try {
       await navigator.clipboard.writeText(shareText);
       alert("이 브라우저에서는 기본 공유를 지원하지 않아,\n결과 텍스트와 링크가 클립보드에 복사되었습니다.");
@@ -1246,6 +1248,7 @@ if (shareBtn) {
     }
   });
 }
+
 
 
 
