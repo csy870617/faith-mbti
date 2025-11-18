@@ -1168,74 +1168,81 @@ function isKakaoInApp() {
   return /KAKAOTALK/i.test(navigator.userAgent || "");
 }
 
-document.getElementById("shareBtn").addEventListener("click", async () => {
-  const resultType = finalType; // 예: ISTP
-  const resultTitle = typeTitles[resultType].kr;   // 예: 묵묵한 실천가
-  const resultTitleEng = typeTitles[resultType].en; // 예: The Silent Craftsman
+// 이미 위쪽에서 선언한 shareBtn을 재사용한다고 가정
+// const shareBtn = document.getElementById("share-btn"); 가 위에 있음
 
-  const baseUrl = "https://csy870617.github.io/faith-mbti/";
+if (shareBtn) {
+  shareBtn.addEventListener("click", async () => {
+    // 결과 타입 정보가 없으면 그냥 리턴
+    if (!finalType || !typeTitles || !typeTitles[finalType]) {
+      alert("먼저 검사를 완료한 뒤, 결과를 공유해 주세요.");
+      return;
+    }
 
-  const shareText =
-    `나의 Faith-MBTI 유형은 ${resultType} (${resultTitle} · ${resultTitleEng}) 입니다.\n` +
-    `당신의 신앙 유형은 무엇인가요?\n` +
-    `${baseUrl}`;
+    const resultType = finalType; // 예: ISTP
+    const resultTitle = typeTitles[resultType].kr;   // 예: 묵묵한 실천가
+    const resultTitleEng = typeTitles[resultType].en; // 예: The Silent Craftsman
 
-  // 1) 카카오 인앱 브라우저인지 체크
-  const ua = navigator.userAgent || "";
-  const isKakaoInApp = /KAKAOTALK/i.test(ua);
+    const baseUrl = "https://csy870617.github.io/faith-mbti/";
 
-  // 1-1) 카카오 인앱 + Kakao SDK 초기화 완료 → 카카오톡으로 공유
-  if (isKakaoInApp && window.Kakao && Kakao.isInitialized()) {
-    try {
-      Kakao.Link.sendDefault({
-        objectType: "feed",
-        content: {
-          title: "FAITH-MBTI 신앙 유형 테스트",
-          description: `나의 Faith-MBTI 유형은 ${resultType} (${resultTitle} · ${resultTitleEng}) 입니다.\n당신의 신앙 유형은 무엇인가요?`,
-          imageUrl: baseUrl + "images/thumbnail.jpg", // 썸네일 이미지
-          link: {
-            mobileWebUrl: baseUrl,
-            webUrl: baseUrl,
-          },
-        },
-        buttons: [
-          {
-            title: "나도 FAITH-MBTI 검사하기",
+    const shareText =
+      `나의 Faith-MBTI 유형은 ${resultType} (${resultTitle} · ${resultTitleEng}) 입니다.\n` +
+      `당신의 신앙 유형은 무엇인가요?\n` +
+      `${baseUrl}`;
+
+    // 1) 카카오 인앱 브라우저 + Kakao SDK 초기화 완료 → 카카오톡으로 공유
+    if (isKakaoInApp() && window.Kakao && Kakao.isInitialized()) {
+      try {
+        Kakao.Link.sendDefault({
+          objectType: "feed",
+          content: {
+            title: "FAITH-MBTI 신앙 유형 테스트",
+            description: `나의 Faith-MBTI 유형은 ${resultType} (${resultTitle} · ${resultTitleEng}) 입니다.\n당신의 신앙 유형은 무엇인가요?`,
+            imageUrl: baseUrl + "images/thumbnail.jpg", // 썸네일 이미지
             link: {
               mobileWebUrl: baseUrl,
               webUrl: baseUrl,
             },
           },
-        ],
-      });
-    } catch (err) {
-      console.error("Kakao Link 공유 오류:", err);
-      alert("카카오톡 공유 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.");
+          buttons: [
+            {
+              title: "나도 FAITH-MBTI 검사하기",
+              link: {
+                mobileWebUrl: baseUrl,
+                webUrl: baseUrl,
+              },
+            },
+          ],
+        });
+      } catch (err) {
+        console.error("Kakao Link 공유 오류:", err);
+        alert("카카오톡 공유 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.");
+      }
+      return; // 여기서 종료
     }
-    return; // 여기서 종료
-  }
 
-  // 2) 일반 브라우저 → 기본 공유 시트
-  if (navigator.share) {
-    try {
-      await navigator.share({
-        title: "FAITH-MBTI 결과",
-        text: shareText,
-        url: baseUrl,
-      });
-    } catch (err) {
-      console.log("공유 취소/오류:", err);
+    // 2) 일반 브라우저 → 기본 공유 시트
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "FAITH-MBTI 결과",
+          text: shareText,
+          url: baseUrl,
+        });
+      } catch (err) {
+        console.log("공유 취소/오류:", err);
+      }
+    } else {
+      // 3) 어떤 공유도 안 되는 환경 → 클립보드 복사
+      try {
+        await navigator.clipboard.writeText(shareText);
+        alert("이 브라우저에서는 기본 공유를 지원하지 않아,\n결과 텍스트가 클립보드에 복사되었습니다.");
+      } catch (err) {
+        alert("공유 기능을 사용할 수 없습니다. 다른 브라우저에서 다시 시도해 주세요.");
+      }
     }
-  } else {
-    // 3) 어떤 공유도 안 되는 환경 → 클립보드 복사
-    try {
-      await navigator.clipboard.writeText(shareText);
-      alert("이 브라우저에서는 기본 공유를 지원하지 않아,\n결과 텍스트가 클립보드에 복사되었습니다.");
-    } catch (err) {
-      alert("공유 기능을 사용할 수 없습니다. 다른 브라우저에서 다시 시도해 주세요.");
-    }
-  }
-});
+  });
+}
 
 
 /* 16. 시작 / 뒤로 / 건너뛰기 / 다시 검사 */
