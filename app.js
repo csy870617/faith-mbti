@@ -1168,80 +1168,72 @@ function isKakaoInApp() {
   return /KAKAOTALK/i.test(navigator.userAgent || "");
 }
 
-shareBtn.addEventListener("click", async () => {
-  if (!myResultType) {
-    alert("먼저 FAITH-MBTI 검사를 완료해 주세요.");
-    return;
-  }
+document.getElementById("shareBtn").addEventListener("click", async () => {
+  const resultType = finalType; // 예: ISTP
+  const resultTitle = typeTitles[resultType].kr;   // 예: 묵묵한 실천가
+  const resultTitleEng = typeTitles[resultType].en; // 예: The Silent Craftsman
 
-  const type = myResultType;
-  const shortText =
-    getTypeShortText(type) || "신앙에도 유형이 있다, FAITH-MBTI.";
-  const title = "FAITH-MBTI 신앙유형 테스트";
-  const text = `나의 FAITH-MBTI 유형은 ${type} 입니다.\n${shortText}`;
-  const url = location.href.split("#")[0]; // 해시(#) 제거
-  const fullShareText = `${title}\n\n${text}\n\n${url}`;
+  const baseUrl = "https://csy870617.github.io/faith-mbti/";
 
-  /* 1) 카카오 인앱 + Kakao SDK 준비 완료 → Kakao톡으로 바로 공유 */
-  const isInKakao = isKakaoInApp();
-  const canUseKakaoLink =
-    isInKakao &&
-    window.Kakao &&
-    window.Kakao.isInitialized &&
-    window.Kakao.isInitialized();
+  const shareText =
+    `나의 Faith-MBTI 유형은 ${resultType} (${resultTitle} · ${resultTitleEng}) 입니다.\n` +
+    `당신의 신앙 유형은 무엇인가요?\n` +
+    `${baseUrl}`;
 
-  if (canUseKakaoLink) {
+  // 1) 카카오 인앱 브라우저인지 체크
+  const ua = navigator.userAgent || "";
+  const isKakaoInApp = /KAKAOTALK/i.test(ua);
+
+  // 1-1) 카카오 인앱 + Kakao SDK 초기화 완료 → 카카오톡으로 공유
+  if (isKakaoInApp && window.Kakao && Kakao.isInitialized()) {
     try {
-      window.Kakao.Link.sendDefault({
-        objectType: "text",
-        text: fullShareText,
-        link: {
-          mobileWebUrl: url,
-          webUrl: url,
+      Kakao.Link.sendDefault({
+        objectType: "feed",
+        content: {
+          title: "FAITH-MBTI 신앙 유형 테스트",
+          description: `나의 Faith-MBTI 유형은 ${resultType} (${resultTitle} · ${resultTitleEng}) 입니다.\n당신의 신앙 유형은 무엇인가요?`,
+          imageUrl: baseUrl + "images/thumbnail.jpg", // 썸네일 이미지
+          link: {
+            mobileWebUrl: baseUrl,
+            webUrl: baseUrl,
+          },
         },
-        buttonTitle: "FAITH-MBTI 열어 보기",
+        buttons: [
+          {
+            title: "나도 FAITH-MBTI 검사하기",
+            link: {
+              mobileWebUrl: baseUrl,
+              webUrl: baseUrl,
+            },
+          },
+        ],
       });
-      return; // 여기서 끝
-    } catch (e) {
-      console.error("Kakao 공유 실패, Web Share로 폴백:", e);
-      // 실패 시 아래 Web Share로 넘어감
+    } catch (err) {
+      console.error("Kakao Link 공유 오류:", err);
+      alert("카카오톡 공유 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.");
     }
+    return; // 여기서 종료
   }
 
-  /* 2) 일반 브라우저 → Web Share API(기본 공유 시트) */
+  // 2) 일반 브라우저 → 기본 공유 시트
   if (navigator.share) {
     try {
       await navigator.share({
-        title,
-        text,
-        url,
+        title: "FAITH-MBTI 결과",
+        text: shareText,
+        url: baseUrl,
       });
-      return;
-    } catch (e) {
-      console.error("Web Share 실패:", e);
-      // 사용자가 닫았거나, 지원 문제 → 아래 폴백
+    } catch (err) {
+      console.log("공유 취소/오류:", err);
     }
-  }
-
-  /* 3) 폴백 – 클립보드 복사 or 직접 복사 안내 */
-  try {
-    if (navigator.clipboard && window.isSecureContext) {
-      await navigator.clipboard.writeText(fullShareText);
-      alert(
-        "공유 문구와 링크를 복사했어요.\n대화창에서 붙여넣기 해서 보내 주세요."
-      );
-    } else {
-      window.prompt(
-        "아래 내용을 전체 선택해서 복사한 뒤,\n공유하고 싶은 대화창에 붙여넣기 해 주세요.",
-        fullShareText
-      );
+  } else {
+    // 3) 어떤 공유도 안 되는 환경 → 클립보드 복사
+    try {
+      await navigator.clipboard.writeText(shareText);
+      alert("이 브라우저에서는 기본 공유를 지원하지 않아,\n결과 텍스트가 클립보드에 복사되었습니다.");
+    } catch (err) {
+      alert("공유 기능을 사용할 수 없습니다. 다른 브라우저에서 다시 시도해 주세요.");
     }
-  } catch (err) {
-    console.error("클립보드/프롬프트 폴백 실패:", err);
-    window.prompt(
-      "아래 내용을 전체 선택해서 복사한 뒤,\n공유하고 싶은 대화창에 붙여넣기 해 주세요.",
-      fullShareText
-    );
   }
 });
 
