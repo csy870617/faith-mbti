@@ -1161,7 +1161,13 @@ bibleToggleBtn.addEventListener("click", () => {
   }
 });
 
-/* 15. 공유 – 휴대폰 기본 공유 시트 사용 */
+/* 15. 공유 – 카카오 인앱이면 Kakao.Link, 그 외에는 기본 공유 시트 */
+
+// 카카오톡 인앱 브라우저 감지
+function isKakaoInApp() {
+  return /KAKAOTALK/i.test(navigator.userAgent || "");
+}
+
 shareBtn.addEventListener("click", async () => {
   if (!myResultType) {
     alert("먼저 FAITH-MBTI 검사를 완료해 주세요.");
@@ -1169,11 +1175,40 @@ shareBtn.addEventListener("click", async () => {
   }
 
   const type = myResultType;
-  const shortText = getTypeShortText(type) || "신앙에도 유형이 있다, FAITH-MBTI.";
+  const shortText =
+    getTypeShortText(type) || "신앙에도 유형이 있다, FAITH-MBTI.";
   const title = "FAITH-MBTI 신앙유형 테스트";
   const text = `나의 FAITH-MBTI 유형은 ${type} 입니다.\n${shortText}`;
-  const url = location.href.split("#")[0]; // 해시(#) 뒤는 제거
+  const url = location.href.split("#")[0]; // 해시(#) 제거
+  const fullShareText = `${title}\n\n${text}\n\n${url}`;
 
+  /* 1) 카카오 인앱 + Kakao SDK 준비 완료 → Kakao톡으로 바로 공유 */
+  const isInKakao = isKakaoInApp();
+  const canUseKakaoLink =
+    isInKakao &&
+    window.Kakao &&
+    window.Kakao.isInitialized &&
+    window.Kakao.isInitialized();
+
+  if (canUseKakaoLink) {
+    try {
+      window.Kakao.Link.sendDefault({
+        objectType: "text",
+        text: fullShareText,
+        link: {
+          mobileWebUrl: url,
+          webUrl: url,
+        },
+        buttonTitle: "FAITH-MBTI 열어 보기",
+      });
+      return; // 여기서 끝
+    } catch (e) {
+      console.error("Kakao 공유 실패, Web Share로 폴백:", e);
+      // 실패 시 아래 Web Share로 넘어감
+    }
+  }
+
+  /* 2) 일반 브라우저 → Web Share API(기본 공유 시트) */
   if (navigator.share) {
     try {
       await navigator.share({
@@ -1181,25 +1216,35 @@ shareBtn.addEventListener("click", async () => {
         text,
         url,
       });
+      return;
     } catch (e) {
-      // 사용자가 공유 시트를 닫았거나, 에러가 난 경우
-      console.error("공유 중 에러:", e);
-    }
-  } else {
-    // 데스크탑 등 Web Share API 미지원 환경용 간단 폴백
-    try {
-      if (navigator.clipboard) {
-        await navigator.clipboard.writeText(`${text}\n${url}`);
-        alert("이 브라우저에서는 기본 공유 시트를 지원하지 않아,\n공유 텍스트와 링크를 클립보드에 복사해 두었습니다.");
-      } else {
-        alert("이 브라우저에서는 기본 공유 시트를 지원하지 않습니다.\n주소창의 링크를 직접 복사해 주세요.");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("공유 기능을 사용할 수 없습니다.\n주소창의 링크를 직접 복사해 주세요.");
+      console.error("Web Share 실패:", e);
+      // 사용자가 닫았거나, 지원 문제 → 아래 폴백
     }
   }
+
+  /* 3) 폴백 – 클립보드 복사 or 직접 복사 안내 */
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(fullShareText);
+      alert(
+        "공유 문구와 링크를 복사했어요.\n대화창에서 붙여넣기 해서 보내 주세요."
+      );
+    } else {
+      window.prompt(
+        "아래 내용을 전체 선택해서 복사한 뒤,\n공유하고 싶은 대화창에 붙여넣기 해 주세요.",
+        fullShareText
+      );
+    }
+  } catch (err) {
+    console.error("클립보드/프롬프트 폴백 실패:", err);
+    window.prompt(
+      "아래 내용을 전체 선택해서 복사한 뒤,\n공유하고 싶은 대화창에 붙여넣기 해 주세요.",
+      fullShareText
+    );
+  }
 });
+
 
 /* 16. 시작 / 뒤로 / 건너뛰기 / 다시 검사 */
 startBtn.addEventListener("click", () => {
