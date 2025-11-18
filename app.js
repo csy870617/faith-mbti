@@ -1168,7 +1168,7 @@ function isKakaoInApp() {
   return /KAKAOTALK/i.test(navigator.userAgent || "");
 }
 
-// 위쪽 어딘가에 이미 있을 것:
+// 위쪽에 이미 있을 것:
 // const shareBtn = document.getElementById("share-btn");
 
 if (shareBtn) {
@@ -1189,7 +1189,7 @@ if (shareBtn) {
       `당신의 신앙 유형은 무엇인가요?\n` +
       baseUrl;
 
-    // ✅ 1) 카카오 인앱 브라우저인 경우 → 무조건 카카오 링크만 시도 (클립보드 X)
+    // 1) 카카오 인앱인 경우 → 먼저 Kakao.Link 시도
     if (isKakaoInApp()) {
       if (typeof Kakao !== "undefined" && Kakao && Kakao.Link && Kakao.Link.sendDefault) {
         try {
@@ -1214,17 +1214,16 @@ if (shareBtn) {
               },
             ],
           });
+          return; // 카카오 링크 성공 시 여기서 끝
         } catch (err) {
           console.error("Kakao Link 공유 오류:", err);
-          alert("카카오톡 공유 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.");
+          // 실패하면 아래 공통 공유 로직으로 자연스럽게 떨어지게 둠
         }
-      } else {
-        alert("카카오 SDK가 로드되지 않았어요.\n인앱 브라우저에서 새로고침 후 다시 시도해 주세요.");
       }
-      return; // 👈 인앱이면 여기서 끝! 아래 기본 공유/클립보드로 안 내려감
+      // 인앱인데 Kakao 객체가 없거나 오류 나면 → 아래 공통 공유 로직으로 그냥 진행
     }
 
-    // ✅ 2) 일반 브라우저 → 기본 공유 시트
+    // 2) Web Share API 지원 브라우저 → 기본 공유 시트
     if (navigator.share) {
       try {
         await navigator.share({
@@ -1238,10 +1237,14 @@ if (shareBtn) {
       }
     }
 
-    // ✅ 3) 일반 브라우저 중 공유 시트도 안 되면 → 그때만 클립보드
+    // 3) 그 외 → 마지막으로 클립보드
     try {
       await navigator.clipboard.writeText(shareText);
-      alert("이 브라우저에서는 기본 공유를 지원하지 않아,\n결과 텍스트와 링크가 클립보드에 복사되었습니다.");
+      alert(
+        "이 브라우저에서는 기본 공유를 지원하지 않아,\n" +
+        "결과 텍스트와 링크가 클립보드에 복사되었습니다.\n" +
+        "원하는 카카오톡 대화창에 붙여넣기 해 주세요."
+      );
     } catch (err) {
       alert("공유 기능을 사용할 수 없습니다. 다른 브라우저에서 다시 시도해 주세요.");
     }
@@ -1662,3 +1665,4 @@ if (churchResultList && !churchResultList.innerHTML.trim()) {
     </div>
   `;
 }
+
