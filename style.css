@@ -191,6 +191,16 @@ main {
   font-size: 12px;
   cursor: pointer;
 }
+.btn-primary2 {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #4f46e5, #a855f7);
+  color: #fff;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+}
 .btn-primary.small {
   padding: 6px 12px;
   font-size: 11px;
@@ -905,4 +915,3 @@ body {
     justify-content: center;
   }
 }
-
