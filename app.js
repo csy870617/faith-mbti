@@ -1582,6 +1582,9 @@ const churchBtn = document.getElementById("church-btn");
 const churchSection = document.getElementById("church-section");
 const churchCloseBtn = document.getElementById("church-close-btn");
 
+const inviteBtn = document.getElementById("invite-btn");
+const churchNameInput = document.getElementById("member-church-input");
+
 const memberNameInput = document.getElementById("member-name-input");
 const memberChurchInput = document.getElementById("member-church-input");
 const memberPasswordInput = document.getElementById("member-password-input");
@@ -1590,7 +1593,9 @@ const memberSaveBtn = document.getElementById("member-save-btn");
 const viewChurchInput = document.getElementById("view-church-input");
 const viewPasswordInput = document.getElementById("view-password-input");
 const churchViewBtn = document.getElementById("church-view-btn");
+
 const churchResultList = document.getElementById("church-result-list");
+const churchSummaryBtn = document.getElementById("church-summary-btn");
 
 // 18-1. 결과 화면 → 우리교회 화면으로 이동
 if (churchBtn && churchSection) {
@@ -1665,4 +1670,106 @@ if (churchResultList && !churchResultList.innerHTML.trim()) {
   `;
 }
 
+if (churchSummaryBtn) {
+  churchSummaryBtn.addEventListener("click", async () => {
+    const churchName = (viewChurchInput?.value || "").trim();
+    const pw = (viewPasswordInput?.value || "").trim();
 
+    if (!churchName) {
+      alert("교회 이름을 입력해 주세요.");
+      viewChurchInput?.focus();
+      return;
+    }
+    if (!pw) {
+      alert("우리교회 비밀번호를 입력해 주세요.");
+      viewPasswordInput?.focus();
+      return;
+    }
+
+    try {
+      // Firestore에서 해당 교회 목록 불러오기 (이미 만든 함수라고 가정)
+      const { members } = await loadChurchMembers(churchName, pw);
+
+      // 화면에 렌더링
+      renderChurchList(churchName, members);
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "우리교회 신앙 유형을 불러오는 중 오류가 발생했습니다.");
+    }
+  });
+}
+
+
+// 18-5. "초대하기" 버튼 → 교회 이름 포함 초대 링크 공유
+
+async function shareInviteLink() {
+  const baseUrl = "https://csy870617.github.io/faith-mbti/";
+
+  // 교회 이름 입력
+  const churchName =
+    churchNameInput?.value?.trim() && churchNameInput.value.trim().length > 0
+      ? churchNameInput.value.trim()
+      : "우리교회";
+
+  const shareText =
+    `${churchName} 신앙 유형 모음을 함께 만들어요!\n` +
+    `당신의 신앙 유형은 무엇인가요?\n` +
+    baseUrl;
+
+  // 1. 카카오 인앱 → 카카오 공유 시도
+  if (/KAKAOTALK/i.test(navigator.userAgent || "")) {
+    if (typeof Kakao !== "undefined" && Kakao.Link && Kakao.Link.sendDefault) {
+      try {
+        Kakao.Link.sendDefault({
+          objectType: "feed",
+          content: {
+            title: "FAITH-MBTI 신앙 유형 테스트",
+            description: shareText,
+            imageUrl: baseUrl + "images/thumbnail.jpg",
+            link: { mobileWebUrl: baseUrl, webUrl: baseUrl },
+          },
+          buttons: [
+            {
+              title: "나도 FAITH-MBTI 검사하기",
+              link: { mobileWebUrl: baseUrl, webUrl: baseUrl },
+            },
+          ],
+        });
+        return;
+      } catch (err) {
+        console.error("카카오 링크 오류:", err);
+      }
+    }
+    // SDK가 안 뜨면 → Web Share로 이어짐
+  }
+
+  // 2. Web Share API 지원 → 기본 공유 시트
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: "FAITH-MBTI 초대",
+        text: shareText,
+        url: baseUrl,
+      });
+      return;
+    } catch (err) {
+      console.log("공유 취소/오류:", err);
+    }
+  }
+
+  // 3. 최후 → 클립보드 복사
+  try {
+    await navigator.clipboard.writeText(shareText);
+    alert(
+      "공유가 지원되지 않는 환경입니다.\n" +
+      "초대 메시지가 클립보드에 복사되었어요!\n" +
+      "카카오톡에 붙여넣기 해 주세요."
+    );
+  } catch (err) {
+    alert("공유 기능을 사용할 수 없습니다.");
+  }
+}
+
+if (inviteBtn) {
+  inviteBtn.addEventListener("click", shareInviteLink);
+}
