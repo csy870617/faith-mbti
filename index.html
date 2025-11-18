@@ -78,38 +78,37 @@
               <li>공동체에서 나의 영적 강점은 무엇인가?</li>
               <li>나는 어떤 부분을 성장시키면 좋을까?</li>
             </ul>
+
+            <!-- 검사 시작 버튼 -->
             <button class="start-btn" id="start-btn">
               유형 검사 시작하기 <span>›</span>
+            </button>
 
+            <!-- (개발용) 결과 바로 보기 버튼 -->
             <button class="start-btn dev-btn" id="go-result-btn">
-              🔍 FAITH MBTI 결과 페이지  <span>›</span>
+              🔍 FAITH MBTI 결과 보기 <span>›</span>
             </button>
 
             <!-- 👇 책 배너: 심플 버전 -->
-              <div class="book-banner-simple">
-                <div class="book-banner-simple-text">
-                  <div class="book-banner-simple-title">“FAITH MBTI: 신앙에도 유형이 있다”</div>
-                  <div class="book-banner-simple-sub">
-                    &#160;16가지 신앙 유형과 공동체 활용법을<br />
-                    &#160;한 권에 정리한 안내서
-                  </div>
+            <div class="book-banner-simple">
+              <div class="book-banner-simple-text">
+                <div class="book-banner-simple-title">“FAITH MBTI: 신앙에도 유형이 있다”</div>
+                <div class="book-banner-simple-sub">
+                  &#160;16가지 신앙 유형과 공동체 활용법을<br />
+                  &#160;한 권에 정리한 안내서
                 </div>
-                <a
-                  href="https://bit.ly/faith-mbti-book"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="book-banner-simple-btn"
-                >
-                  📘 책 보러가기
-                </a>
               </div>
-
-            </button>
+              <a
+                href="https://bit.ly/faith-mbti-book"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="book-banner-simple-btn"
+              >
+                📘 책 보러가기
+              </a>
+            </div>
           </div>
         </div>
-          
-
-
       </section>
 
        <!-- ■■■ Test 화면 ■■■ -->
@@ -284,12 +283,15 @@
           </div>
         </div>
       </section>
+
+
             <!-- =============================
            우리교회 신앙 유형 섹션
            (Firebase + app.js 코드와 연결됨)
            ============================= -->
       <section id="church-section" class="hidden">
         <div class="result-card">
+
           <!-- 상단: 뒤로가기 -->
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
             <h3 class="card-title" style="margin-bottom:0;">우리교회 신앙 유형 모아보기</h3>
@@ -373,8 +375,8 @@
         </div>
       </section>
     </main>
-  </div>
   
+    <div>
       <!-- Kakao JavaScript SDK -->
       <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.3/kakao.min.js"
               integrity="sha384-kmHkA3F7YtSBOQc/VgXbPiOObzhqkWcivwZZZt7kfieiI19B5Pgvqkr1/AgUNa1m"
@@ -384,11 +386,10 @@
         Kakao.init('9bde8b67ddb17b795d596ab3bd943668 ');
         console.log('Kakao SDK initialized:', Kakao.isInitialized());
       </script>
-
-      <script src="app.js"></script>
+    </div>
+    
+<script src="app.js"></script>
 
 </body>
 </html>
-
-
 
