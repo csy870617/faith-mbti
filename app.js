@@ -1242,7 +1242,7 @@ if (shareBtn) {
       await navigator.clipboard.writeText(shareText);
       alert(
         "당신의 유형이 클립보드에 복사되었습니다.\n" +
-        "원하는 카카오톡 대화창에 붙여넣기 해주세요."
+        "원하는 대화창에 붙여넣기 해 주세요."
       );
     } catch (err) {
       alert("공유 기능을 사용할 수 없습니다. 다른 브라우저에서 다시 시도해 주세요.");
@@ -1761,9 +1761,8 @@ async function shareInviteLink() {
   try {
     await navigator.clipboard.writeText(shareText);
     alert(
-      "공유가 지원되지 않는 환경입니다.\n" +
       "초대 메시지가 클립보드에 복사되었어요!\n" +
-      "카카오톡에 붙여넣기 해 주세요."
+      "원하는 대화창에 붙여넣기 해 주세요."
     );
   } catch (err) {
     alert("공유 기능을 사용할 수 없습니다.");
