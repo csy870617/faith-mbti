@@ -110,7 +110,7 @@ const typeResults = {
       "안전·보안·시설 관리 및 점검",
     ],
     strengthShort:
-      "책임감과 실행력이 강하고, 질서를 세우고 유지하는 능력을 탁월합니다.",
+      "책임감과 실행력이 강하고, 질서를 세우고 유지하는 능력이 탁월합니다.",
     weaknessShort:
       "유연성과 공감 표현이 부족하다는 피드백을 들을 수 있고, 때로는 딱딱하게 느껴질 수 있습니다.",
     warningShort:
@@ -188,7 +188,7 @@ const typeResults = {
     characterEmoji: "🧭",
     characterTitle: "도시 재건 프로젝트 디렉터",
     characterStory:
-      "비어 있는 공간을 보면 ‘이곳을 통해 하나님이 무엇을 하실 수 있을까?’를 떠올리며, 사람을 모으고 역할을 나누어 실제 변화를 만들어내는 사람입니다. 당신의 노트에는 늘 새로운 프로젝트와 구조도가 가득하지만, 그 중심에는 ‘복음이 더 잘 흘러가도록’이라는 한 문장이 자리잡고 있습니다.",
+      "비어 있는 공간을 보면 ‘이곳을 통해 하나님이 무엇을 하실 수 있을까?’를 떠올리며, 사람을 모으고 역할을 나누어 실제 변화를 만들어내는 사람입니다. 당신의 노트에는 늘 새로운 프로젝트와 구조도가 가득하지만, 결국 그 중심에는 ‘복음이 더 잘 흘러가도록’이라는 한 문장이 자리잡고 있습니다.",
     ministries: [
       "교회/공동체 비전·전략 기획",
       "프로젝트 리드(행사, 캠페인, 개척 등)",
@@ -575,7 +575,7 @@ const typeResults = {
     characterEmoji: "🔥",
     characterTitle: "이야기로 전도하는 스토리텔러",
     characterStory:
-      "하나님께 받은 작은 감동도 이야기로 풀어내며, 주변 사람들의 마음에 불씨를 옮겨 심는 사람입니다. 당신이 나누는 ‘작은 간증’이 모여, 공동체 안에 ‘나도 다시 시작해 보고 싶다’는 소망이 생겨나고, 잃어버린 양들이 다시 교회의 문을 두드리기도 합니다.",
+      "하나님께 받은 작은 감동도 이야기로 풀어내며, 주변 사람들의 마음에 불씨를 옮겨 심는 사람입니다. 당신이 나누는 ‘작은 간증’을 모아, 공동체 안에 ‘나도 다시 시작해 보고 싶다’는 소망이 생겨나고, 잃어버린 양들이 다시 교회의 문을 두드리기도 합니다.",
     ministries: [
       "관계 전도·초청 사역",
       "간증·스토리 나눔",
@@ -911,7 +911,7 @@ function calculateResult() {
     }
   });
 
-  // ✅ 축 점수를 기준으로 최종 유형 결정 (이 부분은 그대로 유지)
+  // ✅ 축 점수를 기준으로 최종 유형 결정
   const type =
     (axisScores.EI >= 0 ? "E" : "I") +
     (axisScores.SN >= 0 ? "S" : "N") +
@@ -920,7 +920,6 @@ function calculateResult() {
 
   return { type, scores, axisScores };
 }
-
 
 /* 7. 다음/결과 이동 */
 function goNextOrResult() {
@@ -944,7 +943,6 @@ function goNextOrResult() {
     buildOtherTypesGrid();
   }
 }
-
 
 /* 8. 결과 렌더링 */
 function renderResult(type) {
@@ -1041,7 +1039,6 @@ function renderAxisUpgraded(axisScores) {
   container.innerHTML = html;
 }
 
-
 /* 10. 세부 점수 */
 function renderDetailScores(scores) {
   const container = document.getElementById("detail-score-list");
@@ -1064,7 +1061,6 @@ function renderDetailScores(scores) {
 
   container.innerHTML = html;
 }
-
 
 /* 11. 유형 관계 보기 */
 function similarityScore(a, b) {
@@ -1165,53 +1161,43 @@ bibleToggleBtn.addEventListener("click", () => {
   }
 });
 
-/* 15. 공유 */
+/* 15. 공유 – 휴대폰 기본 공유 시트 사용 */
 shareBtn.addEventListener("click", async () => {
-  if (!myResultType) return;
-            /* 15. 공유 */
-      shareBtn.addEventListener("click", async () => {
-        if (!myResultType) return;
+  if (!myResultType) {
+    alert("먼저 FAITH-MBTI 검사를 완료해 주세요.");
+    return;
+  }
 
-        const koName = typeResults[myResultType]?.nameKo || "";
-        const text = `[FAITH-MBTI 결과]
-      나는 ${myResultType}형 "${koName}" 신앙인이래요 ✨
+  const type = myResultType;
+  const shortText = getTypeShortText(type) || "신앙에도 유형이 있다, FAITH-MBTI.";
+  const title = "FAITH-MBTI 신앙유형 테스트";
+  const text = `나의 FAITH-MBTI 유형은 ${type} 입니다.\n${shortText}`;
+  const url = location.href.split("#")[0]; // 해시(#) 뒤는 제거
 
-      당신도 테스트해 보고,
-      우리 공동체의 신앙 지도를 함께 만들어봐요`;
-
-        try {
-          if (navigator.share) {
-            await navigator.share({
-              title: "FAITH-MBTI 결과",
-              text,
-              url: location.href,
-            });
-          } else if (navigator.clipboard) {
-            await navigator.clipboard.writeText(`${text}\n${location.href}`);
-            alert("결과 링크가 클립보드에 복사되었습니다.");
-          } else {
-            alert("이 브라우저에서는 공유 기능을 지원하지 않습니다.");
-          }
-        } catch (e) {
-          console.error(e);
-        }
-      });
-
-  try {
-    if (navigator.share) {
+  if (navigator.share) {
+    try {
       await navigator.share({
-        title: "Faith-MBTI 결과",
+        title,
         text,
-        url: location.href,
+        url,
       });
-    } else if (navigator.clipboard) {
-      await navigator.clipboard.writeText(`${text}\n${location.href}`);
-      alert("결과 링크가 클립보드에 복사되었습니다.");
-    } else {
-      alert("이 브라우저에서는 공유 기능을 지원하지 않습니다.");
+    } catch (e) {
+      // 사용자가 공유 시트를 닫았거나, 에러가 난 경우
+      console.error("공유 중 에러:", e);
     }
-  } catch (e) {
-    console.error(e);
+  } else {
+    // 데스크탑 등 Web Share API 미지원 환경용 간단 폴백
+    try {
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(`${text}\n${url}`);
+        alert("이 브라우저에서는 기본 공유 시트를 지원하지 않아,\n공유 텍스트와 링크를 클립보드에 복사해 두었습니다.");
+      } else {
+        alert("이 브라우저에서는 기본 공유 시트를 지원하지 않습니다.\n주소창의 링크를 직접 복사해 주세요.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("공유 기능을 사용할 수 없습니다.\n주소창의 링크를 직접 복사해 주세요.");
+    }
   }
 });
 
@@ -1275,30 +1261,23 @@ goResultBtn.addEventListener("click", () => {
   buildOtherTypesGrid();
 });
 
-
 /* =========================================================
  * 17. Firebase + 우리교회 Firestore 연동
- *  - 우리교회 버튼으로 이동
- *  - 이름/교회/비밀번호 + 내 유형 저장
- *  - 교회별 신앙유형 목록 조회 + 개별 삭제
  * ======================================================= */
 
-// ----- 17-1. Firebase 동적 로딩 & 초기화 -----
 const CHURCH_COLLECTION = "faith_churches";
 
 let _firebaseDb = null;
 let _firebaseFsModule = null;
 
 /**
- * Firebase + Firestore 모듈을 동적으로 import 하고,
- * project 설정으로 초기화한다.
+ * Firebase + Firestore 모듈 동적 import + 초기화
  */
 async function ensureFirebase() {
   if (_firebaseDb && _firebaseFsModule) {
     return { db: _firebaseDb, fs: _firebaseFsModule };
   }
 
-  // Firebase SDK 동적 import
   const appMod = await import(
     "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"
   );
@@ -1336,8 +1315,6 @@ function getTypeShortText(type) {
 
 /**
  * 17-2. 교회 문서에 내 결과 저장
- *  - 교회 문서가 없으면 새로 생성
- *  - 이미 있으면 비밀번호 확인 후 member 추가
  */
 async function saveMyResultToChurch(name, churchName, password) {
   const trimmedName = name.trim();
@@ -1354,7 +1331,6 @@ async function saveMyResultToChurch(name, churchName, password) {
   const { db, fs } = await ensureFirebase();
   const { doc, getDoc, setDoc, collection, addDoc, serverTimestamp } = fs;
 
-  // /faith_churches/{churchName}
   const churchRef = doc(db, CHURCH_COLLECTION, trimmedChurch);
   const snap = await getDoc(churchRef);
 
@@ -1364,10 +1340,9 @@ async function saveMyResultToChurch(name, churchName, password) {
       throw new Error("이미 등록된 교회입니다. 비밀번호가 일치하지 않습니다.");
     }
   } else {
-    // 새 교회 문서 생성
     await setDoc(churchRef, {
       churchName: trimmedChurch,
-      password: trimmedPassword, // 실제 서비스에서는 해시 권장
+      password: trimmedPassword,
       createdAt: serverTimestamp ? serverTimestamp() : Date.now(),
     });
   }
@@ -1383,15 +1358,9 @@ async function saveMyResultToChurch(name, churchName, password) {
   });
 }
 
-/** 현재 어떤 교회/비밀번호로 보고 있는지 저장 (삭제 시 재사용) */
-let currentChurchName = null;
-let currentChurchPassword = null;
-
 /**
  * 17-3. 특정 교회 전체 목록 불러오기
- *  - 교회 존재 여부 + 비밀번호 확인
- *  - members 서브컬렉션 createdAt 기준 오름차순 정렬
- *  - 각 member에 Firestore 문서 id 포함
+ *  - members: 각 항목에 Firestore doc id 포함 (삭제용)
  */
 async function loadChurchMembers(churchName, password) {
   const trimmedChurch = churchName.trim();
@@ -1416,10 +1385,6 @@ async function loadChurchMembers(churchName, password) {
     throw new Error("비밀번호가 일치하지 않습니다.");
   }
 
-  // 현재 보고 있는 교회/비밀번호 저장
-  currentChurchName = trimmedChurch;
-  currentChurchPassword = trimmedPassword;
-
   const membersCol = collection(churchRef, "members");
   const q = query(membersCol, orderBy("createdAt", "asc"));
   const snap = await getDocs(q);
@@ -1436,9 +1401,43 @@ async function loadChurchMembers(churchName, password) {
 }
 
 /**
+ * 17-3-1. 개별 member 삭제 (비밀번호 확인 포함)
+ */
+async function deleteChurchMember(churchName, password, memberId) {
+  const trimmedChurch = churchName.trim();
+  const trimmedPassword = password.trim();
+
+  if (!trimmedChurch || !trimmedPassword) {
+    throw new Error("교회이름과 비밀번호를 모두 입력해 주세요.");
+  }
+  if (!memberId) {
+    throw new Error("삭제할 대상을 찾을 수 없습니다.");
+  }
+
+  const { db, fs } = await ensureFirebase();
+  const { doc, getDoc, collection, deleteDoc } = fs;
+
+  const churchRef = doc(db, CHURCH_COLLECTION, trimmedChurch);
+  const churchSnap = await getDoc(churchRef);
+
+  if (!churchSnap.exists()) {
+    throw new Error("해당 이름으로 등록된 교회가 없습니다.");
+  }
+
+  const churchData = churchSnap.data();
+  if (churchData.password !== trimmedPassword) {
+    throw new Error("비밀번호가 일치하지 않습니다.");
+  }
+
+  const membersCol = collection(churchRef, "members");
+  const memberRef = doc(membersCol, memberId);
+  await deleteDoc(memberRef);
+}
+
+/**
  * 17-4. 우리교회 목록 렌더링
- *  - 이름 / 유형 / 간략한 설명 / 삭제
- *  - # 숫자 컬럼 제거
+ *  - 이름 / 유형 / 간략한 설명 / 삭제 버튼
+ *  - 삭제 시 우리교회 비밀번호를 다시 입력해야 함
  */
 function renderChurchList(churchName, members) {
   const container = document.getElementById("church-result-list");
@@ -1462,11 +1461,10 @@ function renderChurchList(churchName, members) {
         <td>${m.type || ""}</td>
         <td>${m.shortText || ""}</td>
         <td>
-          <button
-            type="button"
-            class="btn-secondary church-delete-btn"
-            data-member-id="${m.id || ""}"
-            style="font-size:10px;padding:3px 8px;"
+          <button 
+            class="btn-secondary member-delete-btn"
+            data-member-id="${m.id}"
+            data-church="${churchName}"
           >
             삭제
           </button>
@@ -1494,72 +1492,37 @@ function renderChurchList(churchName, members) {
         </table>
       </div>
       <p class="gray" style="margin-top:8px;">
-        같은 교회이름과 비밀번호로 저장된 결과들이 이 표에 함께 쌓입니다.<br/>
-        잘못 입력된 항목은 각 줄의 [삭제] 버튼으로 지울 수 있습니다.
+        같은 교회이름과 비밀번호로 저장한 결과들은 이 표에 함께 쌓입니다.<br/>
+        항목을 삭제하려면 우리교회 비밀번호를 다시 입력해야 합니다.
       </p>
     </div>
   `;
-}
 
-/**
- * 17-5. 특정 교회의 member 하나 삭제
- */
-async function deleteChurchMember(memberId) {
-  if (!currentChurchName || !memberId) {
-    throw new Error("현재 교회 정보 또는 멤버 ID가 없습니다.");
-  }
+  // 삭제 버튼 이벤트 연결 (비밀번호 확인 포함)
+  container.querySelectorAll(".member-delete-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const memberId = btn.dataset.memberId;
+      const church = btn.dataset.church;
 
-  const { db, fs } = await ensureFirebase();
-  const { doc, deleteDoc } = fs;
-
-  const memberRef = doc(
-    db,
-    `${CHURCH_COLLECTION}/${currentChurchName}/members/${memberId}`
-  );
-  await deleteDoc(memberRef);
-}
-
-/**
- * 17-6. 삭제 버튼 클릭 이벤트(이벤트 위임)
- *  - #church-result-list 안에서 .church-delete-btn 클릭 감지
- */
-let churchDeleteHandlerBound = false;
-
-function bindChurchDeleteHandler() {
-  const container = document.getElementById("church-result-list");
-  if (!container || churchDeleteHandlerBound) return;
-
-  container.addEventListener("click", async (event) => {
-    const btn = event.target.closest(".church-delete-btn");
-    if (!btn) return;
-
-    const memberId = btn.dataset.memberId;
-    if (!memberId) return;
-    if (!currentChurchName) {
-      alert("현재 교회 정보가 없습니다. 다시 목록을 불러와 주세요.");
-      return;
-    }
-
-    const ok = confirm("이 항목을 삭제하시겠습니까?");
-    if (!ok) return;
-
-    try {
-      await deleteChurchMember(memberId);
-      // 삭제 후 최신 목록 다시 불러오기
-      const res = await loadChurchMembers(
-        currentChurchName,
-        currentChurchPassword || ""
+      const pw = prompt(
+        "해당 항목을 삭제하려면 우리교회 비밀번호를 다시 입력해 주세요."
       );
-      renderChurchList(res.churchName, res.members);
-    } catch (err) {
-      console.error(err);
-      alert(err.message || "삭제 중 오류가 발생했습니다.");
-    }
+      if (!pw) return;
+
+      try {
+        await deleteChurchMember(church, pw, memberId);
+        alert("해당 항목이 삭제되었습니다.");
+
+        // 삭제 후 최신 목록 다시 조회
+        const { members: refreshed } = await loadChurchMembers(church, pw);
+        renderChurchList(church, refreshed);
+      } catch (err) {
+        console.error(err);
+        alert(err.message || "삭제 중 오류가 발생했습니다.");
+      }
+    });
   });
-
-  churchDeleteHandlerBound = true;
 }
-
 
 /* =========================================================
  * 18. 우리교회 화면 / 버튼 연결
@@ -1582,10 +1545,6 @@ const churchResultList = document.getElementById("church-result-list");
 // 18-1. 결과 화면 → 우리교회 화면으로 이동
 if (churchBtn && churchSection) {
   churchBtn.addEventListener("click", () => {
-    if (!myResultType) {
-      alert("먼저 FAITH-MBTI 검사를 완료해 주세요.");
-      return;
-    }
     introSection.classList.add("hidden");
     testSection.classList.add("hidden");
     resultSection.classList.add("hidden");
@@ -1625,7 +1584,7 @@ if (
   });
 }
 
-// 18-4. "우리교회 신앙유형 확인" 버튼 → 목록 조회
+// 18-4. "우리교회 신앙유형확인" 버튼 → 목록 조회
 if (churchViewBtn && viewChurchInput && viewPasswordInput) {
   churchViewBtn.addEventListener("click", async () => {
     try {
@@ -1643,18 +1602,15 @@ if (churchViewBtn && viewChurchInput && viewPasswordInput) {
   });
 }
 
-// 18-5. churchResultList 초기 안내 + 삭제 핸들러 바인딩
+// churchResultList 최초 안내
 if (churchResultList && !churchResultList.innerHTML.trim()) {
   churchResultList.innerHTML = `
     <div class="result-card">
-      <div class="card-title">FAITH-MBTI 우리교회 신앙 유형</div>
+      <div class="card-title"> FAITH MBTI</div>
       <p class="gray">
         위에서 교회이름과 비밀번호를 입력하고<br/>
-        [우리교회 신앙유형 확인] 버튼을 눌러 주세요.
+        [우리교회 신앙 유형 확인] 버튼을 눌러 주세요.
       </p>
     </div>
   `;
 }
-
-// 삭제 버튼 이벤트 위임 핸들러 1회 등록
-bindChurchDeleteHandler();
