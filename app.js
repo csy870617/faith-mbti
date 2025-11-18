@@ -1241,9 +1241,8 @@ if (shareBtn) {
     try {
       await navigator.clipboard.writeText(shareText);
       alert(
-        "이 브라우저에서는 기본 공유를 지원하지 않아,\n" +
-        "결과 텍스트와 링크가 클립보드에 복사되었습니다.\n" +
-        "원하는 카카오톡 대화창에 붙여넣기 해 주세요."
+        "당신의 유형이 클립보드에 복사되었습니다.\n" +
+        "원하는 카카오톡 대화창에 붙여넣기 해주세요."
       );
     } catch (err) {
       alert("공유 기능을 사용할 수 없습니다. 다른 브라우저에서 다시 시도해 주세요.");
@@ -1665,4 +1664,5 @@ if (churchResultList && !churchResultList.innerHTML.trim()) {
     </div>
   `;
 }
+
 
