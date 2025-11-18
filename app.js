@@ -1173,7 +1173,7 @@ function isKakaoInApp() {
 
 if (shareBtn) {
   shareBtn.addEventListener("click", async () => {
-    // 결과가 아직 없으면 막기
+    // 아직 결과가 없으면 막기
     if (!myResultType || !typeResults || !typeResults[myResultType]) {
       alert("먼저 검사를 완료한 뒤, 결과를 공유해 주세요.");
       return;
@@ -1189,9 +1189,9 @@ if (shareBtn) {
       `당신의 신앙 유형은 무엇인가요?\n` +
       baseUrl;
 
-    // ✅ 1) 카카오 인앱 브라우저인 경우 → "카톡 → 카톡 공유"만 사용 (클립보드 X)
+    // ✅ 1) 카카오 인앱 브라우저인 경우 → 무조건 카카오 링크만 시도 (클립보드 X)
     if (isKakaoInApp()) {
-      if (window.Kakao && Kakao.isInitialized && Kakao.isInitialized()) {
+      if (typeof Kakao !== "undefined" && Kakao && Kakao.Link && Kakao.Link.sendDefault) {
         try {
           Kakao.Link.sendDefault({
             objectType: "feed",
@@ -1219,10 +1219,9 @@ if (shareBtn) {
           alert("카카오톡 공유 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.");
         }
       } else {
-        // 인앱인데 SDK가 없거나 init 안 된 경우에도 "클립보드로 빠지지 않게"
-        alert("카카오톡 인앱 브라우저에서는 카카오 공유만 지원해요.\n자바스크립트 키 설정과 도메인 등록을 다시 확인해 주세요.");
+        alert("카카오 SDK가 로드되지 않았어요.\n인앱 브라우저에서 새로고침 후 다시 시도해 주세요.");
       }
-      return; // 👈 카카오 인앱에서는 여기서 끝! 아래 기본 공유/클립보드로 안 내려감
+      return; // 👈 인앱이면 여기서 끝! 아래 기본 공유/클립보드로 안 내려감
     }
 
     // ✅ 2) 일반 브라우저 → 기본 공유 시트
@@ -1248,8 +1247,6 @@ if (shareBtn) {
     }
   });
 }
-
-
 
 
 /* 16. 시작 / 뒤로 / 건너뛰기 / 다시 검사 */
