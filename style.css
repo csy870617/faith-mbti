@@ -548,7 +548,7 @@ main {
 }
 .dev-btn {
   margin-top: 8px;
-  background: #05ac58;
+  background: #03994e;
   color: #ffffff;
   box-shadow: none;
 }
@@ -846,7 +846,7 @@ body {
   margin-top: 20px;
   padding: 14px 18px;
   border-radius: 16px;
-  background:#ffa238;
+  background:#f58506;
   color: #f9fafb;
   display: flex;
   align-items: center;
