@@ -987,7 +987,6 @@ function renderResult(type) {
 
   // 성경 인물 (토글 박스 내용)
   bibleCharacterEl.textContent = `${data.bibleCharacter} – ${data.bibleCharacterDesc}`;
-  bibleVerseEl.textContent = `${data.verseRef} · ${data.verseText}`;
   bibleBox.classList.add("hidden");
   bibleToggleBtn.textContent = "📖 성경 인물 보기";
 
@@ -1772,3 +1771,4 @@ async function shareInviteLink() {
 if (inviteBtn) {
   inviteBtn.addEventListener("click", shareInviteLink);
 }
+
