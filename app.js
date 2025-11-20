@@ -1239,9 +1239,8 @@ if (shareBtn) {
     try {
       await navigator.clipboard.writeText(shareText);
       alert(
-        "이 브라우저에서는 카카오/기본 공유가 잘 지원되지 않아,\n" +
-        "결과 텍스트와 링크가 클립보드에 복사되었습니다.\n" +
-        "원하는 카카오톡 대화창에 붙여넣기 해 주세요."
+        "결과가 클립보드에 복사되었습니다.\n" +
+        "원하는 대화창에 붙여넣기 해 주세요."
       );
     } catch (err) {
       console.error(err);
@@ -1829,5 +1828,6 @@ if (churchCopyBtn) {
     }
   });
 }
+
 
 
