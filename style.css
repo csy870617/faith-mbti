@@ -474,7 +474,7 @@ main {
   margin-top: 6px;
 }
 .match-title {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
   margin-bottom: 4px;
 }
@@ -832,7 +832,7 @@ body {
 #church-result-list .card-title {
   font-size: 14px;
   font-weight: 600;
-  margin-bottom: 6px;
+  margin-bottom: 3px;
 }
 
 /* 작은 회색 안내 글 */
