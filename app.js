@@ -1160,15 +1160,7 @@ bibleToggleBtn.addEventListener("click", () => {
   }
 });
 
-/* 15. 공유 – 카카오 인앱이면 Kakao.Link, 그 외에는 기본 공유 시트 */
-
-// 카카오톡 인앱 브라우저 감지
-function isKakaoInApp() {
-  return /KAKAOTALK/i.test(navigator.userAgent || "");
-}
-
-// 위쪽에 이미 있을 것:
-// const shareBtn = document.getElementById("share-btn");
+/* 15. 공유 – Kakao 링크 우선, 그 외에는 기본 공유 / 클립보드 */
 
 if (shareBtn) {
   shareBtn.addEventListener("click", async () => {
@@ -1180,55 +1172,62 @@ if (shareBtn) {
 
     const baseUrl = "https://csy870617.github.io/faith-mbti/";
     const data = typeResults[myResultType];
-    const nameKo = data.nameKo;   // 예: 묵묵한 실천가
-    const nameEn = data.nameEn;   // 예: The Silent Craftsman
+    const nameKo = data.nameKo;
+    const nameEn = data.nameEn;
 
-    const shareText =
+    const shareTitle = "FAITH-MBTI 신앙 유형 테스트";
+    const shareDesc =
       `나의 Faith-MBTI 유형은 ${myResultType} (${nameKo} · ${nameEn}) 입니다.\n` +
-      `당신의 신앙 유형은 무엇인가요?\n` +
-      baseUrl;
+      `당신의 신앙 유형은 무엇인가요?`;
+    const shareUrl = baseUrl;
+    const shareText = `${shareDesc}\n${shareUrl}`;
 
-    // 1) 카카오 인앱인 경우 → 먼저 Kakao.Link 시도
-    if (isKakaoInApp()) {
-      if (typeof Kakao !== "undefined" && Kakao && Kakao.Link && Kakao.Link.sendDefault) {
-        try {
-          Kakao.Link.sendDefault({
-            objectType: "feed",
-            content: {
-              title: "FAITH-MBTI 신앙 유형 테스트",
-              description: `나의 Faith-MBTI 유형은 ${myResultType} (${nameKo} · ${nameEn}) 입니다.\n당신의 신앙 유형은 무엇인가요?`,
-              imageUrl: baseUrl + "images/thumbnail.jpg",
+    // 1) Kakao JS SDK가 있으면, 환경 상관 없이 Kakao.Link 우선 사용
+    if (
+      typeof Kakao !== "undefined" &&
+      Kakao &&
+      typeof Kakao.isInitialized === "function" &&
+      Kakao.isInitialized() &&
+      Kakao.Link &&
+      typeof Kakao.Link.sendDefault === "function"
+    ) {
+      try {
+        Kakao.Link.sendDefault({
+          objectType: "feed",
+          content: {
+            title: shareTitle,
+            description: shareDesc,
+            imageUrl: shareUrl + "images/thumbnail.jpg",
+            link: {
+              mobileWebUrl: shareUrl,
+              webUrl: shareUrl,
+            },
+          },
+          buttons: [
+            {
+              title: "나도 FAITH-MBTI 검사하기",
               link: {
-                mobileWebUrl: baseUrl,
-                webUrl: baseUrl,
+                mobileWebUrl: shareUrl,
+                webUrl: shareUrl,
               },
             },
-            buttons: [
-              {
-                title: "나도 FAITH-MBTI 검사하기",
-                link: {
-                  mobileWebUrl: baseUrl,
-                  webUrl: baseUrl,
-                },
-              },
-            ],
-          });
-          return; // 카카오 링크 성공 시 여기서 끝
-        } catch (err) {
-          console.error("Kakao Link 공유 오류:", err);
-          // 실패하면 아래 공통 공유 로직으로 자연스럽게 떨어지게 둠
-        }
+          ],
+        });
+        // Kakao 공유 창이 뜨면 여기서 끝
+        return;
+      } catch (err) {
+        console.error("Kakao Link 공유 오류:", err);
+        // 실패하면 아래 공통 공유 로직으로 자연스럽게 진행
       }
-      // 인앱인데 Kakao 객체가 없거나 오류 나면 → 아래 공통 공유 로직으로 그냥 진행
     }
 
     // 2) Web Share API 지원 브라우저 → 기본 공유 시트
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "FAITH-MBTI 결과",
-          text: shareText,
-          url: baseUrl,
+          title: shareTitle,
+          text: shareDesc,
+          url: shareUrl,
         });
         return;
       } catch (err) {
@@ -1240,10 +1239,12 @@ if (shareBtn) {
     try {
       await navigator.clipboard.writeText(shareText);
       alert(
-        "당신의 유형이 클립보드에 복사되었습니다.\n" +
-        "원하는 대화창에 붙여넣기 해 주세요."
+        "이 브라우저에서는 카카오/기본 공유가 잘 지원되지 않아,\n" +
+        "결과 텍스트와 링크가 클립보드에 복사되었습니다.\n" +
+        "원하는 카카오톡 대화창에 붙여넣기 해 주세요."
       );
     } catch (err) {
+      console.error(err);
       alert("공유 기능을 사용할 수 없습니다. 다른 브라우저에서 다시 시도해 주세요.");
     }
   });
@@ -1771,4 +1772,62 @@ async function shareInviteLink() {
 if (inviteBtn) {
   inviteBtn.addEventListener("click", shareInviteLink);
 }
+
+/* =========================================================
+ * 19. 우리교회 목록 → 클립보드 복사 기능 (그룹명 + 신앙 유형)
+ * ======================================================= */
+
+const churchCopyBtn = document.getElementById("church-copy-btn");
+
+if (churchCopyBtn) {
+  churchCopyBtn.addEventListener("click", async () => {
+    const container = document.getElementById("church-result-list");
+    if (!container) return;
+
+    const table = container.querySelector("table");
+    if (!table) {
+      alert("복사할 내용이 없습니다. 먼저 우리교회를 조회해 주세요.");
+      return;
+    }
+
+    const rows = table.querySelectorAll("tbody tr");
+    if (!rows.length) {
+      alert("복사할 내용이 없습니다. 먼저 우리교회를 조회해 주세요.");
+      return;
+    }
+
+    // 🔹 조회할 때 직접 입력한 그룹명 (교회 이름)
+    const rawGroupName = (viewChurchInput?.value || "").trim();
+    const groupName = rawGroupName || "우리교회";
+
+    // 🔹 1) 맨 윗줄: "그룹명 + 신앙 유형"
+    let text = `${groupName}의 신앙 유형 모음\n\n`;
+
+    // 🔹 2) 사람별 블록: 이름 / 유형 / 간단한 설명 + 빈 줄
+    rows.forEach((row, index) => {
+      const cells = row.querySelectorAll("td");
+      const name = (cells[0]?.innerText || "").trim();
+      const type = (cells[1]?.innerText || "").trim();
+      const desc = (cells[2]?.innerText || "").trim(); // 간단한 설명
+
+      text += `이름: ${name}\n`;
+      text += `유형: ${type}\n`;
+      text += `간단한 설명: ${desc}\n`;
+
+      // 사람과 사람 사이 한 줄 띄우기
+      if (index !== rows.length - 1) {
+        text += `\n`;
+      }
+    });
+
+    try {
+      await navigator.clipboard.writeText(text);
+      alert("우리교회 신앙 유형 목록이 클립보드에 복사되었습니다! 🙌");
+    } catch (err) {
+      console.error(err);
+      alert("복사 중 오류가 발생했습니다. 다른 브라우저에서 다시 시도해 주세요.");
+    }
+  });
+}
+
 
