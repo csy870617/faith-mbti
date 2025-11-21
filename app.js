@@ -1289,12 +1289,17 @@ restartBtn.addEventListener("click", () => {
 const goResultBtn = document.getElementById("go-result-btn");
 
 goResultBtn.addEventListener("click", () => {
-  // 임의 응답 생성 (40문항 자동 중립 처리)
-  originalQuestions.forEach(q => {
+  // (원래대로) 임의 응답 생성 – 그래프/점수용
+  originalQuestions.forEach((q) => {
     answers[q.id] = 3; // 중립값
   });
 
-  const { type, scores, axisScores } = calculateResult();
+  // 점수/그래프는 기존 로직 활용
+  const { scores, axisScores } = calculateResult();
+
+  // 🔹 유형 코드는 무조건 ENFJ로 고정
+  const type = "ENFJ";
+
   myResultType = type;
   myScores = scores;
   currentViewType = type;
@@ -1303,7 +1308,7 @@ goResultBtn.addEventListener("click", () => {
   testSection.classList.add("hidden");
   resultSection.classList.remove("hidden");
 
-  renderResult(type);
+  renderResult(type);            // ENFJ 설명/텍스트
   renderAxisUpgraded(axisScores);
   renderDetailScores(scores);
   renderMatchCards(type);
@@ -1541,8 +1546,8 @@ function renderChurchList(churchName, members) {
         </table>
       </div>
       <p class="gray" style="margin-top:8px;">
-        같은 교회이름과 비밀번호로 저장한 결과들은 이 표에 함께 쌓입니다.<br/>
-        항목을 삭제하려면 우리교회 비밀번호를 다시 입력해야 합니다.
+        같은 그룹명과 비밀번호로 저장한 신앙 유형 모음입니다.<br/>
+        항목을 삭제하려면 우리교회 비밀번호를 입력하세요.
       </p>
     </div>
   `;
@@ -1773,7 +1778,7 @@ if (inviteBtn) {
 }
 
 /* =========================================================
- * 19. 우리교회 목록 → 클립보드 복사 기능 (그룹명 + 신앙 유형)
+ * 19. 우리교회 목록 → 클립보드 복사 기능 (그룹명 + 신앙 유형 + 검사 링크)
  * ======================================================= */
 
 const churchCopyBtn = document.getElementById("church-copy-btn");
@@ -1795,29 +1800,32 @@ if (churchCopyBtn) {
       return;
     }
 
-    // 🔹 조회할 때 직접 입력한 그룹명 (교회 이름)
+    // 조회할 때 직접 입력한 그룹명
     const rawGroupName = (viewChurchInput?.value || "").trim();
     const groupName = rawGroupName || "우리교회";
 
-    // 🔹 1) 맨 윗줄: "그룹명 + 신앙 유형"
-    let text = `${groupName}의 신앙 유형 모음\n\n`;
+    // 1) 맨 윗줄: "그룹명 + 신앙 유형"
+    let text = `${groupName} 신앙 유형\n\n`;
 
-    // 🔹 2) 사람별 블록: 이름 / 유형 / 간단한 설명 + 빈 줄
+    // 2) 사람별 블록
     rows.forEach((row, index) => {
       const cells = row.querySelectorAll("td");
       const name = (cells[0]?.innerText || "").trim();
       const type = (cells[1]?.innerText || "").trim();
-      const desc = (cells[2]?.innerText || "").trim(); // 간단한 설명
+      const desc = (cells[2]?.innerText || "").trim();
 
       text += `이름: ${name}\n`;
       text += `유형: ${type}\n`;
       text += `간단한 설명: ${desc}\n`;
 
-      // 사람과 사람 사이 한 줄 띄우기
       if (index !== rows.length - 1) {
         text += `\n`;
       }
     });
+
+    // 🔹 3) 맨 아래 검사 링크 추가
+    const baseUrl = "https://csy870617.github.io/faith-mbti/";
+    text += `\n\n검사 링크: ${baseUrl}`;
 
     try {
       await navigator.clipboard.writeText(text);
@@ -1828,6 +1836,8 @@ if (churchCopyBtn) {
     }
   });
 }
+
+
 
 
 
