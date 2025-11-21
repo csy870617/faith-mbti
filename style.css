@@ -87,7 +87,13 @@ main {
 }
 .intro-highlight {
   background: linear-gradient(120deg, #4f46e5, #a855f7);
+
+  /* 표준 속성 - 일부 브라우저에서는 'text' 값을 지원하지 않지만 경고 제거용 */
+  background-clip: text;
+
+  /* WebKit (Chrome/Safari) 실제 적용되는 속성 */
   -webkit-background-clip: text;
+
   color: transparent;
 }
 .intro-text {
@@ -846,13 +852,13 @@ body {
   margin-top: 20px;
   padding: 14px 18px;
   border-radius: 16px;
-  background:#f58506;
-  color: #f9fafb;
+  background:#e4d9fd;
+  color: #000000;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  box-shadow: 0 0px 5px rgba(15, 23, 42, 0.35);
+  box-shadow: 0 0px 2px rgba(15, 23, 42, 0.35);
 }
 
 .book-banner-simple-text {
@@ -879,7 +885,9 @@ body {
 
 .book-banner-simple-sub {
   font-size: 13px;
+  font-weight: 540;
   opacity: 0.9;
+  color: #0f326e;
 }
 
 .book-banner-simple-btn {
