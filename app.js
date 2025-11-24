@@ -1223,7 +1223,7 @@ if (shareBtn) {
           content: {
             title: shareTitle,
             description: shareDesc,
-            imageUrl: shareUrl + "images/thumbnail.jpg",
+            imageUrl: "https://csy870617.github.io/faith-mbti/images/thumbnail.jpg",
             link: {
               mobileWebUrl: shareUrl,
               webUrl: shareUrl,
@@ -1760,7 +1760,7 @@ async function shareInviteLink() {
           content: {
             title: "FAITH-MBTI 신앙 유형 테스트",
             description: shareText,
-            imageUrl: baseUrl + "images/thumbnail.jpg",
+            imageUrl: "https://csy870617.github.io/faith-mbti/images/thumbnail.jpg",
             link: { mobileWebUrl: baseUrl, webUrl: baseUrl },
           },
           buttons: [
