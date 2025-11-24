@@ -1871,29 +1871,4 @@ if (churchCopyBtn) {
 
 
 
-/**************************************************
- *  X. 언어 선택 → Google 번역 버전 열기
- **************************************************/
-const langSelect = document.getElementById("lang-select");
-
-if (langSelect) {
-  langSelect.addEventListener("change", (e) => {
-    const targetLang = e.target.value;
-
-    // 한국어(원문) 선택 시 아무 작업 안 함
-    if (!targetLang) return;
-
-    const currentUrl = window.location.href;
-
-    const base = "https://translate.google.com/translate";
-    const params = new URLSearchParams({
-      hl: targetLang, // 번역 UI 언어
-      sl: "ko",       // 원문: 한국어
-      tl: targetLang, // 번역 대상 언어
-      u: currentUrl,  // 번역할 사이트 URL
-    });
-
-    window.location.href = `${base}?${params.toString()}`;
-  });
-}
 
