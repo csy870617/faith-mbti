@@ -38,31 +38,6 @@ header {
   flex-direction: column;
   gap: 6px;
 }
-
-.header-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-/* 🌐 언어 선택 드롭다운 */
-.lang-toggle select {
-  padding: 6px 10px;
-  border-radius: 6px;
-  border: 1px solid #d1d5db;
-  font-size: 13px;
-  background: #ffffff;
-  cursor: pointer;
-}
-
-@media (max-width: 600px) {
-  .lang-toggle select {
-    font-size: 12px;
-    padding: 4px 8px;
-  }
-}
-
-
 .logo {
   display: flex;
   align-items: center;
