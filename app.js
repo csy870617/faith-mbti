@@ -1184,7 +1184,7 @@ bibleToggleBtn.addEventListener("click", () => {
   }
 });
 
-/* 15. 공유 – Kakao 링크 우선, 그 외에는 기본 공유 / 클립보드 */
+/* 15. 공유 – Kakao.Share 우선, 그 외에는 기본 공유 / 클립보드 */
 
 if (shareBtn) {
   shareBtn.addEventListener("click", async () => {
@@ -1194,7 +1194,7 @@ if (shareBtn) {
       return;
     }
 
-    const baseUrl = "https://faiths.life";
+    const baseUrl = "https://faiths.life/";
     const data = typeResults[myResultType];
     const nameKo = data.nameKo;
     const nameEn = data.nameEn;
@@ -1206,17 +1206,19 @@ if (shareBtn) {
     const shareUrl = baseUrl;
     const shareText = `${shareDesc}\n${shareUrl}`;
 
-    // 1) Kakao JS SDK가 있으면, 환경 상관 없이 Kakao.Link 우선 사용
+    /* ------------------------------------------------------------
+     * 1) Kakao JS SDK가 있으면 → Kakao.Share.sendDefault 우선 사용
+     * ------------------------------------------------------------ */
     if (
       typeof Kakao !== "undefined" &&
       Kakao &&
       typeof Kakao.isInitialized === "function" &&
       Kakao.isInitialized() &&
-      Kakao.Link &&
-      typeof Kakao.Link.sendDefault === "function"
+      Kakao.Share &&
+      typeof Kakao.Share.sendDefault === "function"
     ) {
       try {
-        Kakao.Link.sendDefault({
+        Kakao.Share.sendDefault({
           objectType: "feed",
           content: {
             title: shareTitle,
@@ -1237,15 +1239,17 @@ if (shareBtn) {
             },
           ],
         });
-        // Kakao 공유 창이 뜨면 여기서 끝
+        // 공유 성공하면 여기서 끝
         return;
       } catch (err) {
-        console.error("Kakao Link 공유 오류:", err);
-        // 실패하면 아래 공통 공유 로직으로 자연스럽게 진행
+        console.error("Kakao Share 공유 오류:", err);
+        // 실패하면 아래 단계(Web Share / 클립보드)로 자동 이동
       }
     }
 
-    // 2) Web Share API 지원 브라우저 → 기본 공유 시트
+    /* ------------------------------------------------------------
+     * 2) Web Share API 지원 → 기본 공유 시트
+     * ------------------------------------------------------------ */
     if (navigator.share) {
       try {
         await navigator.share({
@@ -1259,11 +1263,13 @@ if (shareBtn) {
       }
     }
 
-    // 3) 그 외 → 마지막으로 클립보드
+    /* ------------------------------------------------------------
+     * 3) 마지막 → 클립보드 복사
+     * ------------------------------------------------------------ */
     try {
       await navigator.clipboard.writeText(shareText);
       alert(
-        "결과가 클립보드에 복사되었습니다.\n" +
+        "결과 텍스트가 클립보드에 복사되었습니다.\n" +
         "원하는 대화창에 붙여넣기 해 주세요."
       );
     } catch (err) {
@@ -1272,6 +1278,7 @@ if (shareBtn) {
     }
   });
 }
+
 
 
 /* 16. 시작 / 뒤로 / 건너뛰기 / 다시 검사 */
@@ -1860,7 +1867,6 @@ if (churchCopyBtn) {
       }
     });
   }
-
 
 
 
