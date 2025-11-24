@@ -1269,7 +1269,7 @@ if (shareBtn) {
     try {
       await navigator.clipboard.writeText(shareText);
       alert(
-        "결과 텍스트가 클립보드에 복사되었습니다.\n" +
+        "결과가 클립보드에 복사되었습니다.\n" +
         "원하는 대화창에 붙여넣기 해 주세요."
       );
     } catch (err) {
@@ -1867,6 +1867,7 @@ if (churchCopyBtn) {
       }
     });
   }
+
 
 
 
