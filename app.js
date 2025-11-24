@@ -1194,7 +1194,7 @@ if (shareBtn) {
       return;
     }
 
-    const baseUrl = "https://csy870617.github.io/faith-mbti/";
+    const baseUrl = "https://faiths.life";
     const data = typeResults[myResultType];
     const nameKo = data.nameKo;
     const nameEn = data.nameEn;
@@ -1731,7 +1731,7 @@ if (churchSummaryBtn) {
 // 18-5. "초대하기" 버튼 → 교회 이름 포함 초대 링크 공유
 
 async function shareInviteLink() {
-  const baseUrl = "https://csy870617.github.io/faith-mbti/";
+  const baseUrl = "https://faiths.life";
 
   // 교회 이름 입력
   const churchName =
@@ -1848,7 +1848,7 @@ if (churchCopyBtn) {
     });
 
    // 🔹 3) 맨 아래 검사 링크 추가
-   const baseUrl = "https://csy870617.github.io/faith-mbti/";
+   const baseUrl = "https://faiths.life";
       text += `\n\n검사 링크: ${baseUrl}`;
 
       try {
@@ -1860,6 +1860,7 @@ if (churchCopyBtn) {
       }
     });
   }
+
 
 
 
