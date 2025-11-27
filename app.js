@@ -596,8 +596,51 @@ if (dom.btns.churchSummary) {
 
 if (dom.btns.invite) {
   dom.btns.invite.addEventListener("click", async () => {
-    try { await navigator.clipboard.writeText("https://faiths.life - 우리교회 신앙 유형 함께해요!"); alert("링크가 복사되었습니다."); }
-    catch(e) { alert("복사 실패"); }
+    const baseUrl = "https://faiths.life";
+    
+    // 사용자가 입력한 그룹명 가져오기 (비어있으면 '우리교회'로 설정)
+    const rawGroupName = dom.inputs.viewChurch.value.trim();
+    const groupName = rawGroupName.length > 0 ? rawGroupName : "우리교회";
+
+    const shareTitle = `${groupName} 신앙 유형 모임 초대`;
+    const shareDesc = "함께 신앙 유형을 검사하고 결과를 나눠보세요!";
+    
+    // [1] 카카오톡 공유
+    if (typeof Kakao !== "undefined" && Kakao.isInitialized && Kakao.isInitialized()) {
+      try {
+        Kakao.Share.sendDefault({
+          objectType: "feed",
+          content: {
+            title: shareTitle,
+            description: shareDesc,
+            imageUrl: "https://csy870617.github.io/faith-mbti/images/thumbnail.jpg",
+            link: { mobileWebUrl: baseUrl, webUrl: baseUrl },
+          },
+          buttons: [{ title: "모임 참여하기", link: { mobileWebUrl: baseUrl, webUrl: baseUrl } }]
+        });
+        return; 
+      } catch (e) { console.error(e); }
+    }
+
+    // [2] 모바일 기본 공유 (Web Share API)
+    if (navigator.share) {
+      try { 
+        await navigator.share({ 
+          title: shareTitle, 
+          text: shareDesc, 
+          url: baseUrl 
+        }); 
+        return; 
+      } catch(e) {}
+    }
+
+    // [3] 클립보드 복사 (PC 등)
+    try { 
+      const clipboardText = `${shareTitle}\n${shareDesc}\n${baseUrl}`;
+      await navigator.clipboard.writeText(clipboardText); 
+      alert("초대 링크가 클립보드에 복사되었습니다."); 
+    }
+    catch(e) { alert("공유 기능을 사용할 수 없습니다."); }
   });
 }
 
@@ -607,4 +650,5 @@ if (dom.btns.churchCopy) {
     catch(e) { alert("복사 실패"); }
   });
 }
+
 
