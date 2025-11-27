@@ -1,925 +1,724 @@
-/* RESET */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+/**************************************************
+ * Faith-MBTI Test – app.js (최종 수정 버전)
+ * - data.js의 데이터를 사용하여 로직을 수행합니다.
+ **************************************************/
 
-/* GLOBAL */
-body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
-    "Noto Sans KR", sans-serif;
-  background: radial-gradient(circle at top, #f3f0ff, #f8fafc);
-  color: #111827;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  padding: 24px;
-}
-.hidden {
-  display: none !important;
-}
-.app {
-  width: 100%;
-  max-width: 960px;
-  background: #ffffff;
-  border-radius: 24px;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
+/* 1. 전역 상태 변수 초기화 */
+let currentIndex = 0;
+let questions = []; // data.js의 originalQuestions를 섞어서 담을 변수
+const answers = {};
+let myResultType = null;
+let myScores = null;
+let currentViewType = null;
 
-/* HEADER */
-header {
-  padding: 20px 28px;
-  border-bottom: 1px solid #e5e7eb;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 700;
-  font-size: 20px;
-}
-.logo-badge {
-  width: 28px;
-  height: 28px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #4f46e5, #a855f7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 16px;
-}
-.logo-sub {
-  font-size: 12px;
-  color: #6b7280;
-}
+/* 2. DOM 요소 가져오기 (HTML ID와 일치해야 함) */
+const introSection = document.getElementById("intro-section");
+const testSection = document.getElementById("test-section");
+const resultSection = document.getElementById("result-section");
+const churchSection = document.getElementById("church-section");
 
-/* MAIN */
-main {
-  padding: 24px 28px 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-}
+const startBtn = document.getElementById("start-btn");
+const backBtn = document.getElementById("back-btn");
+const skipBtn = document.getElementById("skip-btn");
+const restartBtn = document.getElementById("restart-btn");
+const shareBtn = document.getElementById("share-btn");
 
-/* INTRO */
-.intro {
-  display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-  gap: 26px;
-}
-@media (max-width: 768px) {
-  .intro {
-    grid-template-columns: 1fr;
+const progressLabel = document.getElementById("progress-label");
+const axisLabel = document.getElementById("axis-label");
+const progressFill = document.getElementById("progress-fill");
+const questionCode = document.getElementById("question-code");
+const questionText = document.getElementById("question-text");
+const scaleInputs = document.getElementById("scale-inputs");
+
+const resultCode = document.getElementById("result-code");
+const resultName = document.getElementById("result-name");
+const resultSummary = document.getElementById("result-summary");
+const resultBadges = document.getElementById("result-badges");
+const resultFeatures = document.getElementById("result-features");
+const resultGrowth = document.getElementById("result-growth");
+const resultStrength = document.getElementById("result-strength");
+const resultWeakness = document.getElementById("result-weakness");
+const resultWarning = document.getElementById("result-warning");
+const resultMinistries = document.getElementById("result-ministries");
+
+const bibleCharacterEl = document.getElementById("bible-character");
+const bibleVerseEl = document.getElementById("bible-verse");
+const bibleToggleBtn = document.getElementById("bible-toggle-btn");
+const bibleBox = document.getElementById("bible-box");
+
+const characterEmojiEl = document.getElementById("character-emoji");
+const characterTitleEl = document.getElementById("character-title");
+const characterTextEl = document.getElementById("character-text");
+
+const otherTypesGrid = document.getElementById("other-types-grid");
+
+const todayVerseBtn = document.getElementById("today-verse-btn");
+const todayVerseBox = document.getElementById("today-verse-box");
+const todayVerseBoxRef = document.getElementById("today-verse-box-ref");
+const todayVerseBoxText = document.getElementById("today-verse-box-text");
+const todayVerseBoxApply = document.getElementById("today-verse-box-apply");
+
+/* 우리교회 관련 DOM */
+const churchBtn = document.getElementById("church-btn");
+const churchCloseBtn = document.getElementById("church-close-btn");
+const inviteBtn = document.getElementById("invite-btn");
+const memberNameInput = document.getElementById("member-name-input");
+const memberChurchInput = document.getElementById("member-church-input");
+const memberPasswordInput = document.getElementById("member-password-input");
+const memberSaveBtn = document.getElementById("member-save-btn");
+const viewChurchInput = document.getElementById("view-church-input");
+const viewPasswordInput = document.getElementById("view-password-input");
+const churchSummaryBtn = document.getElementById("church-summary-btn");
+const churchResultList = document.getElementById("church-result-list");
+const churchCopyBtn = document.getElementById("church-copy-btn");
+const goResultBtn = document.getElementById("go-result-btn");
+
+
+/* 3. 유틸리티 함수 */
+function shuffle(array) {
+  const arr = array.slice();
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
   }
-}
-.intro-title {
-  font-size: 26px;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-.intro-highlight {
-  background: linear-gradient(120deg, #4f46e5, #a855f7);
-
-  /* 표준 속성 - 일부 브라우저에서는 'text' 값을 지원하지 않지만 경고 제거용 */
-  background-clip: text;
-
-  /* WebKit (Chrome/Safari) 실제 적용되는 속성 */
-  -webkit-background-clip: text;
-
-  color: transparent;
-}
-.intro-text {
-  font-size: 14px;
-  color: #4b5563;
-  line-height: 1.6;
-  margin-bottom: 14px;
-}
-.intro-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  font-size: 13px;
-  border-radius: 999px;
-  background: #eef2ff;
-  color: #4f46e5;
-}
-.tag-dot {
-  width: 6px;
-  height: 6px;
-  background: #4f46e5;
-  border-radius: 999px;
+  return arr;
 }
 
-/* 카드 */
-.card {
-  border-radius: 18px;
-  background: radial-gradient(circle at top left, #eef2ff, #f9fafb);
-  padding: 18px;
-  border: 1px solid #e5e7eb;
-}
-.card-title {
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.card-title-emoji {
-  font-size: 16px;
-}
-.card-list {
-  list-style: none;
-  font-size: 15px;
-  color: #4b5563;
-  display: grid;
-  gap: 3px;
-  margin-bottom: 16px;
-}
-.card-list li::before {
-  content: "•";
-  color: #6366f1;
-  margin-right: 6px;
-}
+/* 4. 질문 화면 렌더링 */
+function renderScale(questionId) {
+  scaleInputs.innerHTML = "";
+  const currentValue = answers[questionId] || null;
 
-/* 버튼 */
-.start-btn {
-  width: 100%;
-  padding: 10px 14px;
-  border-radius: 999px;
-  border: none;
-  background: linear-gradient(135deg, #4f46e5, #a855f7);
-  color: #fff;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  box-shadow: 0 0px 5px rgba(79, 70, 229, 0.45);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;
-  transition: 0.12s ease;
-}
-.start-btn:hover {
-  transform: translateY(-1px);
-  opacity: 0.96;
-}
-.btn {
-  border-radius: 999px;
-  border: 1px solid #e5e7eb;
-  background: #fff;
-  padding: 7px 14px;
-  font-size: 12px;
-  cursor: pointer;
-  transition: 0.12s;
-}
-.btn-primary {
-  padding: 8px 14px;
-  border-radius: 999px;
-  border: none;
-  background: linear-gradient(135deg, #4f46e5, #a855f7);
-  color: #fff;
-  font-weight: 600;
-  font-size: 12px;
-  cursor: pointer;
-}
-.btn-primary2 {
-  padding: 8px 14px;
-  border-radius: 999px;
-  border: none;
-  background: linear-gradient(135deg, #4f46e5, #a855f7);
-  color: #fff;
-  font-weight: 600;
-  font-size: 12px;
-  cursor: pointer;
-}
-.btn-primary.small {
-  padding: 6px 12px;
-  font-size: 11px;
-}
-.btn-secondary {
-  padding: 6px 12px;
-  border-radius: 999px;
-  border: 1px solid #e5e7eb;
-  background: #fff;
-  font-size: 12px;
-}
+  for (let i = 1; i <= 5; i++) {
+    const label = document.createElement("label");
+    label.className = "scale-option";
 
-/* TEST 화면 */
-.progress-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.progress-header {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  color: #6b7280;
-}
-.progress-bar {
-  width: 100%;
-  height: 8px;
-  background: #e5e7eb;
-  border-radius: 999px;
-  overflow: hidden;
-}
-.progress-fill {
-  width: 0%;
-  height: 100%;
-  background: linear-gradient(90deg, #4f46e5, #a855f7);
-  transition: width 0.2s ease-out;
-}
-.question-card {
-  margin-top: 6px;
-  border-radius: 18px;
-  padding: 18px;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  display: grid;
-  gap: 14px;
-}
-.question-code {
-  font-size: 11px;
-  color: #9ca3af;
-  letter-spacing: 0.18em;
-  font-weight: 600;
-}
-.question-text {
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 1.6;
-}
-.question-sub {
-  font-size: 12px;
-  color: #6b7280;
-}
-.scale {
-  display: grid;
-  gap: 8px;
-}
-.scale-labels {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  color: #6b7280;
-}
-.scale-inputs {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 6px;
-}
-.scale-option input {
-  display: none;
-}
-.scale-pill {
-  padding: 6px 0;
-  border-radius: 999px;
-  border: 1px solid #e5e7eb;
-  background: #fff;
-  font-size: 11px;
-  cursor: pointer;
-  text-align: center;
-  transition: 0.12s;
-}
-.scale-option input:checked + .scale-pill {
-  border-color: #4f46e5;
-  background: #eef2ff;
-  color: #3730a3;
-  font-weight: 600;
-}
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.name = "scale";
+    input.value = String(i);
+    input.checked = currentValue === i;
 
-/* RESULT 레이아웃 */
-.type-pill {
-  padding: 4px 8px;
-  background: #eef2ff;
-  color: #4f46e5;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.15em;
-  margin-bottom: 10px;
-}
+    const pill = document.createElement("div");
+    pill.className = "scale-pill";
+    pill.textContent = i;
 
-.result-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-  gap: 16px;
-}
-@media (max-width: 768px) {
-  .result-layout {
-    grid-template-columns: 1fr;
+    const handleSelect = () => {
+      answers[questionId] = i;
+      goNextOrResult();
+    };
+
+    input.addEventListener("change", handleSelect);
+    pill.addEventListener("click", () => {
+      input.checked = true;
+      handleSelect();
+    });
+
+    label.appendChild(input);
+    label.appendChild(pill);
+    scaleInputs.appendChild(label);
   }
 }
 
-.result-main-column,
-.result-side-column {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+function renderQuestion() {
+  const q = questions[currentIndex];
+  const idx = currentIndex + 1;
+  const total = questions.length;
+
+  progressLabel.textContent = `문항 ${idx} / ${total}`;
+  if(axisLabel) axisLabel.style.visibility = "hidden";
+
+  progressFill.style.width = `${(idx / total) * 100}%`;
+
+  questionCode.textContent = `Q${idx}`;
+  questionText.textContent = q.text;
+
+  renderScale(q.id);
+  backBtn.disabled = currentIndex === 0;
 }
 
-.result-card {
-  border-radius: 16px;
-  padding: 14px;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  font-size: 12px;
+/* 5. 결과 계산 로직 */
+function calculateResult() {
+  const scores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
+  const axisScores = { EI: 0, SN: 0, TF: 0, JP: 0 };
+
+  // data.js의 originalQuestions 사용
+  originalQuestions.forEach((q) => {
+    const v = answers[q.id];
+    if (!v) return; 
+
+    scores[q.side] += v; 
+    const centered = v - 3; 
+
+    if (q.axis === "EI") {
+      axisScores.EI += q.side === "E" ? centered : -centered;
+    } else if (q.axis === "SN") {
+      axisScores.SN += q.side === "S" ? centered : -centered;
+    } else if (q.axis === "TF") {
+      axisScores.TF += q.side === "T" ? centered : -centered;
+    } else if (q.axis === "JP") {
+      axisScores.JP += q.side === "J" ? centered : -centered;
+    }
+  });
+
+  const type =
+    (axisScores.EI >= 0 ? "E" : "I") +
+    (axisScores.SN >= 0 ? "S" : "N") +
+    (axisScores.TF >= 0 ? "T" : "F") +
+    (axisScores.JP >= 0 ? "J" : "P");
+
+  return { type, scores, axisScores };
 }
 
-.result-main-title {
-  font-size: 26px;
-  font-weight: 800;
-}
-.result-main-name {
-  font-size: 14px;
-  font-weight: 600;
-  margin-top: 4px;
-}
-.result-main-summary {
-  margin-top: 6px;
-  font-size: 13px;
-  color: #4b5563;
-  line-height: 1.7;
+/* 6. 다음 단계 이동 */
+function goNextOrResult() {
+  const total = questions.length;
+  if (currentIndex < total - 1) {
+    currentIndex++;
+    renderQuestion();
+  } else {
+    testSection.classList.add("hidden");
+    resultSection.classList.remove("hidden");
+
+    const { type, scores, axisScores } = calculateResult();
+    myResultType = type;
+    myScores = scores;
+    currentViewType = type;
+
+    renderResult(type);
+    renderAxisUpgraded(axisScores); 
+    renderDetailScores(scores);     
+    renderMatchCards(type);
+    buildOtherTypesGrid();
+  }
 }
 
-/* 뱃지 */
-.result-badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 10px;
-}
-.badge {
-  padding: 4px 9px;
-  border-radius: 999px;
-  border: 1px solid #e5e7eb;
-  font-size: 11px;
+/* 7. 결과 화면 렌더링 */
+function renderResult(type) {
+  const data = typeResults[type]; // data.js에서 가져옴
+
+  resultCode.textContent = type;
+  resultName.textContent = `${data.nameKo} · ${data.nameEn}`;
+  resultSummary.textContent = data.summary;
+
+  resultBadges.innerHTML = "";
+  data.badges.forEach((b) => {
+    const span = document.createElement("span");
+    span.className = "badge";
+    span.textContent = b;
+    resultBadges.appendChild(span);
+  });
+
+  resultFeatures.innerHTML = "";
+  data.features.forEach((f) => {
+    const li = document.createElement("li");
+    li.textContent = f;
+    resultFeatures.appendChild(li);
+  });
+
+  resultGrowth.innerHTML = "";
+  data.growth.forEach((g) => {
+    const li = document.createElement("li");
+    li.textContent = g;
+    resultGrowth.appendChild(li);
+  });
+
+  resultStrength.textContent = `강점: ${data.strengthShort}`;
+  resultWeakness.textContent = `약점: ${data.weaknessShort}`;
+  resultWarning.textContent = data.warningShort;
+
+  resultMinistries.innerHTML = "";
+  data.ministries.forEach((m) => {
+    const li = document.createElement("li");
+    li.textContent = m;
+    resultMinistries.appendChild(li);
+  });
+
+  // 성경 인물
+  bibleCharacterEl.textContent = `${data.bibleCharacter} – ${data.bibleCharacterDesc}`;
+  bibleVerseEl.textContent = `${data.verseRef} ${data.verseText}`; // 추가된 부분
+  bibleBox.classList.add("hidden");
+  bibleToggleBtn.textContent = "📖 성경 인물 보기";
+
+  // 메인 캐릭터
+  characterEmojiEl.textContent = data.characterEmoji;
+  characterTitleEl.textContent = data.characterTitle;
+  characterTextEl.textContent = data.characterStory;
 }
 
-/* 캐릭터 */
-#character-block {
-  margin-top: 12px;
-  display: flex;
-  gap: 10px;
-}
-#character-emoji {
-  font-size: 26px;
-}
-.character-title {
-  font-weight: 600;
-  font-size: 15px;
-  margin-bottom: 2px;
-}
-.character-text {
-  font-size: 15px;
-  color: #4b5563;
+/* 8. 그래프 및 추가 정보 렌더링 */
+function renderAxisUpgraded(axisScores) {
+  const container = document.getElementById("axis-upgraded");
+  const defs = [
+    { key: "EI", left: "E", right: "I", label: "에너지 방향" },
+    { key: "SN", left: "S", right: "N", label: "정보 인식" },
+    { key: "TF", left: "T", right: "F", label: "판단 기준" },
+    { key: "JP", left: "J", right: "P", label: "생활 방식" },
+  ];
+  const MAX = 20;
+  let html = "";
+
+  defs.forEach((d) => {
+    const v = axisScores[d.key] || 0; 
+    let leftPercent = 50 + (v / (2 * MAX)) * 100;
+    leftPercent = Math.max(0, Math.min(100, Math.round(leftPercent)));
+    const rightPercent = 100 - leftPercent;
+
+    html += `
+      <div class="axis-row">
+        <div class="axis-label">
+          <span>${d.label}</span>
+          <span style="font-size:11px;color:#9ca3af;">
+            ${d.left} ${leftPercent}% · ${d.right} ${rightPercent}%
+          </span>
+        </div>
+        <div class="axis-bar-bg">
+          <div class="axis-bar-fill" style="width:${leftPercent}%"></div>
+        </div>
+      </div>
+    `;
+  });
+  container.innerHTML = html;
 }
 
-/* 리스트 */
-.result-card ul {
-  list-style: none;
-  display: grid;
-  gap: 4px;
-}
-.result-card li::before {
-  content: "›";
-  color: #6366f1;
-  margin-right: 6px;
+function renderDetailScores(scores) {
+  const container = document.getElementById("detail-score-list");
+  const maxScore = 25; 
+  let html = "";
+
+  ["E", "I", "S", "N", "T", "F", "J", "P"].forEach((k) => {
+    const v = scores[k] || 0;
+    const percent = Math.min(100, Math.round((v / maxScore) * 100));
+
+    html += `
+      <div class="detail-score-row">
+        <div class="detail-score-label">${k} (${v})</div>
+        <div class="detail-score-bar-bg">
+          <div class="detail-score-bar-fill" style="width:${percent}%"></div>
+        </div>
+      </div>
+    `;
+  });
+  container.innerHTML = html;
 }
 
-/* 성경 인물 / 오늘의 말씀 (공통 박스) */
-.verse-box {
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: #ffffff;
-  border: 1px dashed #e5e7eb;
-  font-size: 12px;
-  margin-top: 8px;
-}
-.verse-ref {
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-.verse-text {
-  margin-bottom: 4px;
-}
-.verse-apply {
-  font-size: 11px;
-  color: #6b7280;
+function similarityScore(a, b) {
+  let s = 0;
+  for (let i = 0; i < 4; i++) if (a[i] === b[i]) s++;
+  return s;
 }
 
-/* 4축 그래프 */
-.axis-row {
-  margin-bottom: 10px;
-}
-.axis-label {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-  color: #6b7280;
-  margin-bottom: 2px;
-}
-.axis-score {
-  font-size: 11px;
-  margin-bottom: 4px;
-}
-.axis-bar-bg {
-  width: 100%;
-  height: 6px;
-  border-radius: 999px;
-  background: #e5e7eb;
-  overflow: hidden;
-}
-.axis-bar-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #4f46e5, #a855f7);
+function renderMatchCards(type) {
+  const entries = Object.entries(typeResults);
+  const all = entries
+    .filter(([code]) => code !== type)
+    .map(([code, data]) => ({
+      code,
+      data,
+      sim: similarityScore(type, code),
+    }));
+
+  const top2 = [...all].sort((a, b) => b.sim - a.sim).slice(0, 2);
+  const opposite = [...all].sort((a, b) => a.sim - b.sim)[0];
+
+  let htmlTop2 = "";
+  top2.forEach((t) => {
+    htmlTop2 += `
+      <div class="match-item">
+        <div class="match-item-title">${t.data.nameKo} (${t.code})</div>
+        <div class="match-item-sub">
+          비슷한 성향 덕분에 함께 사역할 때 호흡이 잘 맞는 유형입니다.
+          서로의 강점을 더 크게 살려 줄 수 있어요.
+        </div>
+      </div>
+    `;
+  });
+  document.getElementById("match-top2").innerHTML = htmlTop2;
+
+  document.getElementById("match-opposite").innerHTML = `
+    <div class="match-item match-item-opposite">
+      <div class="match-item-title">${opposite.data.nameKo} (${opposite.code})</div>
+      <div class="match-item-sub">
+        나와 많이 다른 유형이지만, 그래서 더 균형을 도와주는 “반대 친구”입니다.
+        같이 섬기며 서로의 약한 부분을 채워 줄 수 있어요.
+      </div>
+    </div>
+  `;
 }
 
-/* 세부 점수 */
-.detail-score-row {
-  margin-bottom: 8px;
-}
-.detail-score-label {
-  font-size: 11px;
-  color: #4b5563;
-  margin-bottom: 2px;
-}
-.detail-score-bar-bg {
-  width: 100%;
-  height: 4px;
-  background: #e5e7eb;
-  border-radius: 999px;
-}
-.detail-score-bar-fill {
-  height: 100%;
-  background: #a855f7;
-  border-radius: 999px;
+function buildOtherTypesGrid() {
+  otherTypesGrid.innerHTML = "";
+
+  Object.keys(typeResults)
+    .sort()
+    .forEach((t) => {
+      const btn = document.createElement("button");
+      btn.className = "btn-type";
+      btn.dataset.type = t;
+      btn.innerHTML = `<strong>${t}</strong>`;
+      btn.addEventListener("click", () => {
+        currentViewType = t;
+        renderResult(t);
+        renderMatchCards(t);
+        updateTypeButtonsActive();
+      });
+      otherTypesGrid.appendChild(btn);
+    });
+
+  updateTypeButtonsActive();
 }
 
-/* 유형 관계 보기 */
-.match-card {
-  padding: 8px 10px;
-  border-radius: 10px;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  margin-top: 6px;
-}
-.match-title {
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-.match-list {
-  display: grid;
-  gap: 4px;
-}
-.match-item {
-  padding: 6px 8px;
-  border-radius: 8px;
-  background: #edf3ff;
-  font-size: 11px;
-}
-.match-item-opposite {
-  background: #fcf3f8; /* ← 반대 유형 박스 색 (연한 핑크) */
-  border: 1px solid #fcf1f7;
-}
-.match-item-title {
-  font-weight: 600;
-  margin-bottom: 2px;
-}
-.match-item-sub {
-  color: #6b7280;
-  line-height: 1.4;
+function updateTypeButtonsActive() {
+  document.querySelectorAll(".btn-type").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.type === currentViewType);
+  });
 }
 
-/* 다른 유형 보기 */
-#other-types-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-}
-.btn-type {
-  padding: 6px 8px;
-  font-size: 11px;
-  border-radius: 10px;
-  border: 1px solid #e5e7eb;
-  background: #fff;
-  cursor: pointer;
-}
-.btn-type.active {
-  background: #111827;
-  color: #fff;
+/* 9. 이벤트 리스너 (버튼 동작) */
+
+// 성경 말씀 토글
+todayVerseBtn.addEventListener("click", () => {
+  const type = currentViewType || myResultType;
+  if (!type) return;
+
+  const data = typeResults[type];
+  todayVerseBoxRef.textContent = data.verseRef;
+  todayVerseBoxText.textContent = data.verseText;
+  todayVerseBoxApply.textContent = data.verseApply || "";
+
+  todayVerseBox.classList.toggle("hidden");
+});
+
+// 성경 인물 토글
+bibleToggleBtn.addEventListener("click", () => {
+  const willOpen = bibleBox.classList.contains("hidden");
+  if (willOpen) {
+    bibleBox.classList.remove("hidden");
+    bibleToggleBtn.textContent = "📖 성경 인물 닫기";
+  } else {
+    bibleBox.classList.add("hidden");
+    bibleToggleBtn.textContent = "📖 성경 인물 보기";
+  }
+});
+
+// 공유하기 버튼
+if (shareBtn) {
+  shareBtn.addEventListener("click", async () => {
+    if (!myResultType || !typeResults || !typeResults[myResultType]) {
+      alert("먼저 검사를 완료한 뒤, 결과를 공유해 주세요.");
+      return;
+    }
+
+    const baseUrl = "https://faiths.life/";
+    const data = typeResults[myResultType];
+    const shareTitle = "FAITH-MBTI 신앙 유형 테스트";
+    const shareDesc = `나의 Faith-MBTI 유형은 ${myResultType} (${data.nameKo}) 입니다.`;
+    const shareUrl = baseUrl;
+
+    // 1. 카카오 공유
+    if (typeof Kakao !== "undefined" && Kakao.isInitialized && Kakao.isInitialized()) {
+      try {
+        Kakao.Share.sendDefault({
+          objectType: "feed",
+          content: {
+            title: shareTitle,
+            description: shareDesc,
+            imageUrl: "https://csy870617.github.io/faith-mbti/images/thumbnail.jpg",
+            link: { mobileWebUrl: shareUrl, webUrl: shareUrl },
+          },
+          buttons: [
+            { title: "테스트 하러가기", link: { mobileWebUrl: shareUrl, webUrl: shareUrl } },
+          ],
+        });
+        return;
+      } catch (err) { console.error(err); }
+    }
+
+    // 2. Web Share
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: shareTitle, text: shareDesc, url: shareUrl });
+        return;
+      } catch (err) {}
+    }
+
+    // 3. 클립보드 복사
+    try {
+      await navigator.clipboard.writeText(`${shareDesc}\n${shareUrl}`);
+      alert("결과가 클립보드에 복사되었습니다.");
+    } catch (err) {
+      alert("공유 기능을 사용할 수 없습니다.");
+    }
+  });
 }
 
-/* FOOTER */
-.result-footer {
-  font-size: 12px;
-  color: #6b7280;
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 6px;
-}
-.result-footer-right {
-  display: flex;
-  gap: 6px;
-}
-/* 질문 카드 내 네비게이션 버튼 정렬 */
-.nav-buttons {
-  display: flex;
-  gap: 8px;
-  width: 100%;
-  margin-top: 10px;
+// 네비게이션 버튼
+startBtn.addEventListener("click", () => {
+  // data.js에서 가져온 originalQuestions 사용
+  questions = shuffle(originalQuestions);
+  Object.keys(answers).forEach((k) => delete answers[k]);
+  currentIndex = 0;
+  myResultType = null;
+  myScores = null;
+  currentViewType = null;
+
+  todayVerseBox.classList.add("hidden");
+  bibleBox.classList.add("hidden");
+
+  introSection.classList.add("hidden");
+  testSection.classList.remove("hidden");
+  resultSection.classList.add("hidden");
+
+  renderQuestion();
+});
+
+backBtn.addEventListener("click", () => {
+  if (currentIndex > 0) {
+    currentIndex--;
+    renderQuestion();
+  }
+});
+
+skipBtn.addEventListener("click", () => {
+  goNextOrResult();
+});
+
+restartBtn.addEventListener("click", () => {
+  resultSection.classList.add("hidden");
+  introSection.classList.remove("hidden");
+});
+
+// 개발용 바로보기
+if (goResultBtn) {
+    goResultBtn.addEventListener("click", () => {
+        // data.js의 데이터 사용
+        originalQuestions.forEach((q) => { answers[q.id] = 3; });
+        const { scores, axisScores } = calculateResult();
+        const type = "ENFJ"; 
+
+        myResultType = type;
+        myScores = scores;
+        currentViewType = type;
+
+        introSection.classList.add("hidden");
+        testSection.classList.add("hidden");
+        resultSection.classList.remove("hidden");
+
+        renderResult(type);
+        renderAxisUpgraded(axisScores);
+        renderDetailScores(scores);
+        renderMatchCards(type);
+        buildOtherTypesGrid();
+    });
 }
 
-/* 건너뛰기 버튼을 오른쪽 끝으로 이동 */
-#skip-btn {
-  margin-left: auto;
-}
-.dev-btn {
-  margin-top: 8px;
-  background: #03994e;
-  color: #ffffff;
-  box-shadow: none;
-}
-.dev-btn:hover {
-  opacity: 0.8;
-}
-body {
-  font-size: 18px !important;
-}
-/* === 타이포그래피 리디자인: 전역 설정 === */
-:root {
-  /* 기본 폰트 크기 세팅 (1rem 기준) */
-  --font-size-body: 18px;
-  --font-size-title-main: 23px;  /* 메인 제목 */
-  --font-size-title-sub: 16px;   /* 섹션 제목 */
-  --font-size-heading: 16px;     /* 카드/블록 제목 */
-  --font-size-label: 16px;       /* 작은 라벨/보조 텍스트 */
+
+/* =========================================================
+ * 10. Firebase + 우리교회 Firestore 연동
+ * ======================================================= */
+
+const CHURCH_COLLECTION = "faith_churches";
+let _firebaseDb = null;
+let _firebaseFsModule = null;
+
+async function ensureFirebase() {
+  if (_firebaseDb && _firebaseFsModule) {
+    return { db: _firebaseDb, fs: _firebaseFsModule };
+  }
+  const appMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+  const fsMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDAigdc0C7zzzOySBTFb527eeAN3jInIfQ",
+    authDomain: "faith-mbti.firebaseapp.com",
+    projectId: "faith-mbti",
+    storageBucket: "faith-mbti.firebasestorage.app",
+    messagingSenderId: "1065834838710",
+    appId: "1:1065834838710:web:33382f9a82f94d112e8417",
+    measurementId: "G-RWMSVFRMRP"
+  };
+
+  const app = appMod.initializeApp(firebaseConfig);
+  const db = fsMod.getFirestore(app);
+  _firebaseDb = db;
+  _firebaseFsModule = fsMod;
+  return { db, fs: fsMod };
 }
 
-body {
-  font-size: var(--font-size-body);
-  line-height: 1.7;
-}
-/* 인트로 페이지 타이포그래피 */
-#intro-section h1 {
-  font-size: var(--font-size-title-main);
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  margin-bottom: 13px;
+function getTypeShortText(type) {
+  const data = typeResults[type];
+  if (!data) return "";
+  return data.summary || data.strengthShort || data.nameKo || "";
 }
 
-#intro-section .intro-subtitle,
-#intro-section p {
-  font-size: var(--font-size-title-sub);
-  font-weight: 540;
-  color: #46484d;
-}
-/* 질문 헤더 (문항 번호 / 진행률) */
-#progress-label {
-  font-size: 14px;
-  font-weight: 500;
-  color: #6b7280;
-}
+async function saveMyResultToChurch(name, churchName, password) {
+  const trimmedName = name.trim();
+  const trimmedChurch = churchName.trim();
+  const trimmedPassword = password.trim();
 
-/* 질문 코드: Q1, Q2... */
-#question-code {
-  font-size: 15px;
-  font-weight: 600;
-  color: #9ca3af;
-}
+  if (!trimmedName || !trimmedChurch || !trimmedPassword) throw new Error("모든 항목을 입력해 주세요.");
+  if (!myResultType) throw new Error("먼저 검사를 완료해 주세요.");
 
-/* 질문 본문 */
-#question-text {
-  font-size: var(--font-size-heading); /* 20px */
-  font-weight: 600;
-  color: #111827;
-  margin-top: 4px;
-}
+  const { db, fs } = await ensureFirebase();
+  const { doc, getDoc, setDoc, collection, addDoc, serverTimestamp } = fs;
 
-/* 1~5 선택 버튼 숫자 */
-.scale-pill {
-  font-size: 14px;
-  font-weight: 600;
-}
+  const churchRef = doc(db, CHURCH_COLLECTION, trimmedChurch);
+  const snap = await getDoc(churchRef);
 
-/* 이전 / 건너뛰기 버튼 글자 */
-#back-btn,
-#skip-btn {
-  font-size: 13px;
-  font-weight: 500;
-}
-
-/* 내 유형 코드 (ENFJ 등) */
-#result-code {
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-}
-
-/* 내 유형 이름 (감동의 인도자 · The Inspirer) */
-#result-name {
-  font-size: var(--font-size-title-sub); /* 24px */
-  font-weight: 700;
-  margin-top: 4px;
-}
-
-/* 한 줄 요약 */
-#result-summary {
-  font-size: 17px;
-  color: #374151;
-  margin-top: 10px;
-}
-
-/* 배지들 (강점 키워드) */
-#result-badges .badge {
-  font-size: 13px;
-  font-weight: 600;
-}
-
-/* 특징 / 성장 포인트 리스트 */
-#result-features li,
-#result-growth li {
-  font-size: 15px;
-}
-
-/* 강점/약점/주의 문장 */
-#result-strength,
-#result-weakness,
-#result-warning {
-  font-size: 15px;
-}
-
-/* 추천 사역 리스트 */
-#result-ministries li {
-  font-size: 15px;
-}
-/* 성경 인물 토글 버튼 */
-#bible-toggle-btn {
-  font-size: 15px;
-  font-weight: 500;
-}
-
-/* 성경 인물 박스 */
-#bible-character {
-  font-size: 15px;
-  font-weight: 500;
-}
-
-#bible-verse {
-  font-size: 15px;
-  color: #374151;
-}
-
-/* 오늘의 말씀 버튼 */
-#today-verse-btn {
-  font-size: 15px;
-  font-weight: 500;
-}
-
-/* 오늘의 말씀 내용 */
-#today-verse-box-ref {
-  font-size: 15px;
-  font-weight: 600;
-}
-
-#today-verse-box-text {
-  font-size: 16px;
-}
-
-#today-verse-box-apply {
-  font-size: 14px;
-  color: #4b5563;
-}
-/* 유형 관계 제목들 */
-.match-item-title {
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.match-item-sub {
-  font-size: 14px;
-  color: #4b5563;
-}
-
-/* 다른 유형 버튼(ENFJ, ENTJ… ) */
-.btn-type {
-  font-size: 14px;
-  font-weight: 350;
-}
-/* 주요 CTA 버튼들 */
-#start-btn,
-#go-result-btn,
-#restart-btn,
-#church-btn,
-#share-btn {
-  font-size: 14px;
-  font-weight: 550;
-}
-
-/* =========================================
-   우리교회 섹션 스타일 (Firebase 연동용)
-   - 기존 스타일은 수정하지 않고, 아래만 추가하면 됩니다.
-   - 관련 HTML id/class:
-     #church-section, .church-form, .church-form-group,
-     .church-button-row, #church-result-list 등
-   ========================================= */
-
-#church-section {
-  margin-top: 16px;
-}
-
-#church-section .result-card {
-  border-radius: 16px;
-  padding: 14px 16px;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  font-size: 12px;
-}
-
-/* 안내 텍스트 */
-.church-desc {
-  font-size: 12px;
-  color: #6b7280;
-  margin-top: 4px;
-  margin-bottom: 10px;
-}
-
-/* 입력 폼 전체 레이아웃 */
-.church-form {
-  display: grid;
-  gap: 8px;
-  margin-top: 8px;
-  margin-bottom: 12px;
-}
-
-/* 각 입력 그룹 (label + input) */
-.church-form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 12px;
-}
-
-.church-form-group label {
-  font-weight: 500;
-  color: #4b5563;
-}
-
-.church-form-group input {
-  padding: 6px 8px;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  font-size: 13px;
-  background: #ffffff;
-}
-
-.church-form-group input:focus {
-  outline: none;
-  border-color: #4f46e5;
-  box-shadow: 0 0 0 1px rgba(79, 70, 229, 0.15);
-}
-
-/* 버튼 묶음 */
-.church-button-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 4px;
-}
-
-/* 결과 리스트 영역 */
-#church-result-list {
-  margin-top: 12px;
-  font-size: 12px;
-}
-
-/* 테이블 기본 스타일 */
-#church-result-list table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-#church-result-list th,
-#church-result-list td {
-  border-bottom: 1px solid #e5e7eb;
-  padding: 6px 4px;
-  text-align: left;
-}
-
-#church-result-list th {
-  font-size: 11px;
-  color: #6b7280;
-  font-weight: 600;
-}
-
-#church-result-list tbody tr:nth-child(even) {
-  background: #f9fafb;
-}
-
-/* 교회 이름 제목 느낌 */
-#church-result-list .card-title {
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 3px;
-}
-
-/* 작은 회색 안내 글 */
-#church-result-list .gray {
-  font-size: 11px;
-  color: #9ca3af;
-}
-
-/* === FAITH-MBTI 책 배너 (심플) === */
-.book-banner-simple {
-  margin-top: 20px;
-  padding: 14px 18px;
-  border-radius: 16px;
-  background:#e4d9fd;
-  color: #000000;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  box-shadow: 0 0px 2px rgba(15, 23, 42, 0.35);
-}
-
-.book-banner-simple-text {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.book-banner-simple-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 10px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.13);
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.book-banner-simple-title {
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.book-banner-simple-sub {
-  font-size: 13px;
-  font-weight: 540;
-  opacity: 0.9;
-  color: #0f326e;
-}
-
-.book-banner-simple-btn {
-  flex-shrink: 0;
-  padding: 8px 12px;
-  border-radius: 999px;
-  border: none;
-  background: #f9fafbe5;
-  color: #040047;
-  font-size: 12px;
-  font-weight: 700;
-  text-decoration: none;
-  cursor: pointer;
-  transition: transform 0.1s ease, opacity 0.1s ease;
-  white-space: nowrap;
-}
-
-.book-banner-simple-btn:hover {
-  transform: translateY(-1px);
-  opacity: 0.95;
-}
-
-/* 모바일에서는 세로 배치 */
-@media (max-width: 768px) {
-  .book-banner-simple {
-    flex-direction: column;
-    align-items: flex-start;
+  if (snap.exists()) {
+    if (snap.data().password !== trimmedPassword) throw new Error("비밀번호가 일치하지 않습니다.");
+  } else {
+    await setDoc(churchRef, {
+      churchName: trimmedChurch,
+      password: trimmedPassword,
+      createdAt: serverTimestamp ? serverTimestamp() : Date.now(),
+    });
   }
 
-  .book-banner-simple-btn {
-    width: 100%;
-    text-align: center;
-    justify-content: center;
+  await addDoc(collection(churchRef, "members"), {
+    name: trimmedName,
+    type: myResultType,
+    shortText: getTypeShortText(myResultType),
+    createdAt: serverTimestamp ? serverTimestamp() : Date.now(),
+  });
+}
+
+async function loadChurchMembers(churchName, password) {
+  const trimmedChurch = churchName.trim();
+  const trimmedPassword = password.trim();
+  if (!trimmedChurch || !trimmedPassword) throw new Error("정보를 모두 입력해 주세요.");
+
+  const { db, fs } = await ensureFirebase();
+  const { doc, getDoc, collection, query, orderBy, getDocs } = fs;
+
+  const churchRef = doc(db, CHURCH_COLLECTION, trimmedChurch);
+  const churchSnap = await getDoc(churchRef);
+
+  if (!churchSnap.exists()) throw new Error("등록된 교회가 없습니다.");
+  if (churchSnap.data().password !== trimmedPassword) throw new Error("비밀번호가 일치하지 않습니다.");
+
+  const q = query(collection(churchRef, "members"), orderBy("createdAt", "asc"));
+  const snap = await getDocs(q);
+
+  return {
+    churchName: churchSnap.data().churchName || trimmedChurch,
+    members: snap.docs.map((d) => ({ id: d.id, ...d.data() })),
+  };
+}
+
+async function deleteChurchMember(churchName, password, memberId) {
+  const trimmedChurch = churchName.trim();
+  const trimmedPassword = password.trim();
+
+  const { db, fs } = await ensureFirebase();
+  const { doc, getDoc, collection, deleteDoc } = fs;
+
+  const churchRef = doc(db, CHURCH_COLLECTION, trimmedChurch);
+  const churchSnap = await getDoc(churchRef);
+
+  if (!churchSnap.exists() || churchSnap.data().password !== trimmedPassword) {
+    throw new Error("권한이 없습니다.");
   }
+  await deleteDoc(doc(collection(churchRef, "members"), memberId));
+}
+
+function renderChurchList(churchName, members) {
+  if (!churchResultList) return;
+
+  if (!members || members.length === 0) {
+    churchResultList.innerHTML = `<div class="result-card"><p class="gray">저장된 결과가 없습니다.</p></div>`;
+    return;
+  }
+
+  let rows = "";
+  members.forEach((m) => {
+    rows += `
+      <tr>
+        <td>${m.name || ""}</td>
+        <td>${m.type || ""}</td>
+        <td>${m.shortText || ""}</td>
+        <td><button class="btn-secondary member-delete-btn" data-member-id="${m.id}" data-church="${churchName}">삭제</button></td>
+      </tr>`;
+  });
+
+  churchResultList.innerHTML = `
+    <div class="result-card">
+      <div class="card-title">🏠 ${churchName}</div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead>
+            <tr style="border-bottom:1px solid #e5e7eb;">
+              <th>이름</th><th>유형</th><th>설명</th><th>관리</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+
+  churchResultList.querySelectorAll(".member-delete-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const pw = prompt("우리교회 비밀번호를 입력해 주세요.");
+      if (!pw) return;
+      try {
+        await deleteChurchMember(btn.dataset.church, pw, btn.dataset.memberId);
+        alert("삭제되었습니다.");
+        const { members: refreshed } = await loadChurchMembers(btn.dataset.church, pw);
+        renderChurchList(btn.dataset.church, refreshed);
+      } catch (err) { alert(err.message); }
+    });
+  });
+}
+
+// 교회 섹션 이벤트 연결
+if (churchBtn && churchSection) {
+  churchBtn.addEventListener("click", () => {
+    introSection.classList.add("hidden");
+    testSection.classList.add("hidden");
+    resultSection.classList.add("hidden");
+    churchSection.classList.remove("hidden");
+  });
+}
+
+if (churchCloseBtn) {
+  churchCloseBtn.addEventListener("click", () => {
+    churchSection.classList.add("hidden");
+    resultSection.classList.remove("hidden");
+  });
+}
+
+if (memberSaveBtn) {
+  memberSaveBtn.addEventListener("click", async () => {
+    try {
+      await saveMyResultToChurch(memberNameInput.value, memberChurchInput.value, memberPasswordInput.value);
+      alert("저장되었습니다.");
+      memberNameInput.value = "";
+    } catch (err) { alert(err.message); }
+  });
+}
+
+if (churchSummaryBtn) {
+  churchSummaryBtn.addEventListener("click", async () => {
+    try {
+      const { churchName, members } = await loadChurchMembers(viewChurchInput.value, viewPasswordInput.value);
+      renderChurchList(churchName, members);
+    } catch (err) { alert(err.message); }
+  });
+}
+
+if (inviteBtn) {
+  inviteBtn.addEventListener("click", async () => {
+    const txt = "https://faiths.life - 우리교회 신앙 유형 함께해요!";
+    try { await navigator.clipboard.writeText(txt); alert("링크가 복사되었습니다."); }
+    catch(e) { alert("복사 실패"); }
+  });
+}
+
+if (churchCopyBtn) {
+    churchCopyBtn.addEventListener("click", async () => {
+        // 간단 복사 로직
+        const txt = churchResultList.innerText; 
+        try { await navigator.clipboard.writeText(txt); alert("목록이 복사되었습니다."); }
+        catch(e) { alert("복사 실패"); }
+    });
 }
