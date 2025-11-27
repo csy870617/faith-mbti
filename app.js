@@ -360,54 +360,53 @@ if (dom.btns.share) {
     const baseUrl = "https://faiths.life/";
     const data = typeResults[myResultType];
     
-    // 1. 카카오톡 썸네일용 문구 (결과 포함)
+    // 기본 정보 정의
     const shareTitle = "FAITH MBTI 신앙 유형 테스트";
     const shareDesc = `나의 유형은 ${myResultType} (${data.nameKo}) 입니다.`;
-
-    // 2. 클립보드/문자 공유용 텍스트 (요청하신 줄바꿈 형식 적용)
-    // 형식:
-    // FAITH MBTI 신앙 유형 테스트
-    // 나의 유형은 ... (...) 입니다.
-    // 웹주소
-    const textForClipboard = `${shareTitle}\n${shareDesc}\n${baseUrl}`;
-
-    // A. 카카오톡 공유
+    
+    // [1] 카카오톡 공유 (전용 SDK 사용)
     if (typeof Kakao !== "undefined" && Kakao.isInitialized && Kakao.isInitialized()) {
       try {
         Kakao.Share.sendDefault({
           objectType: "feed",
           content: {
             title: shareTitle,
-            description: shareDesc, // 카톡 카드에는 결과가 보여야 하므로 결과 문구 사용
+            description: shareDesc,
             imageUrl: "https://csy870617.github.io/faith-mbti/images/thumbnail.jpg",
             link: { mobileWebUrl: baseUrl, webUrl: baseUrl },
           },
           buttons: [{ title: "테스트 하러가기", link: { mobileWebUrl: baseUrl, webUrl: baseUrl } }]
         });
-        return;
+        return; // 카카오 공유 성공 시 종료
       } catch (e) { console.error(e); }
     }
     
-    // B. 모바일 네이티브 공유 (Web Share API)
+    // [2] 모바일 브라우저 기본 공유 (Web Share API)
+    // * 중요: title, text, url을 따로 줘야 중복되지 않습니다.
     if (navigator.share) {
       try { 
         await navigator.share({ 
           title: shareTitle, 
-          text: textForClipboard, // 줄바꿈 적용된 텍스트
+          text: shareDesc,  // 여기에 제목이나 URL을 섞지 마세요.
           url: baseUrl 
         }); 
         return; 
-      } catch(e){}
+      } catch(e) {
+        // 공유 취소 등을 에러로 처리하지 않음
+      }
     }
     
-    // C. 클립보드 복사 (PC 등)
+    // [3] PC 등 클립보드 복사 (Web Share 미지원 시)
+    // * 여기서는 텍스트로만 전달되므로 전체 문장을 합쳐야 합니다.
     try { 
-      await navigator.clipboard.writeText(textForClipboard); // 줄바꿈 적용된 텍스트 복사
+      const clipboardText = `${shareTitle}\n${shareDesc}\n${baseUrl}`;
+      await navigator.clipboard.writeText(clipboardText); 
       alert("결과가 클립보드에 복사되었습니다."); 
     }
     catch (e) { alert("공유 기능을 사용할 수 없습니다."); }
   });
 }
+
 
 // 네비게이션
 dom.btns.start.addEventListener("click", () => {
@@ -608,3 +607,4 @@ if (dom.btns.churchCopy) {
     catch(e) { alert("복사 실패"); }
   });
 }
+
