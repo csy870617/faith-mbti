@@ -1,11 +1,9 @@
 /**************************************************
- * data.js
- * - 질문 데이터 (originalQuestions)
- * - 결과 데이터 (typeResults)
+ * data.js (전역 변수 할당 버전)
  **************************************************/
 
 /* 1. 질문 데이터 (40문항) */
-const originalQuestions = Object.freeze([
+window.originalQuestions = Object.freeze([
   // E / I — 관계 에너지, 나눔 스타일
   { id: "EI_E1", text: "예배가 끝나면 ‘오늘 은혜 나눌 사람 누구 없나?’ 하며 자연스럽게 사람을 찾는다.", axis: "EI", side: "E" },
   { id: "EI_I1", text: "예배가 끝나면 사람들과 섞이기보다 조용히 혼자 여운을 느끼고 싶다.", axis: "EI", side: "I" },
@@ -72,7 +70,7 @@ const originalQuestions = Object.freeze([
 ]);
 
 /* 2. 16유형 결과 데이터 */
-const typeResults = Object.freeze({
+window.typeResults = Object.freeze({
   ESTJ: {
     nameKo: "진리의 관리자",
     nameEn: "The Builder of Order",
@@ -492,7 +490,7 @@ const typeResults = Object.freeze({
     verseText: "나의 행한 모든 일을 내게 말한 사람을 와 보라 이는 그리스도가 아니냐 하니",
     characterEmoji: "🔥",
     characterTitle: "이야기로 전도하는 스토리텔러",
-    characterStory: "하나님께 받은 작은 감동도 이야기로 풀어내며, 주변 사람들의 마음에 불씨를 옮겨 심는 사람입니다. 당신이 나누는 ‘작은 간증’을 모아, 공동체 안에 ‘나도 다시 시작해 보고 싶다’는 소망이 생겨나고, 잃어버린 양들이 다시 교회의 문을 두드리기도 합니다.",
+    characterStory: "하나님께 받은 작은 감동도 이야기로 풀어내며, 주변 사람들의 마음에 불씨를 옮겨 심는 사람입니다. 당신의 나누는 ‘작은 간증’을 모아, 공동체 안에 ‘나도 다시 시작해 보고 싶다’는 소망이 생겨나고, 잃어버린 양들이 다시 교회의 문을 두드리기도 합니다.",
     ministries: [
       "관계 전도·초청 사역",
       "간증·스토리 나눔 모임",
@@ -649,4 +647,3 @@ const typeResults = Object.freeze({
     verseApply: "당신의 마음속에 있는 불씨가 하나님 안에서 꺼지지 않도록 붙들어 주는 말씀입니다. 오늘은 감정 한 줄과 말씀 한 줄을 적어 짧은 기도시로 써 보고, 한 사람과 나누거나 하나님께만 조용히 올려 드려 보세요."
   }
 });
-
