@@ -352,17 +352,23 @@ dom.btns.bibleToggle.addEventListener("click", () => {
   dom.btns.bibleToggle.textContent = isHidden ? "📖 성경 인물 닫기" : "📖 성경 인물 보기";
 });
 
-// 공유하기
+// app.js의 공유하기 버튼 이벤트 (dom.btns.share) 전체 교체
+
 if (dom.btns.share) {
   dom.btns.share.addEventListener("click", async () => {
-    if (!myResultType) return alert("먼저 검사를 완료한 뒤, 결과를 공유해 주세요.");
+    // [변경점] 현재 보고 있는 유형(currentViewType)을 우선으로 공유합니다.
+    const targetType = currentViewType || myResultType;
+
+    if (!targetType) return alert("먼저 검사를 완료한 뒤, 결과를 공유해 주세요.");
     
     const baseUrl = "https://faiths.life/";
-    const data = typeResults[myResultType];
+    const data = typeResults[targetType]; // 현재 보고 있는 유형의 데이터 가져오기
     
     // 기본 정보 정의
     const shareTitle = "FAITH MBTI 신앙 유형 테스트";
-    const shareDesc = `나의 유형은 ${myResultType} (${data.nameKo}) 입니다.`;
+    // 문구는 통일성을 위해 "나의 유형은..." 형식을 유지하거나, 필요시 "이 유형은..."으로 변경 가능
+    // 여기서는 기존 요청대로 유지하되, 내용은 현재 보고 있는 유형이 들어갑니다.
+    const shareDesc = `나의 유형은 ${targetType} (${data.nameKo}) 입니다.`;
     
     // [1] 카카오톡 공유 (전용 SDK 사용)
     if (typeof Kakao !== "undefined" && Kakao.isInitialized && Kakao.isInitialized()) {
@@ -377,27 +383,23 @@ if (dom.btns.share) {
           },
           buttons: [{ title: "테스트 하러가기", link: { mobileWebUrl: baseUrl, webUrl: baseUrl } }]
         });
-        return; // 카카오 공유 성공 시 종료
+        return; 
       } catch (e) { console.error(e); }
     }
     
     // [2] 모바일 브라우저 기본 공유 (Web Share API)
-    // * 중요: title, text, url을 따로 줘야 중복되지 않습니다.
     if (navigator.share) {
       try { 
         await navigator.share({ 
           title: shareTitle, 
-          text: shareDesc,  // 여기에 제목이나 URL을 섞지 마세요.
+          text: shareDesc, 
           url: baseUrl 
         }); 
         return; 
-      } catch(e) {
-        // 공유 취소 등을 에러로 처리하지 않음
-      }
+      } catch(e) {}
     }
     
-    // [3] PC 등 클립보드 복사 (Web Share 미지원 시)
-    // * 여기서는 텍스트로만 전달되므로 전체 문장을 합쳐야 합니다.
+    // [3] PC 등 클립보드 복사
     try { 
       const clipboardText = `${shareTitle}\n${shareDesc}\n${baseUrl}`;
       await navigator.clipboard.writeText(clipboardText); 
@@ -650,5 +652,6 @@ if (dom.btns.churchCopy) {
     catch(e) { alert("복사 실패"); }
   });
 }
+
 
 
