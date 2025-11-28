@@ -189,7 +189,7 @@ function goNextOrResult() {
     myResultType = type;
     currentViewType = type;
 
-    renderResult(type);
+    (type);
     renderAxisUpgraded(axisScores);
     renderDetailScores(scores);
     renderMatchCards(type);
@@ -231,11 +231,16 @@ function renderResult(type) {
   dom.result.weakness.textContent = `약점: ${data.weaknessShort}`;
   dom.result.warning.textContent = data.warningShort;
 
+  // [수정] 성경 인물 박스 초기화 (닫기)
   dom.bible.charEl.textContent = `${data.bibleCharacter} – ${data.bibleCharacterDesc}`;
   dom.bible.verseEl.textContent = `${data.verseRef} ${data.verseText}`;
   dom.bible.box.classList.add("hidden");
   dom.btns.bibleToggle.textContent = "📖 성경 인물 보기";
+  
+  // [추가됨] '오늘의 말씀' 박스도 화면이 바뀔 때마다 무조건 닫기
+  dom.verse.box.classList.add("hidden");
 
+  // 캐릭터 렌더링
   dom.character.emoji.textContent = data.characterEmoji;
   dom.character.title.textContent = data.characterTitle;
   dom.character.text.textContent = data.characterStory;
@@ -652,6 +657,7 @@ if (dom.btns.churchCopy) {
     catch(e) { alert("복사 실패"); }
   });
 }
+
 
 
 
