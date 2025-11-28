@@ -923,3 +923,68 @@ body {
     justify-content: center;
   }
 }
+
+/* =========================================
+   ENGO 하단 와이드 배너 (테마 맞춤형)
+   ========================================= */
+.engo-bottom-banner {
+  /* 배치 및 크기 */
+  width: 100%;
+  margin-top: 32px;
+  padding: 16px 24px;
+  border-radius: 20px;
+  
+  /* 디자인: FAITH MBTI 메인 테마(보라색) 적용 */
+  background: linear-gradient(135deg, #4f46e5, #a855f7);
+  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+  color: #ffffff;
+  text-decoration: none;
+  
+  /* 내부 정렬 */
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.engo-bottom-banner:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(124, 58, 237, 0.45);
+}
+
+/* 아이콘 이미지 */
+.engo-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background-color: #ffffff;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  flex-shrink: 0;
+}
+
+/* 텍스트 영역 */
+.engo-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+}
+
+.engo-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.engo-desc {
+  font-size: 14px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* 인트로 화면(Grid)에서 하단 전체를 차지하도록 설정 */
+.intro .engo-bottom-banner {
+  grid-column: 1 / -1; /* 그리드 전체 가로폭 사용 */
+}
