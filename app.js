@@ -1,5 +1,5 @@
 /**************************************************
- * Faith-MBTI Test – app.js (최적화 버전)
+ * Faith-MBTI Test – app.js (전역 변수 참조 버전)
  **************************************************/
 
 /* 1. 전역 상태 및 DOM 캐싱 */
@@ -9,7 +9,7 @@ const answers = {};
 let myResultType = null;
 let currentViewType = null;
 
-// DOM 요소 캐싱 (반복 조회 방지)
+// DOM 요소 캐싱
 const dom = {
   sections: {
     intro: document.getElementById("intro-section"),
@@ -100,7 +100,6 @@ function renderScale(questionId) {
   const container = dom.question.inputs;
   container.innerHTML = "";
   
-  // DocumentFragment 사용하여 리플로우 최소화
   const fragment = document.createDocumentFragment();
   const currentValue = answers[questionId] || null;
 
@@ -155,7 +154,8 @@ function calculateResult() {
   const scores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
   const axisScores = { EI: 0, SN: 0, TF: 0, JP: 0 };
 
-  originalQuestions.forEach((q) => {
+  // window.originalQuestions 사용
+  window.originalQuestions.forEach((q) => {
     const v = answers[q.id];
     if (!v) return;
 
@@ -189,7 +189,7 @@ function goNextOrResult() {
     myResultType = type;
     currentViewType = type;
 
-    (type);
+    renderResult(type);
     renderAxisUpgraded(axisScores);
     renderDetailScores(scores);
     renderMatchCards(type);
@@ -198,7 +198,8 @@ function goNextOrResult() {
 }
 
 function renderResult(type) {
-  const data = typeResults[type];
+  // window.typeResults 사용
+  const data = window.typeResults[type];
 
   dom.result.code.textContent = type;
   dom.result.name.textContent = `${data.nameKo} · ${data.nameEn}`;
@@ -231,16 +232,13 @@ function renderResult(type) {
   dom.result.weakness.textContent = `약점: ${data.weaknessShort}`;
   dom.result.warning.textContent = data.warningShort;
 
-  // [수정] 성경 인물 박스 초기화 (닫기)
   dom.bible.charEl.textContent = `${data.bibleCharacter} – ${data.bibleCharacterDesc}`;
   dom.bible.verseEl.textContent = `${data.verseRef} ${data.verseText}`;
   dom.bible.box.classList.add("hidden");
   dom.btns.bibleToggle.textContent = "📖 성경 인물 보기";
   
-  // [추가됨] '오늘의 말씀' 박스도 화면이 바뀔 때마다 무조건 닫기
   dom.verse.box.classList.add("hidden");
 
-  // 캐릭터 렌더링
   dom.character.emoji.textContent = data.characterEmoji;
   dom.character.title.textContent = data.characterTitle;
   dom.character.text.textContent = data.characterStory;
@@ -295,7 +293,8 @@ function similarityScore(a, b) {
 }
 
 function renderMatchCards(type) {
-  const entries = Object.entries(typeResults);
+  // window.typeResults 사용
+  const entries = Object.entries(window.typeResults);
   const all = entries
     .filter(([code]) => code !== type)
     .map(([code, data]) => ({ code, data, sim: similarityScore(type, code) }));
@@ -318,7 +317,8 @@ function renderMatchCards(type) {
 
 function buildOtherTypesGrid() {
   dom.result.otherTypes.innerHTML = "";
-  Object.keys(typeResults).sort().forEach(t => {
+  // window.typeResults 사용
+  Object.keys(window.typeResults).sort().forEach(t => {
     const btn = document.createElement("button");
     btn.className = "btn-type";
     btn.dataset.type = t;
@@ -344,7 +344,8 @@ function updateTypeButtonsActive() {
 dom.btns.todayVerse.addEventListener("click", () => {
   const type = currentViewType || myResultType;
   if (!type) return;
-  const data = typeResults[type];
+  // window.typeResults 사용
+  const data = window.typeResults[type];
   dom.verse.ref.textContent = data.verseRef;
   dom.verse.text.textContent = data.verseText;
   dom.verse.apply.textContent = data.verseApply || "";
@@ -357,25 +358,17 @@ dom.btns.bibleToggle.addEventListener("click", () => {
   dom.btns.bibleToggle.textContent = isHidden ? "📖 성경 인물 닫기" : "📖 성경 인물 보기";
 });
 
-// app.js의 공유하기 버튼 이벤트 (dom.btns.share) 전체 교체
-
+// 공유하기
 if (dom.btns.share) {
   dom.btns.share.addEventListener("click", async () => {
-    // [변경점] 현재 보고 있는 유형(currentViewType)을 우선으로 공유합니다.
     const targetType = currentViewType || myResultType;
-
     if (!targetType) return alert("먼저 검사를 완료한 뒤, 결과를 공유해 주세요.");
     
     const baseUrl = "https://faiths.life/";
-    const data = typeResults[targetType]; // 현재 보고 있는 유형의 데이터 가져오기
-    
-    // 기본 정보 정의
+    const data = window.typeResults[targetType];
     const shareTitle = "FAITH MBTI 신앙 유형 테스트";
-    // 문구는 통일성을 위해 "나의 유형은..." 형식을 유지하거나, 필요시 "이 유형은..."으로 변경 가능
-    // 여기서는 기존 요청대로 유지하되, 내용은 현재 보고 있는 유형이 들어갑니다.
     const shareDesc = `나의 유형은 ${targetType} (${data.nameKo}) 입니다.`;
-    
-    // [1] 카카오톡 공유 (전용 SDK 사용)
+
     if (typeof Kakao !== "undefined" && Kakao.isInitialized && Kakao.isInitialized()) {
       try {
         Kakao.Share.sendDefault({
@@ -388,36 +381,27 @@ if (dom.btns.share) {
           },
           buttons: [{ title: "테스트 하러가기", link: { mobileWebUrl: baseUrl, webUrl: baseUrl } }]
         });
-        return; 
+        return;
       } catch (e) { console.error(e); }
     }
     
-    // [2] 모바일 브라우저 기본 공유 (Web Share API)
     if (navigator.share) {
-      try { 
-        await navigator.share({ 
-          title: shareTitle, 
-          text: shareDesc, 
-          url: baseUrl 
-        }); 
-        return; 
-      } catch(e) {}
+      try { await navigator.share({ title: shareTitle, text: shareDesc, url: baseUrl }); return; } catch(e){}
     }
     
-    // [3] PC 등 클립보드 복사
-    try { 
-      const clipboardText = `${shareTitle}\n${shareDesc}\n${baseUrl}`;
-      await navigator.clipboard.writeText(clipboardText); 
-      alert("결과가 클립보드에 복사되었습니다."); 
-    }
+    try { await navigator.clipboard.writeText(`${shareTitle}\n${shareDesc}\n${baseUrl}`); alert("결과가 클립보드에 복사되었습니다."); }
     catch (e) { alert("공유 기능을 사용할 수 없습니다."); }
   });
 }
 
-
 // 네비게이션
 dom.btns.start.addEventListener("click", () => {
-  questions = shuffle(originalQuestions);
+  // window.originalQuestions 사용
+  if (!window.originalQuestions) {
+      alert("데이터를 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
+      return;
+  }
+  questions = shuffle(window.originalQuestions);
   for (let k in answers) delete answers[k];
   currentIndex = 0;
   myResultType = null;
@@ -448,7 +432,8 @@ dom.btns.restart.addEventListener("click", () => {
 // 개발용 버튼
 if (dom.btns.goResult) {
   dom.btns.goResult.addEventListener("click", () => {
-    originalQuestions.forEach(q => answers[q.id] = 3);
+    if (!window.originalQuestions) return;
+    window.originalQuestions.forEach(q => answers[q.id] = 3);
     const { scores, axisScores } = calculateResult();
     myResultType = "ENFJ";
     currentViewType = "ENFJ";
@@ -497,7 +482,7 @@ async function saveMyResultToChurch(name, churchName, password) {
   if (snap.exists() && snap.data().password !== p) throw new Error("비밀번호가 일치하지 않습니다.");
   if (!snap.exists()) await fs.setDoc(churchRef, { churchName: c, password: p, createdAt: fs.serverTimestamp ? fs.serverTimestamp() : Date.now() });
 
-  const data = typeResults[myResultType];
+  const data = window.typeResults[myResultType];
   await fs.addDoc(fs.collection(churchRef, "members"), {
     name: n, type: myResultType, shortText: data.summary || data.nameKo || "",
     createdAt: fs.serverTimestamp ? fs.serverTimestamp() : Date.now()
@@ -604,22 +589,17 @@ if (dom.btns.churchSummary) {
 if (dom.btns.invite) {
   dom.btns.invite.addEventListener("click", async () => {
     const baseUrl = "https://faiths.life";
-    
-    // 사용자가 입력한 그룹명 가져오기 (비어있으면 '우리교회'로 설정)
     const rawGroupName = dom.inputs.viewChurch.value.trim();
     const groupName = rawGroupName.length > 0 ? rawGroupName : "우리교회";
-
     const shareTitle = `${groupName} 신앙 유형 모임 초대`;
     const shareDesc = "함께 신앙 유형을 검사하고 결과를 나눠보세요!";
-    
-    // [1] 카카오톡 공유
+
     if (typeof Kakao !== "undefined" && Kakao.isInitialized && Kakao.isInitialized()) {
       try {
         Kakao.Share.sendDefault({
           objectType: "feed",
           content: {
-            title: shareTitle,
-            description: shareDesc,
+            title: shareTitle, description: shareDesc,
             imageUrl: "https://csy870617.github.io/faith-mbti/images/thumbnail.jpg",
             link: { mobileWebUrl: baseUrl, webUrl: baseUrl },
           },
@@ -629,22 +609,12 @@ if (dom.btns.invite) {
       } catch (e) { console.error(e); }
     }
 
-    // [2] 모바일 기본 공유 (Web Share API)
     if (navigator.share) {
-      try { 
-        await navigator.share({ 
-          title: shareTitle, 
-          text: shareDesc, 
-          url: baseUrl 
-        }); 
-        return; 
-      } catch(e) {}
+      try { await navigator.share({ title: shareTitle, text: shareDesc, url: baseUrl }); return; } catch(e) {}
     }
 
-    // [3] 클립보드 복사 (PC 등)
     try { 
-      const clipboardText = `${shareTitle}\n${shareDesc}\n${baseUrl}`;
-      await navigator.clipboard.writeText(clipboardText); 
+      await navigator.clipboard.writeText(`${shareTitle}\n${shareDesc}\n${baseUrl}`); 
       alert("초대 링크가 클립보드에 복사되었습니다."); 
     }
     catch(e) { alert("공유 기능을 사용할 수 없습니다."); }
@@ -657,7 +627,3 @@ if (dom.btns.churchCopy) {
     catch(e) { alert("복사 실패"); }
   });
 }
-
-
-
-
