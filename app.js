@@ -85,7 +85,8 @@ const dom = {
     memberChurch: document.getElementById("member-church-input"),
     memberPw: document.getElementById("member-password-input"),
     viewChurch: document.getElementById("view-church-input"),
-    viewPw: document.getElementById("view-password-input")
+    viewPw: document.getElementById("view-password-input"),
+    rememberCreds: document.getElementById("remember-creds-input")
   },
   churchList: document.getElementById("church-result-list"),
   churchAnalysisResult: document.getElementById("church-analysis-result"),
@@ -196,6 +197,7 @@ function goNextOrResult() {
 
     const { type, scores, axisScores } = calculateResult();
     
+    // 결과 로컬스토리지 저장
     const resultData = {
       type: type,
       scores: scores,
@@ -313,7 +315,6 @@ function similarityScore(a, b) {
   return s;
 }
 
-// [수정됨] 유형 관계 보기 (설명 동적 적용)
 function renderMatchCards(type) {
   const entries = Object.entries(window.typeResults);
   const all = entries
@@ -585,17 +586,24 @@ async function deleteChurchMember(churchName, password, memberId) {
   await fs.deleteDoc(fs.doc(fs.collection(churchRef, "members"), memberId));
 }
 
+// [수정됨] 결과 리스트 렌더링 (강점 요약 데이터 사용)
 function renderChurchList(churchName, members) {
   if (!dom.churchList) return;
   if (!members || !members.length) {
     dom.churchList.innerHTML = `<div class="result-card"><p class="gray">저장된 결과가 없습니다.</p></div>`;
     return;
   }
-  const rows = members.map(m => `
+  const rows = members.map(m => {
+    // 저장된 데이터가 없거나 텍스트일 경우를 대비해, 실시간 강점 데이터 사용
+    const typeData = window.typeResults[m.type];
+    const desc = typeData ? typeData.strengthShort : (m.shortText || "");
+    
+    return `
     <tr>
-      <td>${m.name || ""}</td><td>${m.type || ""}</td><td>${m.shortText || ""}</td>
+      <td>${m.name || ""}</td><td>${m.type || ""}</td><td>${desc}</td>
       <td><button class="btn-secondary member-delete-btn" data-id="${m.id}" data-church="${churchName}">삭제</button></td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
     
   dom.churchList.innerHTML = `
     <div class="result-card"><div class="card-title">🏠 ${churchName}</div>
@@ -759,7 +767,6 @@ if (dom.btns.memberSave) {
 
 if (dom.btns.churchSummary) {
   dom.btns.churchSummary.addEventListener("click", async () => {
-    // 기억하기 체크 확인 및 저장/삭제
     if (dom.inputs.rememberCreds && dom.inputs.rememberCreds.checked) {
       localStorage.setItem('faith_church_name', dom.inputs.viewChurch.value);
       localStorage.setItem('faith_church_pw', dom.inputs.viewPw.value);
@@ -780,7 +787,6 @@ if (dom.btns.churchAnalysis) {
   dom.btns.churchAnalysis.addEventListener("click", analyzeAndRenderCommunity);
 }
 
-// 모아보기 토글
 if (dom.churchViewToggle && dom.churchViewContent) {
   dom.churchViewToggle.addEventListener("click", () => {
     const isHidden = dom.churchViewContent.classList.contains("hidden");
@@ -829,27 +835,25 @@ if (dom.btns.invite) {
   });
 }
 
-// 그룹 결과 복사/공유 버튼 (줄바꿈 강제)
+// [수정됨] 그룹 결과 복사 (강점 데이터 사용)
 if (dom.btns.churchCopy) {
   dom.btns.churchCopy.addEventListener("click", async () => {
     const members = currentChurchMembers;
     if (!members || members.length === 0) return alert("복사할 데이터가 없습니다.");
 
     const groupName = dom.inputs.viewChurch.value.trim() || "우리교회";
-    
-    // 1. 헤더 (형식: 그룹명 - 신앙 유형 결과)
     const shareHeader = `${groupName} - 신앙 유형 결과`;
     
-    // 2. 본문 (명단)
     let shareBody = "";
     members.forEach(m => {
-      shareBody += `이름: ${m.name}\n유형: ${m.type}\n설명: ${m.shortText}\n\n`;
+      // 실시간 강점 데이터 불러오기
+      const typeData = window.typeResults[m.type];
+      const desc = typeData ? typeData.strengthShort : (m.shortText || "");
+      shareBody += `이름: ${m.name}\n유형: ${m.type}\n설명: ${desc}\n\n`;
     });
 
-    // 3. 전체 합친 텍스트
     const fullText = `${shareHeader}\n\n${shareBody}`;
     
-    // A. 카카오톡
     if (typeof Kakao !== "undefined" && Kakao.isInitialized && Kakao.isInitialized()) {
       try {
         Kakao.Share.sendDefault({
@@ -862,18 +866,16 @@ if (dom.btns.churchCopy) {
       } catch (e) { console.error(e); }
     }
 
-    // B. 기본 공유 (제목/본문 분리 + 줄바꿈 문자)
     if (navigator.share) {
       try { 
         await navigator.share({ 
           title: shareHeader, 
-          text: "\n\n" + shareBody // 줄바꿈 문자 2개 강제 추가
+          text: "\n\n" + shareBody 
         }); 
         return; 
       } catch(e) {}
     }
 
-    // C. 클립보드
     try { 
       await navigator.clipboard.writeText(fullText); 
       alert("그룹 결과가 클립보드에 복사되었습니다."); 
@@ -891,7 +893,6 @@ let currentFontScale = parseFloat(localStorage.getItem("faith_font_scale")) || 1
 function applyFontSize(scale) {
   scale = Math.round(scale * 10) / 10;
   const root = document.documentElement;
-  // 표준(1.0) = 120%
   const basePercent = 120; 
   const percent = Math.round(scale * basePercent);
   root.style.fontSize = `${percent}%`;
@@ -921,7 +922,6 @@ if (dom.btns.fontUp) {
    페이지 로드 시 저장된 결과 & 교회 정보 불러오기
    ========================================= */
 window.addEventListener('DOMContentLoaded', () => {
-  // 1. 내 결과 불러오기
   const savedData = localStorage.getItem('faith_result_v1');
   if (savedData) {
     try {
@@ -946,7 +946,6 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 2. 교회 정보 기억하기 불러오기
   const savedChurch = localStorage.getItem('faith_church_name');
   const savedPw = localStorage.getItem('faith_church_pw');
   
