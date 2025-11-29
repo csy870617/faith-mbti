@@ -316,27 +316,41 @@
           </div>
         </div>
 
-        <div class="result-card" style="margin-top:20px;">
-          <h3 class="card-title" style="margin-bottom:12px;">우리교회 신앙 유형 모아보기</h3>
-          그룹명과 비밀번호를 입력하면 결과를 함께 볼 수 있어요.
-          <div class="church-form" style="margin-top:12px;">
-            <div class="church-form-group">
-              <label for="view-church-input">그룹명</label>
-              <input id="view-church-input" type="text" placeholder="예: OO교회 청년부" />
-            </div>
-            <div class="church-form-group">
-              <label for="view-password-input">비밀번호</label>
-              <input id="view-password-input" type="password" placeholder="우리교회 비밀번호" />
-            </div>
-            <div class="church-actions">
-              <button id="church-summary-btn" class="btn-primary small">공동체 유형 확인</button>
-              <button id="church-analysis-btn" class="btn-primary small">📊 공동체 분석</button>
-              <button id="invite-btn" class="btn-primary small">멤버초대</button>
-            </div>
+<div class="result-card" style="margin-top:20px;">
+          
+          <div id="church-view-toggle" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+            <h3 class="card-title" style="margin-bottom:0;">우리교회 신앙 유형 모아보기 ▼</h3>
           </div>
-          <div id="church-result-list" style="margin-top:12px;"></div>
-          <div id="church-analysis-result" class="hidden" style="margin-top:20px;"></div>
-          <button id="church-copy-btn" class="btn-secondary" style="margin-top:10px; font-size:12px;">📋 그룹 결과 복사하기</button>
+
+          <div id="church-view-content" class="hidden">
+            <div style="font-size:0.9rem; color:#475569; margin-top:8px;">
+              그룹명과 비밀번호를 입력하면 결과를 함께 볼 수 있어요.
+            </div>
+
+            <div class="church-form" style="margin-top:12px;">
+              <div class="church-form-group">
+                <label for="view-church-input">그룹명</label>
+                <input id="view-church-input" type="text" placeholder="예: OO교회 청년부" />
+              </div>
+              <div class="church-form-group">
+                <label for="view-password-input">비밀번호</label>
+                <input id="view-password-input" type="password" placeholder="우리교회 비밀번호" />
+              </div>
+              <div class="church-actions">
+                <button id="church-summary-btn" class="btn-primary small">우리교회 신앙 유형 확인</button>
+                <button id="church-analysis-btn" class="btn-primary small">📊 공동체 분석</button>
+                <button id="invite-btn" class="btn-primary small">멤버초대</button>
+              </div>
+            </div>
+
+            <div id="church-result-list" style="margin-top:12px;"></div>
+            
+            <div id="church-analysis-result" class="hidden" style="margin-top:20px;"></div>
+
+            <button id="church-copy-btn" class="btn-secondary hidden" style="margin-top:10px; font-size:12px;">
+              📲 그룹 결과 공유/복사하기
+            </button>
+          </div>
         </div>
 
         <div class="church-extra-banner-box" style="margin-top:20px;">
@@ -357,5 +371,6 @@
   </div>
 </body>
 </html>
+
 
 
