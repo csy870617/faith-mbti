@@ -777,10 +777,12 @@ let currentFontScale = parseFloat(localStorage.getItem("faith_font_scale")) || 1
 
 // 폰트 적용 함수 (Root 폰트 사이즈를 %로 조절)
 function applyFontSize(scale) {
+  // 소수점 계산 오류 방지를 위해 반올림하여 정리
+  scale = Math.round(scale * 10) / 10;
+
   const root = document.documentElement;
   
-  // [수정됨] 기준 비율을 100 -> 120으로 변경하여 기본 크기를 키움
-  // scale 1.0일 때 120% (기존의 A+ 두 번 누른 크기)가 됩니다.
+  // [설정] 표준(1.0)일 때의 비율 = 120% (이전 A+ 두 번 누른 크기)
   const basePercent = 120; 
   const percent = Math.round(scale * basePercent);
   
@@ -794,23 +796,25 @@ function applyFontSize(scale) {
 if (currentFontScale !== 1.0) {
   applyFontSize(currentFontScale);
 } else {
-  // 처음 접속하거나 표준 상태일 때도 강제로 적용
-  applyFontSize(1.0);
+  applyFontSize(1.0); // 표준 강제 적용
 }
 
 // 이벤트 리스너 연결
 if (dom.btns.fontUp) {
+  // 확대: 표준(1.0)에서 +3단계 -> 최대 1.3
   dom.btns.fontUp.addEventListener("click", () => {
-    // 최대 크기를 조금 더 여유 있게 (1.5배까지) 늘려드렸습니다.
-    if (currentFontScale < 1.5) applyFontSize(currentFontScale + 0.1);
+    if (currentFontScale < 1.3) applyFontSize(currentFontScale + 0.1);
   });
 
+  // 축소: 표준(1.0)에서 -3단계 -> 최소 0.7
   dom.btns.fontDown.addEventListener("click", () => {
-    if (currentFontScale > 0.8) applyFontSize(currentFontScale - 0.1);
+    if (currentFontScale > 0.7) applyFontSize(currentFontScale - 0.1);
   });
 
+  // 초기화: 표준(1.0)으로 복귀
   dom.btns.fontReset.addEventListener("click", () => {
     applyFontSize(1.0);
   });
 }
+
 
