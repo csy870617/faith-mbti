@@ -275,12 +275,64 @@ main {
 .close-analysis-btn:hover { background: #e2e8f0; }
 
 /* Book Banner */
-.book-banner-simple { margin-top: 24px; padding: 16px 24px; border-radius: 20px; background:#e0e7ff; color: #1e1b4b; display: flex; align-items: center; justify-content: space-between; gap: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-.book-banner-simple-text { display: flex; flex-direction: column; gap: 4px; }
-.book-banner-simple-title { font-size: 1rem; font-weight: 800; letter-spacing: -0.01em; }
-.book-banner-simple-sub { font-size: 0.9rem; font-weight: 500; opacity: 0.8; }
-.book-banner-simple-btn { flex-shrink: 0; padding: 10px 16px; border-radius: 12px; border: none; background: #ffffff; color: #4338ca; font-size: 0.85rem; font-weight: 700; text-decoration: none; cursor: pointer; white-space: nowrap; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-.book-banner-simple-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+.book-banner-simple {
+  margin-top: 24px;
+  padding: 20px 24px;
+  border-radius: 20px;
+  background: #e0e7ff;
+  color: #1e1b4b;
+  display: flex;
+  align-items: center; /* 수직 중앙 */
+  justify-content: space-between;
+  gap: 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  flex-wrap: wrap; /* [중요] 공간 부족하면 줄바꿈 허용 */
+}
+
+.book-banner-simple-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 240px; /* 텍스트 영역 최소 너비 확보 */
+}
+
+.book-banner-simple-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.book-banner-simple-sub {
+  font-size: 0.8125rem;
+  font-weight: 540;
+  opacity: 0.8;
+  color: #0f326e;
+}
+
+.book-banner-simple-btn {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: none;
+  background: #ffffff;
+  color: #4338ca;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: 0.2s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  text-align: center;
+  /* 공간 부족해서 줄바꿈 되면 버튼을 꽉 채우기 */
+  flex: 1 1 auto; 
+  max-width: 100%; /* 필요시 전체 너비 사용 */
+}
+
+.book-banner-simple-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
 
 /* ENGO 하단 와이드 배너 */
 .engo-bottom-banner {
@@ -299,9 +351,9 @@ main {
 
 /* ■■■ 반응형 (모바일 & 폴더블) 처리 ■■■ */
 
-/* 1. 폴더블(펼침) & 태블릿 (폭 768px ~ 1024px) */
-/* 이 구간에서는 PC처럼 2열 레이아웃을 유지합니다 */
-@media (max-width: 1024px) {
+/* 1. 폴더블(펼침) & 태블릿 (폭 681px ~ 1024px) */
+/* [변경] 기준점을 768px -> 680px로 낮춰서 더 좁은 화면도 2열 유지 */
+@media (min-width: 681px) and (max-width: 1024px) {
   .app { 
     max-width: 100%; 
     border-radius: 0; 
@@ -313,24 +365,32 @@ main {
     background: #ffffff; 
   }
 
-  main { padding: 40px 32px; } /* 내부 여백만 조정 */
+  main { padding: 40px 28px; }
 
-  /* 인트로: 2열 유지 (비율만 조정) */
+  /* 인트로: 2열 유지 */
   .intro { 
     grid-template-columns: 1fr 1fr; 
-    gap: 32px; 
+    gap: 24px; 
   }
   
-  /* 결과 페이지: 2열 유지 (Sticky는 해제하지 않음) */
+  /* 결과 페이지: 2열 유지 */
   .result-layout { 
-    grid-template-columns: 1fr 1.2fr; /* 왼쪽 요약, 오른쪽 상세 */
-    gap: 24px; 
+    grid-template-columns: 1fr 1.1fr; 
+    gap: 20px; 
+  }
+
+  /* [수정] 좁은 2열 화면에서 책 배너가 깨지지 않게 조정 */
+  .book-banner-simple {
+    padding: 16px;
+  }
+  .book-banner-simple-btn {
+    width: 100%; /* 버튼을 아래로 내리고 꽉 채움 */
+    margin-top: 4px;
   }
 }
 
-/* 2. 일반 스마트폰 & 폴더블 접음 (폭 767px 이하) */
-/* 여기서부터 1열로 바뀝니다 */
-@media (max-width: 767px) {
+/* 2. 일반 스마트폰 (폭 680px 이하) */
+@media (max-width: 680px) {
   main { padding: 32px 20px; }
 
   /* 헤더 */
@@ -338,22 +398,36 @@ main {
   .logo-badge { width: 28px; height: 28px; font-size: 0.9rem; }
   .font-controls button { padding: 6px 8px; font-size: 0.7rem; }
 
-  /* 인트로: 1열로 변경 */
+  /* 인트로 */
   .intro { grid-template-columns: 1fr; gap: 32px; }
   .intro > div:nth-child(1) { grid-row: auto; grid-column: auto; text-align: left; padding-right: 0; }
   .intro-tags { justify-content: flex-start; }
 
-  /* 결과 페이지: 1열로 변경 & Sticky 해제 */
+  /* 결과 페이지 */
   .result-layout { grid-template-columns: 1fr; gap: 32px; }
-  .result-main-column { position: static; } /* Sticky 해제 */
+  .result-main-column { position: static; }
   
-  /* 입력 폼 그리드 간격 좁히기 */
   .scale-inputs { gap: 6px; }
   .scale-pill { padding: 10px 0; font-size: 1rem; }
 
-  /* 배너 정렬 */
-  .book-banner-simple { flex-direction: column; align-items: flex-start; }
-  .book-banner-simple-btn { width: 100%; text-align: center; }
+  /* [수정됨] 배너 정렬: 세로 배치 및 간격 축소 */
+  .book-banner-simple { 
+    flex-direction: column; 
+    align-items: stretch; /* 버튼을 가로로 꽉 채움 */
+    gap: 8px; /* 간격을 16px -> 8px로 대폭 줄임 */
+    padding: 20px; /* 내부 여백 미세 조정 */
+  }
+  
+  .book-banner-simple-text {
+    flex: 0 0 auto; /* 크기 자동 */
+    gap: 2px; /* 텍스트 줄 간격도 살짝 좁힘 */
+  }
+
+  .book-banner-simple-btn { 
+    width: 100%; 
+    text-align: center; 
+    margin-top: 4px; /* 최소한의 분리감만 유지 */
+  }
 }
 
 /* 3. 초소형/폴더블 커버 화면 (폭 380px 이하) */
@@ -373,4 +447,3 @@ main {
   .engo-title { font-size: 0.95rem; }
   .engo-desc { font-size: 0.8rem; }
 }
-
