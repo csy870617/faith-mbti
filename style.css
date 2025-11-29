@@ -447,3 +447,54 @@ main {
   .engo-title { font-size: 0.95rem; }
   .engo-desc { font-size: 0.8rem; }
 }
+
+/* =========================================
+   우리교회 결과 리스트 모바일 최적화 (Card View)
+   ========================================= */
+
+/* PC/태블릿 기본 테이블 스타일 */
+#church-result-list table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+#church-result-list th, #church-result-list td { border-bottom: 1px solid #e2e8f0; padding: 10px 8px; text-align: left; font-size: 0.9rem; vertical-align: middle; }
+#church-result-list th { font-size: 0.85rem; color: #64748b; font-weight: 700; background: #f8fafc; }
+
+/* 모바일 화면 (폭 680px 이하)에서 카드 형태로 변환 */
+@media (max-width: 680px) {
+  /* 테이블 헤더 숨김 */
+  #church-result-list thead { display: none; }
+  
+  #church-result-list table, 
+  #church-result-list tbody, 
+  #church-result-list tr, 
+  #church-result-list td { 
+    display: block; 
+    width: 100%; 
+  }
+
+  #church-result-list tr {
+    margin-bottom: 12px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+
+  #church-result-list td {
+    padding: 4px 0;
+    border: none;
+    font-size: 0.95rem;
+  }
+
+  /* 각 항목에 라벨 붙이기 (CSS 가상 요소) */
+  #church-result-list td:nth-child(1) { font-weight: 800; font-size: 1.1rem; color: #1e293b; margin-bottom: 4px; } /* 이름 */
+  #church-result-list td:nth-child(2)::before { content: "유형: "; color: #64748b; font-weight: 600; }
+  #church-result-list td:nth-child(3)::before { content: "설명: "; color: #64748b; font-weight: 600; }
+  
+  /* 삭제 버튼 영역 */
+  #church-result-list td:nth-child(4) {
+    margin-top: 8px;
+    text-align: right;
+    border-top: 1px dashed #e2e8f0;
+    padding-top: 8px;
+  }
+}
