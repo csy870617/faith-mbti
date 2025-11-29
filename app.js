@@ -330,21 +330,31 @@ dom.btns.bibleToggle.addEventListener("click", () => {
   dom.btns.bibleToggle.textContent = isHidden ? "📖 성경 인물 닫기" : "📖 성경 인물 보기";
 });
 
-// 결과 공유
+// app.js의 공유하기 버튼 이벤트 (dom.btns.share) 전체 교체
+
 if (dom.btns.share) {
   dom.btns.share.addEventListener("click", async () => {
-    const targetType = myResultType;
-    if (!targetType) return alert("먼저 검사를 완료한 뒤, 결과를 공유해 주세요.");
+    // [수정됨] 
+    // 1. 내 검사 결과(myResultType)가 있으면 -> 무조건 내 결과 공유 (다른 유형 보고 있어도 유지)
+    // 2. 검사 결과가 없으면 -> 현재 화면에 보고 있는 유형(currentViewType) 공유
+    const targetType = myResultType || currentViewType;
+
+    if (!targetType) return alert("먼저 검사를 완료하거나, 공유할 유형을 선택해 주세요.");
+    
     const baseUrl = "https://faiths.life/";
     const data = window.typeResults[targetType];
+    
     const shareTitle = "FAITH MBTI 신앙 유형 테스트";
     const shareDesc = `나의 유형은 ${targetType} (${data.nameKo}) 입니다.`;
+
+    // 1. 카카오톡 공유
     if (typeof Kakao !== "undefined" && Kakao.isInitialized && Kakao.isInitialized()) {
       try {
         Kakao.Share.sendDefault({
           objectType: "feed",
           content: {
-            title: shareTitle, description: shareDesc,
+            title: shareTitle,
+            description: shareDesc,
             imageUrl: "https://csy870617.github.io/faith-mbti/images/thumbnail.jpg",
             link: { mobileWebUrl: baseUrl, webUrl: baseUrl },
           },
@@ -353,10 +363,24 @@ if (dom.btns.share) {
         return; 
       } catch (e) { console.error(e); }
     }
+    
+    // 2. 모바일 기본 공유
     if (navigator.share) {
-      try { await navigator.share({ title: shareTitle, text: shareDesc, url: baseUrl }); return; } catch(e) {}
+      try { 
+        await navigator.share({ 
+          title: shareTitle, 
+          text: shareDesc, 
+          url: baseUrl 
+        }); 
+        return; 
+      } catch(e) {}
     }
-    try { await navigator.clipboard.writeText(`${shareTitle}\n${shareDesc}\n${baseUrl}`); alert("결과가 클립보드에 복사되었습니다."); }
+    
+    // 3. 클립보드 복사
+    try { 
+      await navigator.clipboard.writeText(`${shareTitle}\n${shareDesc}\n${baseUrl}`); 
+      alert("결과가 클립보드에 복사되었습니다."); 
+    }
     catch (e) { alert("공유 기능을 사용할 수 없습니다."); }
   });
 }
@@ -821,4 +845,5 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }
 });
+
 
