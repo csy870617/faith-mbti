@@ -838,7 +838,7 @@ if (dom.btns.invite) {
   });
 }
 
-// [수정됨] 그룹 결과 복사/공유 버튼 (제목 중복 방지)
+// [수정됨] 그룹 결과 복사/공유 버튼 (제목 포맷 변경 & 줄바꿈)
 if (dom.btns.churchCopy) {
   dom.btns.churchCopy.addEventListener("click", async () => {
     const members = currentChurchMembers;
@@ -846,16 +846,16 @@ if (dom.btns.churchCopy) {
 
     const groupName = dom.inputs.viewChurch.value.trim() || "우리교회";
     
-    // 1. 헤더와 본문 생성
-    const shareHeader = `${groupName} 신앙 유형 결과`;
-    let shareBody = "";
+    // 1. 헤더 (형식 변경: 그룹명 - 신앙 유형 결과)
+    const shareHeader = `${groupName} - 신앙 유형 결과`;
     
+    let shareBody = "";
     members.forEach(m => {
       // 명단 리스트 생성
       shareBody += `이름: ${m.name}\n유형: ${m.type}\n설명: ${m.shortText}\n\n`;
     });
 
-    // 2. 전체 합친 텍스트 (카카오톡/클립보드용)
+    // 2. 전체 합친 텍스트 (제목 + 빈 줄 + 본문)
     const fullText = `${shareHeader}\n\n${shareBody}`;
     
     // A. 카카오톡 공유
@@ -872,13 +872,12 @@ if (dom.btns.churchCopy) {
     }
 
     // B. 기본 공유 (Web Share API)
-    // [핵심 변경] text에는 제목을 뺀 'shareBody(명단)'만 넣습니다.
-    // OS가 title(제목)과 text(명단)를 합쳐서 보여주므로 중복이 사라집니다.
+    // [중복 방지] title에는 제목만, text에는 본문(명단)만 넣습니다.
     if (navigator.share) {
       try { 
         await navigator.share({ 
           title: shareHeader, 
-          text: shareBody // fullText 대신 shareBody 사용
+          text: shareBody 
         }); 
         return; 
       } catch(e) {}
@@ -886,7 +885,7 @@ if (dom.btns.churchCopy) {
 
     // C. 클립보드 복사
     try { 
-      await navigator.clipboard.writeText(fullText); // 클립보드는 전체 내용 필요
+      await navigator.clipboard.writeText(fullText); // 전체 텍스트 복사
       alert("그룹 결과가 클립보드에 복사되었습니다."); 
     }
     catch(e) { alert("공유 기능을 사용할 수 없습니다."); }
@@ -966,6 +965,7 @@ window.addEventListener('DOMContentLoaded', () => {
     dom.inputs.rememberCreds.checked = true;
   }
 });
+
 
 
 
