@@ -4,27 +4,20 @@
   <meta charset="UTF-8" />
   <title>FAITH MBTI 신앙 유형 테스트</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  
-<meta
-    name="description"
-    content="당신의 신앙 유형은 무엇인가요?"
-  />
 
+  <meta name="description" content="당신의 신앙 유형은 무엇인가요?" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="FAITH MBTI 신앙 유형 테스트" />
-  <meta
-    property="og:description"
-    content="당신의 신앙 유형은 무엇인가요?"
-  />
+  <meta property="og:description" content="당신의 신앙 유형은 무엇인가요?" />
   <meta property="og:site_name" content="FAITHES" />
   <meta property="og:locale" content="ko_KR" />
-
+  <meta property="og:url" content="https://faiths.life" />
+  <meta property="og:image" content="https://csy870617.github.io/faith-mbti/images/thumbnail.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="FAITH MBTI 신앙 유형 테스트" />
-  <meta
-    name="twitter:description"
-    content="당신의 신앙 유형은 무엇인가요?"
-  />
+  <meta name="twitter:description" content="당신의 신앙 유형은 무엇인가요?" />
   <meta name="twitter:image" content="https://csy870617.github.io/faith-mbti/images/thumbnail.jpg" />
 
   <link rel="stylesheet" href="style.css" />
@@ -53,6 +46,7 @@
 
 <body>
   <div class="app">
+    
     <header>
       <div class="header-row">
         <div class="logo">
@@ -97,17 +91,17 @@
               <li>공동체에서 나의 영적 강점은 무엇인가?</li>
               <li>나는 어떤 부분을 성장시키면 좋을까?</li>
             </ul>
+
             <button class="start-btn" id="start-btn">
               신앙 유형 검사 시작하기 <span>›</span>
             </button>
           </div>
-        </div>
-
-        <div>
-          <div class="card">
+          
+          <div class="card" style="margin-top:20px;">
             <button class="start-btn dev-btn" id="go-result-btn">
               🔍 결과 페이지 바로 보기 <span>›</span>
             </button>
+
             <div class="church-extra-banner-box" style="margin-top:20px;">
               <div class="book-banner-simple" style="margin-top:0;">
                 <div class="book-banner-simple-text">
@@ -122,21 +116,18 @@
                   📘 책 보러가기
                 </a>
               </div>
-              
             </div>
           </div>
         </div>
 
-          <a href="https://csy870617.github.io/engo/index.html#home" target="_blank" class="engo-bottom-banner">
-            <img src="icon.png" alt="ENGO Icon" class="engo-icon">
-            <div class="engo-content">
-              <div class="engo-title">English & Go! 완전무료!</div>
-              <div class="engo-desc">영어회화의 시작은 ENGO에서!</div>
-            </div>
-          </a>
-
+        <a href="https://csy870617.github.io/engo/index.html#home" target="_blank" class="engo-bottom-banner">
+          <img src="icon.png" alt="ENGO Icon" class="engo-icon">
+          <div class="engo-content">
+            <div class="engo-title">영어회화의 시작은 ENGO!</div>
+            <div class="engo-desc">English & Go! 완전무료!</div>
+          </div>
+        </a>
       </section>
-
 
        <section id="test-section" class="hidden">
         <div class="progress-wrapper">
@@ -152,9 +143,11 @@
         <div class="question-card">
           <div id="question-code" class="question-code">Q1</div>
           <div id="question-text" class="question-text">질문 텍스트</div>
+
           <div class="question-sub">
             마음에 가장 <strong>자연스럽게</strong> 느껴지는 쪽을 선택해 주세요.
           </div>
+
           <div class="scale">
             <div class="scale-labels">
               <span>전혀 아니다</span>
@@ -162,6 +155,7 @@
             </div>
             <div id="scale-inputs" class="scale-inputs"></div>
           </div>
+
           <div class="nav-buttons">
             <button id="back-btn" class="btn">‹ 이전</button>
             <button id="skip-btn" class="btn">건너뛰기</button>
@@ -178,7 +172,9 @@
               <div id="result-code" class="result-main-title">XXXX</div>
               <div id="result-name" class="result-main-name">유형 이름</div>
               <p id="result-summary" class="result-main-summary"></p>
+
               <div id="result-badges" class="result-badges"></div>
+
               <div id="character-block">
                 <div id="character-emoji">🙂</div>
                 <div>
@@ -204,19 +200,23 @@
               <h3 class="card-title">🌿 이 유형의 특징</h3>
               <ul id="result-features"></ul>
             </div>
+
             <div class="result-card">
               <h3 class="card-title">💪 강점  🔎 약점</h3>
               <div id="result-strength"></div>
               <div id="result-weakness" class="gray"></div>
             </div>
+
             <div class="result-card">
               <h3 class="card-title">⚠️ 주의할 점</h3>
               <div id="result-warning" class="gray"></div>
             </div>
+
             <div class="result-card">
               <h3 class="card-title">⛪ 잘 맞는 사역</h3>
               <ul id="result-ministries"></ul>
             </div>
+
             <div class="result-card">
               <h3 class="card-title">🧭 성장 포인트</h3>
               <ul id="result-growth"></ul>
@@ -243,7 +243,9 @@
 
             <div class="result-card">
               <h3 class="card-title">🤲 유형 관계 보기</h3>
-              <div class="small-hint">나와 비슷한 친구, 나를 균형 있게 도와줄 친구</div>
+              <div class="small-hint">
+                나와 비슷한 친구, 나를 균형 있게 도와줄 친구
+              </div>
               <div class="match-card">
                 <div class="match-title">함께 사역하면 좋은 유형</div>
                 <div id="match-top2" class="match-list"></div>
@@ -263,7 +265,8 @@
               <div class="gray">
                 이 결과는 성향 이해를 돕는 도구일 뿐입니다.<br />
                 우리는 언제든지 성령 안에서 변화되고 성장할 수 있습니다.<br />
-                <span style="color:#e94f57; font-weight:600;">'처음으로' 버튼을 누르면 검사 내용이 초기화됩니다.</span>
+                <span style="color:#e94f57; font-weight:600;">
+                '처음으로' 버튼을 누르면 검사 내용이 초기화됩니다.</span>
               </div>
               <div class="result-footer-right">
                 <button id="share-btn" class="btn-primary small">공유하기</button>
@@ -273,23 +276,22 @@
             </div>
           </div>
         </div>
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2078760660134095" crossorigin="anonymous"></script>
 
         <a href="https://csy870617.github.io/engo/index.html#home" target="_blank" class="engo-bottom-banner" style="margin-top: 40px;">
           <img src="icon.png" alt="ENGO Icon" class="engo-icon">
           <div class="engo-content">
-            <div class="engo-title">English & Go! 완전무료!</div>
-            <div class="engo-desc">영어회화의 시작은 ENGO에서!</div>
+            <div class="engo-title">영어회화의 시작은 ENGO!</div>
+            <div class="engo-desc">English & Go! 완전무료!</div>
           </div>
         </a>
 
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2078760660134095" crossorigin="anonymous"></script>
       </section>
 
       <section id="church-section" class="hidden">
-        
+
         <div class="result-card">
           <h3 class="card-title" style="margin-bottom:8px;">우리교회 신앙 유형 그룹</h3>
-          
           <div style="font-size:0.9rem; color:#475569; margin-bottom:12px;">
             교회, 친구, 연인, 가족과 함께 만들어보세요.
           </div>
@@ -310,13 +312,12 @@
 
             <div class="church-button-row">
               <button id="member-save-btn" class="btn-primary small">내 결과 저장</button>
-              
               <button id="church-close-btn" class="btn-secondary small">결과로 돌아가기</button>
             </div>
           </div>
         </div>
 
-<div class="result-card" style="margin-top:20px;">
+        <div class="result-card" style="margin-top:20px;">
           
           <div id="church-view-toggle" style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
             <h3 class="card-title" style="margin-bottom:0;">우리교회 신앙 유형 모아보기 ▼</h3>
@@ -363,15 +364,15 @@
                 &#160;공동체/소그룹/리더들을 위한 실전 가이드북
               </div>
             </div>
-            <a href="https://bit.ly/faith-mbti-book" target="_blank" rel="noopener noreferrer" class="book-banner-simple-btn">📘 책 보러가기</a>
+            <a href="https://bit.ly/faith-mbti-book" target="_blank" rel="noopener noreferrer" class="book-banner-simple-btn">
+              📘 책 보러가기
+            </a>
           </div>
         </div>
+
       </section>
+
     </main>
   </div>
 </body>
 </html>
-
-
-
-
