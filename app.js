@@ -955,3 +955,51 @@ window.addEventListener('DOMContentLoaded', () => {
     dom.inputs.rememberCreds.checked = true;
   }
 });
+
+/* =========================================
+   [추가] 뒤로 가기 버튼 제어 (History API)
+   - 교회 그룹 화면에서 뒤로 가기 시 결과 화면으로 복귀
+   ========================================= */
+
+// 1. 교회 그룹 섹션 열 때 히스토리 추가
+if (dom.btns.church) {
+  dom.btns.church.addEventListener("click", () => {
+    // 현재 상태를 히스토리에 추가 (가짜 URL 파라미터 추가)
+    history.pushState({ page: "church" }, "", "#church");
+    
+    dom.sections.intro.classList.add("hidden");
+    dom.sections.test.classList.add("hidden");
+    dom.sections.result.classList.add("hidden");
+    dom.sections.church.classList.remove("hidden");
+  });
+}
+
+// 2. 브라우저 뒤로 가기 감지 (popstate 이벤트)
+window.addEventListener("popstate", (event) => {
+  // 교회 섹션이 열려있는 상태에서 뒤로 가기를 눌렀을 때
+  if (!dom.sections.church.classList.contains("hidden")) {
+    // 교회 섹션 닫고 결과 화면 보여주기
+    dom.sections.church.classList.add("hidden");
+    
+    // 만약 결과 데이터가 있다면 결과 화면으로, 없다면 인트로로
+    if (myResultType) {
+      dom.sections.result.classList.remove("hidden");
+    } else {
+      dom.sections.intro.classList.remove("hidden");
+    }
+  }
+});
+
+// 3. '결과로 돌아가기' 버튼 클릭 시 히스토리 정리
+if (dom.btns.churchClose) {
+  dom.btns.churchClose.addEventListener("click", () => {
+    // 브라우저 히스토리도 한 단계 뒤로 돌려줌 (URL의 #church 제거)
+    if (location.hash === "#church") {
+      history.back(); 
+    } else {
+      // 만약 히스토리가 꼬여서 #church가 아니더라도 강제로 화면 전환
+      dom.sections.church.classList.add("hidden");
+      dom.sections.result.classList.remove("hidden");
+    }
+  });
+}
