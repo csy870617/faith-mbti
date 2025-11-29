@@ -85,7 +85,8 @@ const dom = {
     memberChurch: document.getElementById("member-church-input"),
     memberPw: document.getElementById("member-password-input"),
     viewChurch: document.getElementById("view-church-input"),
-    viewPw: document.getElementById("view-password-input")
+    viewPw: document.getElementById("view-password-input"),
+    rememberCreds: document.getElementById("remember-creds-input")
   },
   churchList: document.getElementById("church-result-list"),
   churchAnalysisResult: document.getElementById("church-analysis-result"),
@@ -766,10 +767,18 @@ if (dom.btns.memberSave) {
 
 if (dom.btns.churchSummary) {
   dom.btns.churchSummary.addEventListener("click", async () => {
+    // [추가] 기억하기 체크 확인 및 저장/삭제
+    if (dom.inputs.rememberCreds && dom.inputs.rememberCreds.checked) {
+      localStorage.setItem('faith_church_name', dom.inputs.viewChurch.value);
+      localStorage.setItem('faith_church_pw', dom.inputs.viewPw.value);
+    } else {
+      localStorage.removeItem('faith_church_name');
+      localStorage.removeItem('faith_church_pw');
+    }
+
     try {
       const { churchName, members } = await loadChurchMembers(dom.inputs.viewChurch.value, dom.inputs.viewPw.value);
       renderChurchList(churchName, members);
-      // 조회 성공 시 복사 버튼 보이기
       if (dom.btns.churchCopy) dom.btns.churchCopy.classList.remove("hidden");
     } catch (e) { alert(e.message); }
   });
@@ -947,6 +956,16 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }
   console.log("App Initialized. Buttons ready.");
+  // [추가] 교회 정보 기억하기 기능 초기화
+  const savedChurch = localStorage.getItem('faith_church_name');
+  const savedPw = localStorage.getItem('faith_church_pw');
+  
+  if (savedChurch && savedPw && dom.inputs.rememberCreds) {
+    dom.inputs.viewChurch.value = savedChurch;
+    dom.inputs.viewPw.value = savedPw;
+    dom.inputs.rememberCreds.checked = true;
+  }
 });
+
 
 
