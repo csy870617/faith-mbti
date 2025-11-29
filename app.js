@@ -829,7 +829,7 @@ if (dom.btns.invite) {
   });
 }
 
-// [수정됨] 그룹 결과 복사/공유 버튼 (줄바꿈 포맷팅 강화)
+// [수정됨] 그룹 결과 복사/공유 버튼 (제목 중복 방지)
 if (dom.btns.churchCopy) {
   dom.btns.churchCopy.addEventListener("click", async () => {
     const members = currentChurchMembers;
@@ -842,11 +842,11 @@ if (dom.btns.churchCopy) {
     let shareBody = "";
     
     members.forEach(m => {
-      // 각 사람마다 한 줄 띄우기 (\n\n)
+      // 명단 리스트 생성
       shareBody += `이름: ${m.name}\n유형: ${m.type}\n설명: ${m.shortText}\n\n`;
     });
 
-    // 2. 전체 합친 텍스트 (제목 + 두 줄 띄움 + 본문)
+    // 2. 전체 합친 텍스트 (카카오톡/클립보드용)
     const fullText = `${shareHeader}\n\n${shareBody}`;
     
     // A. 카카오톡 공유
@@ -863,12 +863,13 @@ if (dom.btns.churchCopy) {
     }
 
     // B. 기본 공유 (Web Share API)
-    // [중요 변경] text에 'fullText'를 넣어서 제목과 본문 사이 줄바꿈을 강제합니다.
+    // [핵심 변경] text에는 제목을 뺀 'shareBody(명단)'만 넣습니다.
+    // OS가 title(제목)과 text(명단)를 합쳐서 보여주므로 중복이 사라집니다.
     if (navigator.share) {
       try { 
         await navigator.share({ 
           title: shareHeader, 
-          text: fullText // 기존 shareBody에서 fullText로 변경
+          text: shareBody // fullText 대신 shareBody 사용
         }); 
         return; 
       } catch(e) {}
@@ -876,7 +877,7 @@ if (dom.btns.churchCopy) {
 
     // C. 클립보드 복사
     try { 
-      await navigator.clipboard.writeText(fullText); 
+      await navigator.clipboard.writeText(fullText); // 클립보드는 전체 내용 필요
       alert("그룹 결과가 클립보드에 복사되었습니다."); 
     }
     catch(e) { alert("공유 기능을 사용할 수 없습니다."); }
@@ -947,4 +948,5 @@ window.addEventListener('DOMContentLoaded', () => {
   }
   console.log("App Initialized. Buttons ready.");
 });
+
 
