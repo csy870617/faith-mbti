@@ -1,5 +1,5 @@
 /**************************************************
- * Faith-MBTI Test – app.js (Final Safe Version)
+ * Faith-MBTI Test – app.js (Safe Version)
  **************************************************/
 
 /* 1. 전역 상태 및 DOM 캐싱 */
@@ -10,7 +10,7 @@ let myResultType = null;
 let currentViewType = null;
 let currentChurchMembers = []; 
 
-// DOM 요소 캐싱 (없는 요소가 있어도 에러 나지 않도록 getElementById 사용)
+// DOM 요소 캐싱
 const dom = {
   sections: {
     intro: document.getElementById("intro-section"),
@@ -105,7 +105,7 @@ function shuffle(array) {
 
 /* 3. 렌더링 로직 */
 function renderScale(questionId) {
-  if (!dom.question.inputs) return; // 안전장치
+  if (!dom.question.inputs) return;
   const container = dom.question.inputs;
   container.innerHTML = "";
   
@@ -156,6 +156,8 @@ function renderQuestion() {
   if (dom.question.text) dom.question.text.textContent = q.text;
 
   renderScale(q.id);
+  
+  // 1번 문항에서도 버튼 활성화 (인트로 이동을 위해)
   if (dom.btns.back) dom.btns.back.disabled = false; 
 }
 
@@ -389,8 +391,7 @@ if (dom.btns.bibleToggle) {
 // 공유하기
 if (dom.btns.share) {
   dom.btns.share.addEventListener("click", async () => {
-    // 1. 내 결과(myResultType)가 있으면 우선 공유
-    // 2. 없으면(검사 안 함 등) 현재 보이는 유형(currentViewType) 공유
+    // 1. 내 결과가 있으면 우선 공유, 없으면 현재 뷰 공유
     const targetType = myResultType || currentViewType;
 
     if (!targetType) return alert("먼저 검사를 완료하거나, 공유할 유형을 선택해 주세요.");
@@ -828,7 +829,7 @@ if (dom.btns.invite) {
   });
 }
 
-// [수정됨] 그룹 결과 복사/공유 버튼 (제목/내용 분리)
+// 그룹 결과 복사/공유 버튼 (제목/내용 분리)
 if (dom.btns.churchCopy) {
   dom.btns.churchCopy.addEventListener("click", async () => {
     const members = currentChurchMembers;
@@ -938,4 +939,5 @@ window.addEventListener('DOMContentLoaded', () => {
       localStorage.removeItem('faith_result_v1');
     }
   }
+  console.log("App Initialized. Buttons ready.");
 });
