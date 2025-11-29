@@ -54,10 +54,19 @@
 <body>
   <div class="app">
     <header>
-      <div class="logo">
-        <span class="logo-badge">🕊</span>
-        FAITHS 
+      <div class="header-row">
+        <div class="logo">
+          <span class="logo-badge">🕊</span>
+          FAITHS 
+        </div>
+
+        <div class="font-controls">
+          <button id="font-down" aria-label="글자 작게">A-</button>
+          <button id="font-reset" aria-label="글자 표준">표준</button>
+          <button id="font-up" aria-label="글자 크게">A+</button>
+        </div>
       </div>
+
       <div class="logo-sub">하나님을 만나는 공동체 신앙 유형 테스트</div>
     </header>
 
@@ -125,7 +134,7 @@
               <div class="engo-desc">영어회화의 시작은 ENGO에서!</div>
             </div>
           </a>
-        
+
       </section>
 
 
@@ -273,7 +282,7 @@
             <div class="engo-desc">영어회화의 시작은 ENGO에서!</div>
           </div>
         </a>
-        
+
       </section>
 
       <section id="church-section" class="hidden">
@@ -316,10 +325,12 @@
             </div>
             <div class="church-actions">
               <button id="church-summary-btn" class="btn-primary small">우리교회 신앙 유형 확인</button>
+              <button id="church-analysis-btn" class="btn-primary small">📊 공동체 분석</button>
               <button id="invite-btn" class="btn-primary small">멤버초대</button>
             </div>
           </div>
           <div id="church-result-list" style="margin-top:12px;"></div>
+          <div id="church-analysis-result" class="hidden" style="margin-top:20px;"></div>
           <button id="church-copy-btn" class="btn-secondary" style="margin-top:10px; font-size:12px;">📋 그룹 결과 복사하기</button>
         </div>
 
@@ -341,5 +352,3 @@
   </div>
 </body>
 </html>
-
-
