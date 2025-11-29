@@ -427,22 +427,30 @@ dom.btns.restart.addEventListener("click", () => {
   }
 });
 
+// [수정됨] 결과 페이지 바로 보기 버튼 (검사 안 함 상태로 진입)
 if (dom.btns.goResult) {
   dom.btns.goResult.addEventListener("click", () => {
-    if (!window.originalQuestions) return;
-    window.originalQuestions.forEach(q => answers[q.id] = 3);
-    const { scores, axisScores } = calculateResult();
-    const resultData = { type: "ENFJ", scores: scores, axisScores: axisScores, date: Date.now() };
-    localStorage.setItem('faith_result_v1', JSON.stringify(resultData));
-    myResultType = "ENFJ";
+    // 1. '검사 안 함' 상태로 만들기 (기존 저장 데이터 삭제 & 내 결과 null 처리)
+    localStorage.removeItem('faith_result_v1');
+    myResultType = null; 
+    
+    // 2. 뷰어 변수만 설정 (화면 표시용)
     currentViewType = "ENFJ";
+    
+    // 3. 그래프를 그리기 위한 임시 더미 데이터 생성
+    const dummyScores = { E: 20, I: 5, S: 20, N: 5, T: 20, F: 5, J: 20, P: 5 };
+    const dummyAxis = { EI: 15, SN: 15, TF: 15, JP: 15 };
+
+    // 4. 화면 전환
     dom.sections.intro.classList.add("hidden");
     dom.sections.test.classList.add("hidden");
     dom.sections.result.classList.remove("hidden");
-    renderResult("ENFJ");
-    renderAxisUpgraded(axisScores);
-    renderDetailScores(scores);
-    renderMatchCards("ENFJ");
+
+    // 5. 렌더링 (저장 없이 화면만 그림)
+    renderResult(currentViewType);
+    renderAxisUpgraded(dummyAxis);
+    renderDetailScores(dummyScores);
+    renderMatchCards(currentViewType);
     buildOtherTypesGrid();
   });
 }
@@ -845,5 +853,6 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }
 });
+
 
 
