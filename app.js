@@ -647,7 +647,7 @@ if (dom.btns.churchSummary) {
       const { churchName, members } = await loadChurchMembers(dom.inputs.viewChurch.value, dom.inputs.viewPw.value);
       renderChurchList(churchName, members);
       // [추가] 조회 성공 시 복사 버튼 보이기
-      if (dom.btns.churchCopy) dom.btns.churchCopy.classList.remove("hidden");
+      if () .classList.remove("hidden");
     } catch (e) { alert(e.message); }
   });
 }
@@ -706,7 +706,7 @@ if (dom.btns.invite) {
   });
 }
 
-// [수정됨] 그룹 결과 복사/공유 버튼 (카톡 -> 기본공유 -> 클립보드)
+// [수정됨] 그룹 결과 복사/공유 버튼
 if (dom.btns.churchCopy) {
   dom.btns.churchCopy.addEventListener("click", async () => {
     const members = currentChurchMembers;
@@ -714,18 +714,23 @@ if (dom.btns.churchCopy) {
 
     const groupName = dom.inputs.viewChurch.value.trim() || "우리교회";
     
-    // 텍스트 생성 (헤더 X, 삭제 X, 줄바꿈 추가)
-    let textBody = `${groupName} 신앙 유형 결과\n\n`;
-    members.forEach(m => {
-      textBody += `이름: ${m.name}\n유형: ${m.type}\n설명: ${m.shortText}\n\n`; // 한 줄 띄움
-    });
+    // 1. 헤더와 본문 분리 (중복 방지용)
+    const shareHeader = `${groupName} 신앙 유형 결과`;
+    let shareBody = "";
     
-    // 1. 카카오톡 공유 (텍스트형)
+    members.forEach(m => {
+      shareBody += `이름: ${m.name}\n유형: ${m.type}\n설명: ${m.shortText}\n\n`;
+    });
+
+    // 2. 전체 합친 텍스트 (카카오톡/클립보드용)
+    const fullText = `${shareHeader}\n\n${shareBody}`;
+    
+    // A. 카카오톡 공유 (전체 텍스트 전송)
     if (typeof Kakao !== "undefined" && Kakao.isInitialized && Kakao.isInitialized()) {
       try {
         Kakao.Share.sendDefault({
           objectType: "text",
-          text: textBody,
+          text: fullText,
           link: { mobileWebUrl: "https://faiths.life", webUrl: "https://faiths.life" },
           buttonTitle: "검사하러 가기"
         });
@@ -733,17 +738,21 @@ if (dom.btns.churchCopy) {
       } catch (e) { console.error(e); }
     }
 
-    // 2. 기본 공유
+    // B. 기본 공유 (Web Share API)
+    // [핵심 변경] title에는 제목만, text에는 본문만 넣어 중복 방지
     if (navigator.share) {
       try { 
-        await navigator.share({ title: `${groupName} 결과`, text: textBody }); 
+        await navigator.share({ 
+          title: shareHeader, // 여기에 "OOO 신앙 유형 결과" 넣음
+          text: shareBody     // 여기엔 명단만 넣음 -> 결과적으로 자연스럽게 연결됨
+        }); 
         return; 
       } catch(e) {}
     }
 
-    // 3. 클립보드 복사
+    // C. 클립보드 복사 (전체 텍스트)
     try { 
-      await navigator.clipboard.writeText(textBody); 
+      await navigator.clipboard.writeText(fullText); 
       alert("그룹 결과가 클립보드에 복사되었습니다."); 
     }
     catch(e) { alert("공유 기능을 사용할 수 없습니다."); }
@@ -812,3 +821,4 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }
 });
+
