@@ -498,3 +498,51 @@ main {
     padding-top: 8px;
   }
 }
+
+/* =========================================
+   추가 기능 스타일 (기억하기 & 큰 버튼)
+   ========================================= */
+
+/* 기억하기 체크박스 영역 */
+.remember-check-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.remember-check-box input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #4f46e5; /* 보라색 테마 */
+}
+
+.remember-check-box label {
+  font-size: 0.85rem;
+  color: #64748b;
+  cursor: pointer;
+  user-select: none; /* 드래그 방지 */
+}
+
+/* 큰 버튼 스타일 (기존 btn-secondary 확장) */
+.btn-secondary.big {
+  width: 100%;
+  margin-top: 16px;
+  padding: 14px;
+  font-size: 1rem; /* 글자 크기 확대 */
+  font-weight: 700;
+  border-radius: 14px;
+  background-color: #f8fafc;
+  border: 2px solid #e2e8f0;
+  color: #475569;
+  transition: all 0.2s;
+}
+
+.btn-secondary.big:hover {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+
