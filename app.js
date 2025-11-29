@@ -1,5 +1,5 @@
 /**************************************************
- * Faith-MBTI Test – app.js (Safe Version)
+ * Faith-MBTI Test – app.js (Final Integrated Version)
  **************************************************/
 
 /* 1. 전역 상태 및 DOM 캐싱 */
@@ -85,8 +85,7 @@ const dom = {
     memberChurch: document.getElementById("member-church-input"),
     memberPw: document.getElementById("member-password-input"),
     viewChurch: document.getElementById("view-church-input"),
-    viewPw: document.getElementById("view-password-input"),
-    rememberCreds: document.getElementById("remember-creds-input")
+    viewPw: document.getElementById("view-password-input")
   },
   churchList: document.getElementById("church-result-list"),
   churchAnalysisResult: document.getElementById("church-analysis-result"),
@@ -158,7 +157,6 @@ function renderQuestion() {
 
   renderScale(q.id);
   
-  // 1번 문항에서도 버튼 활성화 (인트로 이동을 위해)
   if (dom.btns.back) dom.btns.back.disabled = false; 
 }
 
@@ -198,7 +196,6 @@ function goNextOrResult() {
 
     const { type, scores, axisScores } = calculateResult();
     
-    // 결과 로컬스토리지 저장
     const resultData = {
       type: type,
       scores: scores,
@@ -316,6 +313,7 @@ function similarityScore(a, b) {
   return s;
 }
 
+// [수정됨] 유형 관계 보기 (설명 동적 적용)
 function renderMatchCards(type) {
   const entries = Object.entries(window.typeResults);
   const all = entries
@@ -329,7 +327,7 @@ function renderMatchCards(type) {
     dom.result.matchTop2.innerHTML = top2.map(t => `
       <div class="match-item">
         <div class="match-item-title">${t.data.nameKo} (${t.code})</div>
-        <div class="match-item-sub">비슷한 성향 덕분에 함께 사역할 때 호흡이 잘 맞는 유형입니다. 서로의 강점을 더 크게 살려 줄 수 있어요.</div>
+        <div class="match-item-sub">${t.data.strengthShort}</div>
       </div>`).join('');
   }
 
@@ -337,7 +335,7 @@ function renderMatchCards(type) {
     dom.result.matchOpposite.innerHTML = `
       <div class="match-item match-item-opposite">
         <div class="match-item-title">${opposite.data.nameKo} (${opposite.code})</div>
-        <div class="match-item-sub">나와 많이 다른 유형이지만, 그래서 더 균형을 도와주는 “반대 친구”입니다. 같이 섬기며 서로의 약한 부분을 채워 줄 수 있어요.</div>
+        <div class="match-item-sub">${opposite.data.strengthShort}</div>
       </div>`;
   }
 }
@@ -392,7 +390,6 @@ if (dom.btns.bibleToggle) {
 // 공유하기
 if (dom.btns.share) {
   dom.btns.share.addEventListener("click", async () => {
-    // 1. 내 결과가 있으면 우선 공유, 없으면 현재 뷰 공유
     const targetType = myResultType || currentViewType;
 
     if (!targetType) return alert("먼저 검사를 완료하거나, 공유할 유형을 선택해 주세요.");
@@ -469,7 +466,6 @@ if (dom.btns.back) {
       currentIndex--;
       renderQuestion();
     } else {
-      // 인트로로 복귀
       dom.sections.test.classList.add("hidden");
       dom.sections.intro.classList.remove("hidden");
     }
@@ -493,18 +489,15 @@ if (dom.btns.restart) {
   });
 }
 
-// 개발용 버튼 (결과 바로보기 -> 검사 안 함 상태)
+// 개발용 버튼
 if (dom.btns.goResult) {
   dom.btns.goResult.addEventListener("click", () => {
-    // 저장 기록 삭제 및 내 결과 초기화
     localStorage.removeItem('faith_result_v1');
     myResultType = null;
     
-    // 화면만 표시하기 위한 임시 변수
     if (!window.originalQuestions) return;
     currentViewType = "ENFJ";
     
-    // 더미 데이터 생성
     const dummyScores = { E: 20, I: 5, S: 20, N: 5, T: 20, F: 5, J: 20, P: 5 };
     const dummyAxis = { EI: 15, SN: 15, TF: 15, JP: 15 };
 
@@ -544,7 +537,6 @@ async function saveMyResultToChurch(name, churchName, password) {
   const n = name.trim(), c = churchName.trim(), p = password.trim();
   if (!n || !c || !p) throw new Error("모든 항목을 입력해 주세요.");
 
-  // [수정됨] 화면에 떠 있는 유형으로 저장
   const targetType = currentViewType || myResultType;
   if (!targetType) throw new Error("먼저 검사를 완료하거나, '다른 유형 보기'에서 내 유형을 선택해 주세요.");
 
@@ -767,7 +759,7 @@ if (dom.btns.memberSave) {
 
 if (dom.btns.churchSummary) {
   dom.btns.churchSummary.addEventListener("click", async () => {
-    // [추가] 기억하기 체크 확인 및 저장/삭제
+    // 기억하기 체크 확인 및 저장/삭제
     if (dom.inputs.rememberCreds && dom.inputs.rememberCreds.checked) {
       localStorage.setItem('faith_church_name', dom.inputs.viewChurch.value);
       localStorage.setItem('faith_church_pw', dom.inputs.viewPw.value);
@@ -802,7 +794,6 @@ if (dom.churchViewToggle && dom.churchViewContent) {
   });
 }
 
-// 멤버 초대
 if (dom.btns.invite) {
   dom.btns.invite.addEventListener("click", async () => {
     const baseUrl = "https://faiths.life";
@@ -838,7 +829,7 @@ if (dom.btns.invite) {
   });
 }
 
-// [수정됨] 그룹 결과 복사/공유 버튼 (줄바꿈 강제 적용)
+// 그룹 결과 복사/공유 버튼 (줄바꿈 강제)
 if (dom.btns.churchCopy) {
   dom.btns.churchCopy.addEventListener("click", async () => {
     const members = currentChurchMembers;
@@ -855,10 +846,10 @@ if (dom.btns.churchCopy) {
       shareBody += `이름: ${m.name}\n유형: ${m.type}\n설명: ${m.shortText}\n\n`;
     });
 
-    // 3. 전체 합친 텍스트 (클립보드/카톡용)
+    // 3. 전체 합친 텍스트
     const fullText = `${shareHeader}\n\n${shareBody}`;
     
-    // A. 카카오톡 공유
+    // A. 카카오톡
     if (typeof Kakao !== "undefined" && Kakao.isInitialized && Kakao.isInitialized()) {
       try {
         Kakao.Share.sendDefault({
@@ -871,19 +862,18 @@ if (dom.btns.churchCopy) {
       } catch (e) { console.error(e); }
     }
 
-    // B. 기본 공유 (Web Share API)
-    // [핵심 변경] text의 맨 앞에 줄바꿈(\n\n)을 추가하여 제목과 겹치지 않게 함
+    // B. 기본 공유 (제목/본문 분리 + 줄바꿈 문자)
     if (navigator.share) {
       try { 
         await navigator.share({ 
           title: shareHeader, 
-          text: "\n\n" + shareBody 
+          text: "\n\n" + shareBody // 줄바꿈 문자 2개 강제 추가
         }); 
         return; 
       } catch(e) {}
     }
 
-    // C. 클립보드 복사
+    // C. 클립보드
     try { 
       await navigator.clipboard.writeText(fullText); 
       alert("그룹 결과가 클립보드에 복사되었습니다."); 
@@ -928,9 +918,10 @@ if (dom.btns.fontUp) {
 }
 
 /* =========================================
-   페이지 로드 시 저장된 결과 불러오기
+   페이지 로드 시 저장된 결과 & 교회 정보 불러오기
    ========================================= */
 window.addEventListener('DOMContentLoaded', () => {
+  // 1. 내 결과 불러오기
   const savedData = localStorage.getItem('faith_result_v1');
   if (savedData) {
     try {
@@ -954,8 +945,8 @@ window.addEventListener('DOMContentLoaded', () => {
       localStorage.removeItem('faith_result_v1');
     }
   }
-  console.log("App Initialized. Buttons ready.");
-  // [추가] 교회 정보 기억하기 기능 초기화
+
+  // 2. 교회 정보 기억하기 불러오기
   const savedChurch = localStorage.getItem('faith_church_name');
   const savedPw = localStorage.getItem('faith_church_pw');
   
@@ -965,8 +956,3 @@ window.addEventListener('DOMContentLoaded', () => {
     dom.inputs.rememberCreds.checked = true;
   }
 });
-
-
-
-
-
