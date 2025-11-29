@@ -1,5 +1,5 @@
 /**************************************************
- * Faith-MBTI Test – app.js (Final Integrated Version)
+ * Faith-MBTI Test – app.js (Final Integrated Version + Persistence)
  **************************************************/
 
 /* 1. 전역 상태 및 DOM 캐싱 */
@@ -8,7 +8,7 @@ let questions = [];
 const answers = {};
 let myResultType = null;
 let currentViewType = null;
-let currentChurchMembers = []; // 공동체 분석용 데이터 저장
+let currentChurchMembers = []; 
 
 // DOM 요소 캐싱
 const dom = {
@@ -31,10 +31,9 @@ const dom = {
     churchClose: document.getElementById("church-close-btn"),
     memberSave: document.getElementById("member-save-btn"),
     churchSummary: document.getElementById("church-summary-btn"),
-    churchAnalysis: document.getElementById("church-analysis-btn"), // 분석 버튼
+    churchAnalysis: document.getElementById("church-analysis-btn"), 
     invite: document.getElementById("invite-btn"),
     churchCopy: document.getElementById("church-copy-btn"),
-    // 폰트 조절 버튼
     fontUp: document.getElementById("font-up"),
     fontDown: document.getElementById("font-down"),
     fontReset: document.getElementById("font-reset")
@@ -89,7 +88,7 @@ const dom = {
     viewPw: document.getElementById("view-password-input")
   },
   churchList: document.getElementById("church-result-list"),
-  churchAnalysisResult: document.getElementById("church-analysis-result") // 분석 결과 영역
+  churchAnalysisResult: document.getElementById("church-analysis-result")
 };
 
 /* 2. 유틸리티 */
@@ -154,14 +153,13 @@ function renderQuestion() {
   dom.question.text.textContent = q.text;
 
   renderScale(q.id);
-  dom.btns.back.disabled = currentIndex === 0;
+  dom.btns.back.disabled = false; 
 }
 
 function calculateResult() {
   const scores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
   const axisScores = { EI: 0, SN: 0, TF: 0, JP: 0 };
 
-  // window.originalQuestions 사용 (모바일 안전성)
   window.originalQuestions.forEach((q) => {
     const v = answers[q.id];
     if (!v) return;
@@ -193,6 +191,16 @@ function goNextOrResult() {
     dom.sections.result.classList.remove("hidden");
 
     const { type, scores, axisScores } = calculateResult();
+    
+    // [추가] 결과 로컬스토리지 저장
+    const resultData = {
+      type: type,
+      scores: scores,
+      axisScores: axisScores,
+      date: new Date().getTime()
+    };
+    localStorage.setItem('faith_result_v1', JSON.stringify(resultData));
+
     myResultType = type;
     currentViewType = type;
 
@@ -205,14 +213,12 @@ function goNextOrResult() {
 }
 
 function renderResult(type) {
-  // window.typeResults 사용
   const data = window.typeResults[type];
 
   dom.result.code.textContent = type;
   dom.result.name.textContent = `${data.nameKo} · ${data.nameEn}`;
   dom.result.summary.textContent = data.summary;
 
-  // 뱃지 렌더링
   dom.result.badges.innerHTML = "";
   data.badges.forEach(b => {
     const span = document.createElement("span");
@@ -221,7 +227,6 @@ function renderResult(type) {
     dom.result.badges.appendChild(span);
   });
 
-  // 리스트 렌더링 함수
   const renderList = (el, items) => {
     el.innerHTML = "";
     items.forEach(item => {
@@ -244,7 +249,6 @@ function renderResult(type) {
   dom.bible.box.classList.add("hidden");
   dom.btns.bibleToggle.textContent = "📖 성경 인물 보기";
   
-  // 화면 바뀔 때 말씀 박스 닫기
   dom.verse.box.classList.add("hidden");
 
   dom.character.emoji.textContent = data.characterEmoji;
@@ -301,7 +305,6 @@ function similarityScore(a, b) {
 }
 
 function renderMatchCards(type) {
-  // window.typeResults 사용
   const entries = Object.entries(window.typeResults);
   const all = entries
     .filter(([code]) => code !== type)
@@ -325,7 +328,6 @@ function renderMatchCards(type) {
 
 function buildOtherTypesGrid() {
   dom.result.otherTypes.innerHTML = "";
-  // window.typeResults 사용
   Object.keys(window.typeResults).sort().forEach(t => {
     const btn = document.createElement("button");
     btn.className = "btn-type";
@@ -365,7 +367,7 @@ dom.btns.bibleToggle.addEventListener("click", () => {
   dom.btns.bibleToggle.textContent = isHidden ? "📖 성경 인물 닫기" : "📖 성경 인물 보기";
 });
 
-// 공유하기 (수정된 로직)
+// 공유하기
 if (dom.btns.share) {
   dom.btns.share.addEventListener("click", async () => {
     const targetType = currentViewType || myResultType;
@@ -394,16 +396,29 @@ if (dom.btns.share) {
     }
     
     if (navigator.share) {
-      try { await navigator.share({ title: shareTitle, text: shareDesc, url: baseUrl }); return; } catch(e){}
+      try { 
+        await navigator.share({ 
+          title: shareTitle, 
+          text: shareDesc, 
+          url: baseUrl 
+        }); 
+        return; 
+      } catch(e) {}
     }
     
-    try { await navigator.clipboard.writeText(`${shareTitle}\n${shareDesc}\n${baseUrl}`); alert("결과가 클립보드에 복사되었습니다."); }
+    try { 
+      await navigator.clipboard.writeText(`${shareTitle}\n${shareDesc}\n${baseUrl}`); 
+      alert("결과가 클립보드에 복사되었습니다."); 
+    }
     catch (e) { alert("공유 기능을 사용할 수 없습니다."); }
   });
 }
 
-// 네비게이션
+// 네비게이션 & 초기화
 dom.btns.start.addEventListener("click", () => {
+  // [추가] 시작 시 기존 저장된 데이터 삭제 (새로 시작)
+  localStorage.removeItem('faith_result_v1');
+
   if (!window.originalQuestions) {
       alert("데이터를 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
       return;
@@ -427,13 +442,23 @@ dom.btns.back.addEventListener("click", () => {
   if (currentIndex > 0) {
     currentIndex--;
     renderQuestion();
+  } else {
+    dom.sections.test.classList.add("hidden");
+    dom.sections.intro.classList.remove("hidden");
   }
 });
 
 dom.btns.skip.addEventListener("click", goNextOrResult);
+
+// [수정됨] 처음으로 버튼 (결과 삭제 및 초기화)
 dom.btns.restart.addEventListener("click", () => {
-  dom.sections.result.classList.add("hidden");
-  dom.sections.intro.classList.remove("hidden");
+  if(confirm("결과가 초기화됩니다. 처음 화면으로 돌아가시겠습니까?")) {
+    localStorage.removeItem('faith_result_v1'); // 저장된 결과 삭제
+    myResultType = null;
+    currentViewType = null;
+    dom.sections.result.classList.add("hidden");
+    dom.sections.intro.classList.remove("hidden");
+  }
 });
 
 // 개발용 버튼
@@ -442,6 +467,11 @@ if (dom.btns.goResult) {
     if (!window.originalQuestions) return;
     window.originalQuestions.forEach(q => answers[q.id] = 3);
     const { scores, axisScores } = calculateResult();
+    
+    // 개발용도 저장
+    const resultData = { type: "ENFJ", scores: scores, axisScores: axisScores, date: Date.now() };
+    localStorage.setItem('faith_result_v1', JSON.stringify(resultData));
+
     myResultType = "ENFJ";
     currentViewType = "ENFJ";
     
@@ -481,10 +511,7 @@ async function saveMyResultToChurch(name, churchName, password) {
   const n = name.trim(), c = churchName.trim(), p = password.trim();
   if (!n || !c || !p) throw new Error("모든 항목을 입력해 주세요.");
 
-  // [수정됨] 검사 결과(myResultType)가 없더라도, 
-  // 현재 화면에 보고 있는 유형(currentViewType)이 있다면 그것을 저장합니다.
   const targetType = currentViewType || myResultType;
-
   if (!targetType) throw new Error("먼저 검사를 완료하거나, '다른 유형 보기'에서 내 유형을 선택해 주세요.");
 
   const { db, fs } = await ensureFirebase();
@@ -494,12 +521,10 @@ async function saveMyResultToChurch(name, churchName, password) {
   if (snap.exists() && snap.data().password !== p) throw new Error("비밀번호가 일치하지 않습니다.");
   if (!snap.exists()) await fs.setDoc(churchRef, { churchName: c, password: p, createdAt: fs.serverTimestamp ? fs.serverTimestamp() : Date.now() });
 
-  // 저장할 유형의 데이터 가져오기
   const data = window.typeResults[targetType];
-  
   await fs.addDoc(fs.collection(churchRef, "members"), {
     name: n, 
-    type: targetType, // [중요] 보고 있는 유형으로 저장
+    type: targetType, 
     shortText: data.summary || data.nameKo || "",
     createdAt: fs.serverTimestamp ? fs.serverTimestamp() : Date.now()
   });
@@ -519,7 +544,6 @@ async function loadChurchMembers(churchName, password) {
   const q = fs.query(fs.collection(churchRef, "members"), fs.orderBy("createdAt", "asc"));
   const membersSnap = await fs.getDocs(q);
   
-  // 데이터 저장 (공동체 분석용)
   const membersData = membersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
   currentChurchMembers = membersData;
 
@@ -571,7 +595,6 @@ function renderChurchList(churchName, members) {
   });
 }
 
-// [공동체 분석] 관련 로직
 function analyzeAndRenderCommunity() {
   const members = currentChurchMembers;
   if (!members || members.length === 0) {
@@ -579,7 +602,6 @@ function analyzeAndRenderCommunity() {
     return;
   }
 
-  // 1. 데이터 집계
   const total = members.length;
   const counts = { E:0, I:0, S:0, N:0, T:0, F:0, J:0, P:0 };
   const typeCounts = {};
@@ -591,13 +613,11 @@ function analyzeAndRenderCommunity() {
     typeCounts[t] = (typeCounts[t] || 0) + 1;
   });
 
-  // 2. 최다 유형
   let maxType = "", maxVal = 0;
   for (const [t, v] of Object.entries(typeCounts)) {
     if (v > maxVal) { maxVal = v; maxType = t; }
   }
   
-  // 3. 성향 요약
   const domE = counts.E >= counts.I ? "E" : "I";
   const domS = counts.S >= counts.N ? "S" : "N";
   const domT = counts.T >= counts.F ? "T" : "F";
@@ -612,7 +632,6 @@ function analyzeAndRenderCommunity() {
 
   const topTypeName = window.typeResults[groupType] ? window.typeResults[groupType].nameKo : groupType;
 
-  // 4. HTML 생성 (CSS 클래스 사용으로 수정됨)
   let html = `
     <div class="analysis-box">
       <div class="analysis-header">📊 우리 공동체 DNA 분석</div>
@@ -685,7 +704,6 @@ function getGrowthAdvice(c, total) {
   return tips.join("<br/>");
 }
 
-// 교회 섹션 이벤트
 if (dom.btns.church && dom.sections.church) {
   dom.btns.church.addEventListener("click", () => {
     dom.sections.intro.classList.add("hidden");
@@ -725,7 +743,6 @@ if (dom.btns.churchAnalysis) {
   dom.btns.churchAnalysis.addEventListener("click", analyzeAndRenderCommunity);
 }
 
-// 멤버 초대 버튼 (공유 로직 통합)
 if (dom.btns.invite) {
   dom.btns.invite.addEventListener("click", async () => {
     const baseUrl = "https://faiths.life";
@@ -772,17 +789,11 @@ if (dom.btns.churchCopy) {
    글자 크기 조절 기능 (REM 기반)
    ========================================= */
 
-// 현재 스케일 (기본 1.0)
 let currentFontScale = parseFloat(localStorage.getItem("faith_font_scale")) || 1.0;
 
-// 폰트 적용 함수 (Root 폰트 사이즈를 %로 조절)
 function applyFontSize(scale) {
-  // 소수점 계산 오류 방지를 위해 반올림하여 정리
   scale = Math.round(scale * 10) / 10;
-
   const root = document.documentElement;
-  
-  // [설정] 표준(1.0)일 때의 비율 = 120% (이전 A+ 두 번 누른 크기)
   const basePercent = 120; 
   const percent = Math.round(scale * basePercent);
   
@@ -792,29 +803,53 @@ function applyFontSize(scale) {
   currentFontScale = scale;
 }
 
-// 초기화 실행
 if (currentFontScale !== 1.0) {
   applyFontSize(currentFontScale);
 } else {
-  applyFontSize(1.0); // 표준 강제 적용
+  applyFontSize(1.0);
 }
 
-// 이벤트 리스너 연결
 if (dom.btns.fontUp) {
-  // 확대: 표준(1.0)에서 +3단계 -> 최대 1.3
   dom.btns.fontUp.addEventListener("click", () => {
     if (currentFontScale < 1.3) applyFontSize(currentFontScale + 0.1);
   });
 
-  // 축소: 표준(1.0)에서 -3단계 -> 최소 0.7
   dom.btns.fontDown.addEventListener("click", () => {
     if (currentFontScale > 0.7) applyFontSize(currentFontScale - 0.1);
   });
 
-  // 초기화: 표준(1.0)으로 복귀
   dom.btns.fontReset.addEventListener("click", () => {
     applyFontSize(1.0);
   });
 }
 
+/* =========================================
+   [추가] 페이지 로드 시 저장된 결과 불러오기
+   ========================================= */
+window.addEventListener('DOMContentLoaded', () => {
+  const savedData = localStorage.getItem('faith_result_v1');
+  if (savedData) {
+    try {
+      const data = JSON.parse(savedData);
+      // 데이터가 온전하면 바로 결과 화면 렌더링
+      if (data.type && data.scores && data.axisScores) {
+        myResultType = data.type;
+        currentViewType = data.type;
+        
+        // 인트로 숨기고 결과창 표시
+        dom.sections.intro.classList.add("hidden");
+        dom.sections.test.classList.add("hidden");
+        dom.sections.result.classList.remove("hidden");
 
+        renderResult(data.type);
+        renderAxisUpgraded(data.axisScores);
+        renderDetailScores(data.scores);
+        renderMatchCards(data.type);
+        buildOtherTypesGrid();
+      }
+    } catch (e) {
+      console.error("저장된 데이터 로드 실패", e);
+      localStorage.removeItem('faith_result_v1'); // 깨진 데이터 삭제
+    }
+  }
+});
