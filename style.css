@@ -297,18 +297,70 @@ main {
 .engo-desc { font-size: 0.95rem; font-weight: 500; color: rgba(255, 255, 255, 0.9); }
 .intro .engo-bottom-banner { grid-column: 1 / -1; }
 
-/* ■■■ 반응형 (모바일) 처리 ■■■ */
-@media (max-width: 768px) { 
-  .intro { grid-template-columns: 1fr; gap: 32px; } /* 1열로 변경 */
-  .intro > div:nth-child(1) { grid-row: auto; grid-column: auto; text-align: center; padding-right: 0; }
-  .intro-tags { justify-content: center; }
+/* ■■■ 반응형 (모바일 & 폴더블) 처리 ■■■ */
+
+/* 1. 태블릿 및 폴더블 펼침 화면 (폭 1024px 이하) */
+@media (max-width: 1024px) {
+  .app { 
+    max-width: 100%; /* 화면 꽉 채우기 */
+    border-radius: 0; /* 모바일에서는 둥근 모서리 제거하여 공간 확보 */
+    box-shadow: none; 
+  }
   
-  .result-layout { grid-template-columns: 1fr; gap: 24px; } /* 1열로 변경 */
-  .result-main-column { position: static; } /* Sticky 해제 */
+  body { 
+    padding: 0; /* 전체 배경 여백 제거 */
+    background: #ffffff; /* 배경색 통일 */
+  }
+
+  main { padding: 32px 24px; } /* 내부 여백 조정 */
+
+  /* 인트로: 태블릿에서도 1열로 변경하여 가독성 확보 */
+  .intro { grid-template-columns: 1fr; gap: 32px; }
+  .intro > div:nth-child(1) { grid-row: auto; grid-column: auto; text-align: left; padding-right: 0; }
   
+  /* 결과 페이지: Sticky 해제 및 1열 배치 */
+  .result-layout { grid-template-columns: 1fr; gap: 32px; }
+  .result-main-column { position: static; }
+}
+
+/* 2. 모바일 표준 및 폴더블 접음 화면 (폭 768px 이하) */
+@media (max-width: 768px) {
+  /* 헤더 */
+  .logo { font-size: 1.25rem; }
+  .logo-badge { width: 28px; height: 28px; font-size: 0.9rem; }
+  .font-controls button { padding: 6px 8px; font-size: 0.7rem; }
+
+  /* 텍스트 크기 최적화 (너무 크지 않게) */
+  .intro-title { font-size: 1.8rem; }
+  .result-main-title { font-size: 2rem; }
+  
+  /* 입력 폼 그리드 간격 좁히기 */
+  .scale-inputs { gap: 6px; }
+  .scale-pill { padding: 10px 0; font-size: 1rem; }
+
+  /* 배너 정렬 */
   .book-banner-simple { flex-direction: column; align-items: flex-start; }
   .book-banner-simple-btn { width: 100%; text-align: center; }
+}
+
+/* 3. 초소형/폴더블 커버 화면 (폭 380px 이하 - Z폴드 커버 등) */
+@media (max-width: 380px) {
+  header { padding: 16px 20px; }
+  main { padding: 24px 16px; }
+
+  /* 타이틀 크기 더 줄임 */
+  .intro-title { font-size: 1.5rem; word-break: keep-all; }
+  .result-main-title { font-size: 1.8rem; }
+
+  /* 1~5점 척도 버튼이 좁은 화면에서도 안 깨지게 */
+  .scale-inputs { gap: 4px; }
+  .scale-pill { padding: 8px 0; font-size: 0.9rem; border-width: 1px; }
   
-  .header-row { align-items: center; } /* 헤더는 유지 */
-  .scale-inputs { gap: 6px; }
+  /* 로고와 버튼 간격 좁힘 */
+  .logo { font-size: 1.1rem; gap: 6px; }
+  
+  /* 하단 배너 아이콘 크기 조정 */
+  .engo-icon { width: 40px; height: 40px; }
+  .engo-title { font-size: 0.95rem; }
+  .engo-desc { font-size: 0.8rem; }
 }
