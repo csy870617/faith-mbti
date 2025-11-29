@@ -829,7 +829,7 @@ if (dom.btns.invite) {
   });
 }
 
-// 그룹 결과 복사/공유 버튼 (제목/내용 분리)
+// [수정됨] 그룹 결과 복사/공유 버튼 (줄바꿈 포맷팅 강화)
 if (dom.btns.churchCopy) {
   dom.btns.churchCopy.addEventListener("click", async () => {
     const members = currentChurchMembers;
@@ -837,16 +837,19 @@ if (dom.btns.churchCopy) {
 
     const groupName = dom.inputs.viewChurch.value.trim() || "우리교회";
     
-    // 1. 헤더와 본문 분리
+    // 1. 헤더와 본문 생성
     const shareHeader = `${groupName} 신앙 유형 결과`;
     let shareBody = "";
+    
     members.forEach(m => {
+      // 각 사람마다 한 줄 띄우기 (\n\n)
       shareBody += `이름: ${m.name}\n유형: ${m.type}\n설명: ${m.shortText}\n\n`;
     });
 
-    // 2. 카톡/클립보드용 합친 텍스트
+    // 2. 전체 합친 텍스트 (제목 + 두 줄 띄움 + 본문)
     const fullText = `${shareHeader}\n\n${shareBody}`;
     
+    // A. 카카오톡 공유
     if (typeof Kakao !== "undefined" && Kakao.isInitialized && Kakao.isInitialized()) {
       try {
         Kakao.Share.sendDefault({
@@ -859,16 +862,19 @@ if (dom.btns.churchCopy) {
       } catch (e) { console.error(e); }
     }
 
+    // B. 기본 공유 (Web Share API)
+    // [중요 변경] text에 'fullText'를 넣어서 제목과 본문 사이 줄바꿈을 강제합니다.
     if (navigator.share) {
       try { 
         await navigator.share({ 
           title: shareHeader, 
-          text: shareBody 
+          text: fullText // 기존 shareBody에서 fullText로 변경
         }); 
         return; 
       } catch(e) {}
     }
 
+    // C. 클립보드 복사
     try { 
       await navigator.clipboard.writeText(fullText); 
       alert("그룹 결과가 클립보드에 복사되었습니다."); 
@@ -941,3 +947,4 @@ window.addEventListener('DOMContentLoaded', () => {
   }
   console.log("App Initialized. Buttons ready.");
 });
+
