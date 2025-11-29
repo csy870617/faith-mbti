@@ -367,10 +367,14 @@ dom.btns.bibleToggle.addEventListener("click", () => {
   dom.btns.bibleToggle.textContent = isHidden ? "📖 성경 인물 닫기" : "📖 성경 인물 보기";
 });
 
-// 공유하기
+// app.js의 공유하기 버튼 이벤트 (dom.btns.share) 전체 교체
+
 if (dom.btns.share) {
   dom.btns.share.addEventListener("click", async () => {
-    const targetType = currentViewType || myResultType;
+    // [수정됨] 화면에 무엇이 떠있든(currentViewType), 
+    // 공유는 무조건 '나의 실제 검사 결과(myResultType)'로 고정합니다.
+    const targetType = myResultType; 
+
     if (!targetType) return alert("먼저 검사를 완료한 뒤, 결과를 공유해 주세요.");
     
     const baseUrl = "https://faiths.life/";
@@ -379,6 +383,7 @@ if (dom.btns.share) {
     const shareTitle = "FAITH MBTI 신앙 유형 테스트";
     const shareDesc = `나의 유형은 ${targetType} (${data.nameKo}) 입니다.`;
 
+    // 1. 카카오톡 공유
     if (typeof Kakao !== "undefined" && Kakao.isInitialized && Kakao.isInitialized()) {
       try {
         Kakao.Share.sendDefault({
@@ -395,6 +400,7 @@ if (dom.btns.share) {
       } catch (e) { console.error(e); }
     }
     
+    // 2. 모바일 기본 공유
     if (navigator.share) {
       try { 
         await navigator.share({ 
@@ -406,6 +412,7 @@ if (dom.btns.share) {
       } catch(e) {}
     }
     
+    // 3. 클립보드 복사
     try { 
       await navigator.clipboard.writeText(`${shareTitle}\n${shareDesc}\n${baseUrl}`); 
       alert("결과가 클립보드에 복사되었습니다."); 
@@ -853,3 +860,4 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }
 });
+
