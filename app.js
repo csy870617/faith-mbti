@@ -835,15 +835,19 @@ if (dom.btns.invite) {
   });
 }
 
-// [수정됨] 그룹 결과 복사 (강점 데이터 사용)
+// [수정됨] 그룹 결과 복사/공유 버튼 (하이픈 제거 & 줄바꿈 유지)
 if (dom.btns.churchCopy) {
   dom.btns.churchCopy.addEventListener("click", async () => {
     const members = currentChurchMembers;
     if (!members || members.length === 0) return alert("복사할 데이터가 없습니다.");
 
     const groupName = dom.inputs.viewChurch.value.trim() || "우리교회";
-    const shareHeader = `${groupName} - 신앙 유형 결과`;
     
+    // 1. 헤더 (형식 변경: 하이픈 없이 공백으로 구분)
+    // 예: "우리집 신앙 유형 결과"
+    const shareHeader = `${groupName} 신앙 유형 결과`;
+    
+    // 2. 본문 (명단)
     let shareBody = "";
     members.forEach(m => {
       // 실시간 강점 데이터 불러오기
@@ -852,8 +856,10 @@ if (dom.btns.churchCopy) {
       shareBody += `이름: ${m.name}\n유형: ${m.type}\n설명: ${desc}\n\n`;
     });
 
+    // 3. 전체 합친 텍스트 (제목 + 두 줄 띄움 + 본문)
     const fullText = `${shareHeader}\n\n${shareBody}`;
     
+    // A. 카카오톡 공유
     if (typeof Kakao !== "undefined" && Kakao.isInitialized && Kakao.isInitialized()) {
       try {
         Kakao.Share.sendDefault({
@@ -866,6 +872,8 @@ if (dom.btns.churchCopy) {
       } catch (e) { console.error(e); }
     }
 
+    // B. 기본 공유 (Web Share API)
+    // 제목과 본문이 붙지 않도록 text 맨 앞에 줄바꿈(\n\n)을 넣습니다.
     if (navigator.share) {
       try { 
         await navigator.share({ 
@@ -876,6 +884,7 @@ if (dom.btns.churchCopy) {
       } catch(e) {}
     }
 
+    // C. 클립보드 복사
     try { 
       await navigator.clipboard.writeText(fullText); 
       alert("그룹 결과가 클립보드에 복사되었습니다."); 
@@ -1003,3 +1012,4 @@ if (dom.btns.churchClose) {
     }
   });
 }
+
