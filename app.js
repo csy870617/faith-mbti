@@ -845,7 +845,7 @@ if (dom.btns.churchCopy) {
     
     // 1. 헤더 (형식 변경: 하이픈 없이 공백으로 구분)
     // 예: "우리집 신앙 유형 결과"
-    const shareHeader = `-${groupName} 신앙 유형 결과`;
+    const shareHeader = `- ${groupName} 신앙 유형 결과`;
     
     // 2. 본문 (명단)
     let shareBody = "";
@@ -1012,5 +1012,6 @@ if (dom.btns.churchClose) {
     }
   });
 }
+
 
 
