@@ -34,9 +34,17 @@
   </script>
 
   <script src="https://developers.kakao.com/sdk/js/kakao.min.js" integrity="sha384-kmHkA3F7YtSBOQc/VgXbPiOObzhqkWcivwZZZt7kfieiI19B5Pgvqkr1/AgUNa1m" crossorigin="anonymous"></script>
+  
   <script>
-    if (typeof Kakao !== 'undefined' && !Kakao.isInitialized()) {
-        Kakao.init("9bde8b67ddb17b795d596ab3bd943668");
+    // [수정됨] 안전한 초기화 로직
+    // 카카오 스크립트가 차단되거나 로드 실패해도 앱이 멈추지 않게 함
+    try {
+      if (typeof Kakao !== 'undefined' && !Kakao.isInitialized()) {
+          Kakao.init("9bde8b67ddb17b795d596ab3bd943668"); 
+          console.log("Kakao initialized successfully.");
+      }
+    } catch (e) {
+      console.warn("Kakao SDK 로드 실패 (광고 차단기 또는 네트워크 문제일 수 있음):", e);
     }
   </script>
 
@@ -382,5 +390,6 @@
   </div>
 </body>
 </html>
+
 
 
