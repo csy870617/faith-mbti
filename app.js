@@ -1,5 +1,5 @@
 /**************************************************
- * Faith-MBTI Test – app.js (Final Integrated Version)
+ * Faith-MBTI Test – app.js (Balanced Analysis Version)
  **************************************************/
 
 /* 1. 전역 상태 및 DOM 캐싱 */
@@ -586,7 +586,7 @@ async function deleteChurchMember(churchName, password, memberId) {
   await fs.deleteDoc(fs.doc(fs.collection(churchRef, "members"), memberId));
 }
 
-// [수정됨] 결과 리스트 렌더링
+// [수정됨] 강점 데이터 적용
 function renderChurchList(churchName, members) {
   if (!dom.churchList) return;
   if (!members || !members.length) {
@@ -596,7 +596,6 @@ function renderChurchList(churchName, members) {
   const rows = members.map(m => {
     const typeData = window.typeResults[m.type];
     const desc = typeData ? typeData.strengthShort : (m.shortText || "");
-    
     return `
     <tr>
       <td>${m.name || ""}</td><td>${m.type || ""}</td><td>${desc}</td>
@@ -629,7 +628,7 @@ function renderChurchList(churchName, members) {
 }
 
 /* =========================================
-   [업그레이드됨] 공동체 분석 로직 (성장 포인트 추가)
+   [업그레이드됨] 공동체 분석 로직
    ========================================= */
 
 function analyzeAndRenderCommunity() {
@@ -650,7 +649,7 @@ function analyzeAndRenderCommunity() {
     typeCounts[t] = (typeCounts[t] || 0) + 1;
   });
 
-  // 1. 최다 유형 찾기 (동률 처리)
+  // 1. 최다 유형 찾기 (동률 포함)
   let maxVal = 0;
   for (const v of Object.values(typeCounts)) {
     if (v > maxVal) maxVal = v;
@@ -662,7 +661,7 @@ function analyzeAndRenderCommunity() {
   const maxTypeDisplay = maxTypes.join(", ");
   const isTie = maxTypes.length > 1;
 
-  // 2. 대표 성향 결정
+  // 2. 대표 성향 (단순 합산)
   const domE = counts.E >= counts.I ? "E" : "I";
   const domS = counts.S >= counts.N ? "S" : "N";
   const domT = counts.T >= counts.F ? "T" : "F";
@@ -742,7 +741,6 @@ function analyzeAndRenderCommunity() {
   }
 }
 
-// 막대 그래프 렌더링
 function renderBarEnhanced(title, leftLabel, leftVal, rightLabel, rightVal, total) {
   const leftPct = Math.round((leftVal / total) * 100);
   const rightPct = 100 - leftPct;
@@ -775,81 +773,72 @@ function renderBarEnhanced(title, leftLabel, leftVal, rightLabel, rightVal, tota
   `;
 }
 
-// 모임 스타일 텍스트
 function getMeetingStyle(c, total) {
   let text = "";
-  if (c.E > c.I * 1.5) text += "🎤 <strong>활기차고 에너지가 넘쳐요.</strong> 누군가 먼저 말을 꺼내고 분위기를 주도하는 것이 자연스럽습니다. 목소리 큰 사람 위주로 흘러가지 않게 주의하세요.<br/><br/>";
-  else if (c.I > c.E * 1.5) text += "☕ <strong>차분하고 깊이가 있어요.</strong> 왁자지껄하기보다 소그룹으로 깊게 나누는 것을 선호합니다. 침묵을 어색해하지 마세요.<br/><br/>";
-  else text += "✨ <strong>역동과 정적인 분위기가 조화로워요.</strong> 상황에 따라 활발하게, 때로는 진지하게 모임을 이끌 수 있는 건강한 모임입니다.<br/><br/>";
+  if (c.E === c.I) {
+    text += "✨ <strong>활력과 깊이의 균형:</strong> 역동적인 에너지와 차분한 깊이가 공존하는 이상적인 분위기입니다. 상황에 따라 유연하게 모임을 이끌 수 있습니다.<br/><br/>";
+  } else if (c.E > c.I) {
+    text += "🎤 <strong>활기차고 에너지가 넘쳐요.</strong> 누군가 먼저 말을 꺼내고 분위기를 주도하는 것이 자연스럽습니다.<br/><br/>";
+  } else {
+    text += "☕ <strong>차분하고 깊이가 있어요.</strong> 왁자지껄하기보다 소그룹으로 깊게 나누는 것을 선호합니다.<br/><br/>";
+  }
 
-  if (c.J > c.P * 1.5) text += "📅 <strong>계획대로 착착!</strong> 시작과 끝 시간이 명확하고, 정해진 순서대로 진행되는 것을 좋아합니다. 돌발 상황에는 당황할 수 있어요.";
-  else if (c.P > c.J * 1.5) text += "🌊 <strong>그때그때 유연하게!</strong> 순서가 바뀌거나 새로운 나눔이 길어져도 즐겁게 받아들입니다. 하지만 결론 없이 끝날 수도 있으니 마무리를 챙겨주세요.";
-  else text += "🤝 <strong>계획과 유연함의 조화!</strong> 큰 틀은 지키되 상황에 맞춰 융통성을 발휘할 줄 아는 성숙한 모임입니다.";
+  if (c.J === c.P) {
+    text += "🤝 <strong>계획과 유연함의 조화!</strong> 큰 틀은 지키되 상황에 맞춰 융통성을 발휘할 줄 아는 성숙한 모임입니다.";
+  } else if (c.J > c.P) {
+    text += "📅 <strong>계획대로 착착!</strong> 시작과 끝 시간이 명확하고, 정해진 순서대로 진행되는 것을 좋아합니다.";
+  } else {
+    text += "🌊 <strong>그때그때 유연하게!</strong> 순서가 바뀌거나 새로운 나눔이 길어져도 즐겁게 받아들입니다.";
+  }
   return text;
 }
 
-// 소수자 케어 텍스트
 function getMinorityCare(c, total) {
   const minorities = [];
   const threshold = total * 0.3; 
 
-  if (c.I < threshold && c.I > 0) minorities.push("🤫 <strong>내향형(I) 지체들:</strong> 에너지가 너무 높은 모임에서 기가 빨릴 수 있어요. 'OO님 생각은 어때요?'라고 부드럽게 물어봐 주고, 생각할 시간을 주세요.");
-  if (c.E < threshold && c.E > 0) minorities.push("📣 <strong>외향형(E) 지체들:</strong> 너무 차분한 분위기를 답답해할 수 있어요. 가끔은 야외 활동이나 액티비티로 에너지를 발산할 기회를 주세요.");
-  if (c.S < threshold && c.S > 0) minorities.push("👀 <strong>현실형(S) 지체들:</strong> 뜬구름 잡는 비전 나눔보다 '이번 주에 당장 무엇을 할지' 구체적인 적용점을 나눌 때 살아납니다.");
-  if (c.N < threshold && c.N > 0) minorities.push("🌈 <strong>직관형(N) 지체들:</strong> 반복되는 일상 나눔을 지루해할 수 있어요. '우리 공동체의 꿈'이나 '하나님 나라' 같은 깊은 주제를 던져주세요.");
-  if (c.F < threshold && c.F > 0) minorities.push("💖 <strong>감정형(F) 지체들:</strong> 일 처리보다 '서로의 마음'을 확인받고 싶어 해요. 회의 전에 충분한 아이스브레이킹과 공감의 시간을 가져주세요.");
-  if (c.T < threshold && c.T > 0) minorities.push("🤔 <strong>사고형(T) 지체들:</strong> 감정적인 호소만으로는 설득되지 않아요. '왜 해야 하는지' 논리적인 이유와 목적을 설명해 주세요.");
+  if (c.I < threshold && c.I > 0) minorities.push("🤫 <strong>내향형(I):</strong> 에너지가 너무 높은 모임에서 기가 빨릴 수 있어요. 생각할 시간을 주세요.");
+  if (c.E < threshold && c.E > 0) minorities.push("📣 <strong>외향형(E):</strong> 너무 차분하면 답답할 수 있어요. 에너지를 발산할 기회를 주세요.");
+  if (c.S < threshold && c.S > 0) minorities.push("👀 <strong>현실형(S):</strong> 뜬구름 잡는 비전 나눔보다 '이번 주에 당장 무엇을 할지' 구체적인 적용점을 좋아해요.");
+  if (c.N < threshold && c.N > 0) minorities.push("🌈 <strong>직관형(N):</strong> 반복되는 일상 나눔을 지루해할 수 있어요. '꿈'과 '비전'을 나눠주세요.");
+  if (c.F < threshold && c.F > 0) minorities.push("💖 <strong>감정형(F):</strong> 일 처리보다 '서로의 마음'을 확인받고 싶어 해요. 공감의 시간이 필요해요.");
+  if (c.T < threshold && c.T > 0) minorities.push("🤔 <strong>사고형(T):</strong> 감정 호소만으로는 설득되지 않아요. 논리적인 이유를 설명해 주세요.");
 
   if (minorities.length === 0) {
-    return "⚖️ <strong>치우침 없이 조화로워요!</strong><br/>서로 다른 은사를 가진 지체들이 골고루 섞여 있습니다. 이 다양성을 유지하며 서로 배우는 관계가 되세요.";
+    return "⚖️ <strong>모든 성향이 골고루 섞여 있어요!</strong><br/>한쪽으로 치우치지 않은 건강한 구성입니다.";
   }
   return minorities.join("<br/><br/>");
 }
 
-// [신규] 상세 성장 가이드 (축별 밸런스에 따른 조언)
 function getDetailedGrowthGuide(c, total) {
   const guides = [];
 
-  // E vs I (소통)
-  if (c.E >= c.I) {
-    guides.push(`<div class="growth-item"><div class="growth-icon">👂</div><div><strong>경청의 영성:</strong> 에너지가 넘치는 우리, 가끔은 '거룩한 침묵'의 시간을 가져보면 어떨까요? 말하는 것보다 듣는 것에서 깊은 은혜가 시작됩니다.</div></div>`);
-  } else {
-    guides.push(`<div class="growth-item"><div class="growth-icon">🔥</div><div><strong>표현의 용기:</strong> 깊은 묵상이 있는 우리, 이제는 그 은혜를 입 밖으로 꺼내어 나누는 '3초의 용기'를 내보세요. 나눔이 풍성해집니다.</div></div>`);
-  }
+  // E vs I
+  if (c.E === c.I) guides.push(`<div class="growth-item"><div class="growth-icon">⚖️</div><div><strong>소통의 균형:</strong> 말하는 사람과 듣는 사람의 비율이 좋습니다. 이 건강한 밸런스를 유지하세요.</div></div>`);
+  else if (c.E > c.I) guides.push(`<div class="growth-item"><div class="growth-icon">👂</div><div><strong>경청의 영성:</strong> 에너지가 넘치는 우리, 가끔은 '거룩한 침묵'의 시간을 가져보면 어떨까요?</div></div>`);
+  else guides.push(`<div class="growth-item"><div class="growth-icon">🔥</div><div><strong>표현의 용기:</strong> 깊은 묵상이 있는 우리, 이제는 그 은혜를 입 밖으로 꺼내어 나누는 용기를 내보세요.</div></div>`);
 
-  // S vs N (시선)
-  if (c.S >= c.N) {
-    guides.push(`<div class="growth-item"><div class="growth-icon">🔭</div><div><strong>거룩한 상상력:</strong> 현실에 충실한 우리, 눈앞의 문제 해결을 넘어 하나님이 이 공동체를 통해 그리시는 '큰 그림(Vision)'을 함께 꿈꿔보세요.</div></div>`);
-  } else {
-    guides.push(`<div class="growth-item"><div class="growth-icon">🧹</div><div><strong>거룩한 디테일:</strong> 비전이 큰 우리, 그 꿈을 이루기 위해 당장 오늘 해야 할 '작은 순종'과 '실무'를 놓치지 않도록 챙겨주세요.</div></div>`);
-  }
+  // S vs N
+  if (c.S === c.N) guides.push(`<div class="growth-item"><div class="growth-icon">🌉</div><div><strong>현실과 비전의 다리:</strong> 꿈을 꾸는 사람과 길을 만드는 사람이 함께 있어 든든합니다.</div></div>`);
+  else if (c.S > c.N) guides.push(`<div class="growth-item"><div class="growth-icon">🔭</div><div><strong>거룩한 상상력:</strong> 현실에 충실한 우리, 눈앞의 문제 해결을 넘어 하나님이 그리시는 '큰 그림'을 꿈꿔보세요.</div></div>`);
+  else guides.push(`<div class="growth-item"><div class="growth-icon">🧹</div><div><strong>거룩한 디테일:</strong> 비전이 큰 우리, 그 꿈을 이루기 위해 당장 오늘 해야 할 '작은 순종'을 놓치지 마세요.</div></div>`);
 
-  // T vs F (마음)
-  if (c.T >= c.F) {
-    guides.push(`<div class="growth-item"><div class="growth-icon">💓</div><div><strong>공감의 온도:</strong> 옳은 말을 잘하는 우리, 그 정답을 전하기 전에 따뜻한 눈빛과 공감으로 상대방의 마음을 먼저 녹여주세요.</div></div>`);
-  } else {
-    guides.push(`<div class="growth-item"><div class="growth-icon">⚖️</div><div><strong>분별의 지혜:</strong> 사랑이 넘치는 우리, 관계가 상할까 봐 덮어두기보다 건강한 공동체를 위해 '사랑 안에서 진리'를 말하는 용기를 가져보세요.</div></div>`);
-  }
+  // T vs F
+  if (c.T === c.F) guides.push(`<div class="growth-item"><div class="growth-icon">🤝</div><div><strong>머리와 가슴의 조화:</strong> 냉철한 판단과 따뜻한 공감이 어우러진 성숙한 공동체입니다.</div></div>`);
+  else if (c.T > c.F) guides.push(`<div class="growth-item"><div class="growth-icon">💓</div><div><strong>공감의 온도:</strong> 옳은 말을 잘하는 우리, 그 정답을 전하기 전에 따뜻한 눈빛으로 마음을 먼저 녹여주세요.</div></div>`);
+  else guides.push(`<div class="growth-item"><div class="growth-icon">⚖️</div><div><strong>분별의 지혜:</strong> 사랑이 넘치는 우리, 관계가 상할까 봐 덮어두기보다 건강을 위해 '사랑 안에서 진리'를 말해보세요.</div></div>`);
 
-  // J vs P (삶)
-  if (c.J >= c.P) {
-    guides.push(`<div class="growth-item"><div class="growth-icon">🕊️</div><div><strong>여백의 미:</strong> 계획이 철저한 우리, 계획대로 되지 않는 순간이 바로 하나님이 일하시는 틈입니다. 그 의외성을 기쁨으로 받아들여 보세요.</div></div>`);
-  } else {
-    guides.push(`<div class="growth-item"><div class="growth-icon">🧱</div><div><strong>질서의 능력:</strong> 자유로운 우리, 약속 시간과 규칙 같은 작은 질서를 지킬 때 서로를 향한 신뢰가 더욱 단단해집니다.</div></div>`);
-  }
+  // J vs P
+  if (c.J === c.P) guides.push(`<div class="growth-item"><div class="growth-icon">⚓</div><div><strong>안정과 모험:</strong> 체계적인 안정감과 상황에 따른 유연함이 모두 있습니다.</div></div>`);
+  else if (c.J > c.P) guides.push(`<div class="growth-item"><div class="growth-icon">🕊️</div><div><strong>여백의 미:</strong> 계획이 철저한 우리, 계획대로 되지 않는 의외성을 기쁨으로 받아들여 보세요.</div></div>`);
+  else guides.push(`<div class="growth-item"><div class="growth-icon">🧱</div><div><strong>질서의 능력:</strong> 자유로운 우리, 약속 시간과 규칙 같은 작은 질서를 지킬 때 신뢰가 더욱 단단해집니다.</div></div>`);
 
   return guides.join("");
 }
 
-/* -----------------------------------------------------------
-   [수정됨] 이벤트 리스너 (기존 로직 유지)
-   ----------------------------------------------------------- */
-
 // 교회 섹션 이벤트
 if (dom.btns.church && dom.sections.church) {
   dom.btns.church.addEventListener("click", () => {
-    // 히스토리 추가
-    history.pushState({ page: "church" }, "", "#church");
     dom.sections.intro.classList.add("hidden");
     dom.sections.test.classList.add("hidden");
     dom.sections.result.classList.add("hidden");
@@ -857,28 +846,10 @@ if (dom.btns.church && dom.sections.church) {
   });
 }
 
-// 브라우저 뒤로가기 감지
-window.addEventListener("popstate", (event) => {
-  if (!dom.sections.church.classList.contains("hidden")) {
-    dom.sections.church.classList.add("hidden");
-    if (myResultType) {
-      dom.sections.result.classList.remove("hidden");
-    } else {
-      dom.sections.intro.classList.remove("hidden");
-    }
-  }
-});
-
-// 결과로 돌아가기 버튼
 if (dom.btns.churchClose) {
   dom.btns.churchClose.addEventListener("click", () => {
-    if (location.hash === "#church") {
-      history.back(); 
-    } else {
-      dom.sections.church.classList.add("hidden");
-      if (myResultType) dom.sections.result.classList.remove("hidden");
-      else dom.sections.intro.classList.remove("hidden");
-    }
+    dom.sections.church.classList.add("hidden");
+    dom.sections.result.classList.remove("hidden");
   });
 }
 
@@ -914,7 +885,6 @@ if (dom.btns.churchAnalysis) {
   dom.btns.churchAnalysis.addEventListener("click", analyzeAndRenderCommunity);
 }
 
-// 모아보기 토글
 if (dom.churchViewToggle && dom.churchViewContent) {
   dom.churchViewToggle.addEventListener("click", () => {
     const isHidden = dom.churchViewContent.classList.contains("hidden");
@@ -963,29 +933,24 @@ if (dom.btns.invite) {
   });
 }
 
+// [수정됨] 그룹 결과 복사/공유 버튼 (줄바꿈 및 중복 방지)
 if (dom.btns.churchCopy) {
   dom.btns.churchCopy.addEventListener("click", async () => {
     const members = currentChurchMembers;
     if (!members || members.length === 0) return alert("복사할 데이터가 없습니다.");
 
     const groupName = dom.inputs.viewChurch.value.trim() || "우리교회";
+    const shareHeader = `${groupName} - 신앙 유형 결과`;
     
-    // 1. 헤더 (형식 변경: 하이픈 없이 공백으로 구분)
-    const shareHeader = `${groupName} 신앙 유형 결과`;
-    
-    // 2. 본문 (명단)
     let shareBody = "";
     members.forEach(m => {
-      // 실시간 강점 데이터 불러오기
       const typeData = window.typeResults[m.type];
       const desc = typeData ? typeData.strengthShort : (m.shortText || "");
       shareBody += `이름: ${m.name}\n유형: ${m.type}\n설명: ${desc}\n\n`;
     });
 
-    // 3. 전체 합친 텍스트
     const fullText = `${shareHeader}\n\n${shareBody}`;
     
-    // A. 카카오톡 공유
     if (typeof Kakao !== "undefined" && Kakao.isInitialized && Kakao.isInitialized()) {
       try {
         Kakao.Share.sendDefault({
@@ -998,18 +963,16 @@ if (dom.btns.churchCopy) {
       } catch (e) { console.error(e); }
     }
 
-    // B. 기본 공유 (Web Share API)
     if (navigator.share) {
       try { 
         await navigator.share({ 
           title: shareHeader, 
-          text: "\n\n" + shareBody // 줄바꿈 문자 2개 강제 추가
+          text: "\n\n" + shareBody 
         }); 
         return; 
       } catch(e) {}
     }
 
-    // C. 클립보드 복사
     try { 
       await navigator.clipboard.writeText(fullText); 
       alert("그룹 결과가 클립보드에 복사되었습니다."); 
@@ -1025,43 +988,67 @@ if (dom.btns.churchCopy) {
 let currentFontScale = parseFloat(localStorage.getItem("faith_font_scale")) || 1.0;
 
 function applyFontSize(scale) {
-  // 소수점 계산 오류 방지
   scale = Math.round(scale * 10) / 10;
-
   const root = document.documentElement;
-  
-  // [설정] 표준(1.0)일 때의 비율 = 120% (이전 A+ 두 번 누른 크기)
   const basePercent = 120; 
   const percent = Math.round(scale * basePercent);
-  
   root.style.fontSize = `${percent}%`;
-
   localStorage.setItem("faith_font_scale", scale);
   currentFontScale = scale;
 }
 
-// 초기화 실행
 if (currentFontScale !== 1.0) {
   applyFontSize(currentFontScale);
 } else {
-  applyFontSize(1.0); // 표준 강제 적용
+  applyFontSize(1.0);
 }
 
-// 이벤트 리스너 연결
 if (dom.btns.fontUp) {
-  // 확대: 표준(1.0)에서 +3단계 -> 최대 1.3
   dom.btns.fontUp.addEventListener("click", () => {
     if (currentFontScale < 1.3) applyFontSize(currentFontScale + 0.1);
   });
-
-  // 축소: 표준(1.0)에서 -3단계 -> 최소 0.7
   dom.btns.fontDown.addEventListener("click", () => {
     if (currentFontScale > 0.7) applyFontSize(currentFontScale - 0.1);
   });
-
-  // 초기화: 표준(1.0)으로 복귀
   dom.btns.fontReset.addEventListener("click", () => {
     applyFontSize(1.0);
   });
 }
 
+/* =========================================
+   페이지 로드 시 저장된 결과 & 교회 정보 불러오기
+   ========================================= */
+window.addEventListener('DOMContentLoaded', () => {
+  const savedData = localStorage.getItem('faith_result_v1');
+  if (savedData) {
+    try {
+      const data = JSON.parse(savedData);
+      if (data.type && data.scores && data.axisScores) {
+        myResultType = data.type;
+        currentViewType = data.type;
+        
+        dom.sections.intro.classList.add("hidden");
+        dom.sections.test.classList.add("hidden");
+        dom.sections.result.classList.remove("hidden");
+
+        renderResult(data.type);
+        renderAxisUpgraded(data.axisScores);
+        renderDetailScores(data.scores);
+        renderMatchCards(data.type);
+        buildOtherTypesGrid();
+      }
+    } catch (e) {
+      console.error("저장된 데이터 로드 실패", e);
+      localStorage.removeItem('faith_result_v1');
+    }
+  }
+
+  const savedChurch = localStorage.getItem('faith_church_name');
+  const savedPw = localStorage.getItem('faith_church_pw');
+  
+  if (savedChurch && savedPw && dom.inputs.rememberCreds) {
+    dom.inputs.viewChurch.value = savedChurch;
+    dom.inputs.viewPw.value = savedPw;
+    dom.inputs.rememberCreds.checked = true;
+  }
+});
