@@ -1,5 +1,5 @@
 /**************************************************
- * Faith-MBTI Test – app.js (Final Integrated Version)
+ * Faith-MBTI Test – app.js (Final Version with Disclaimer)
  **************************************************/
 
 /* 1. 전역 상태 및 DOM 캐싱 */
@@ -197,6 +197,7 @@ function goNextOrResult() {
 
     const { type, scores, axisScores } = calculateResult();
     
+    // 결과 로컬스토리지 저장
     const resultData = {
       type: type,
       scores: scores,
@@ -489,7 +490,7 @@ if (dom.btns.restart) {
   });
 }
 
-// 개발용 버튼 (결과 바로보기 -> 검사 안 함 상태)
+// 개발용 버튼
 if (dom.btns.goResult) {
   dom.btns.goResult.addEventListener("click", () => {
     localStorage.removeItem('faith_result_v1');
@@ -585,7 +586,6 @@ async function deleteChurchMember(churchName, password, memberId) {
   await fs.deleteDoc(fs.doc(fs.collection(churchRef, "members"), memberId));
 }
 
-// [수정됨] 강점 데이터 적용
 function renderChurchList(churchName, members) {
   if (!dom.churchList) return;
   if (!members || !members.length) {
@@ -595,7 +595,6 @@ function renderChurchList(churchName, members) {
   const rows = members.map(m => {
     const typeData = window.typeResults[m.type];
     const desc = typeData ? typeData.strengthShort : (m.shortText || "");
-    
     return `
     <tr>
       <td>${m.name || ""}</td><td>${m.type || ""}</td><td>${desc}</td>
@@ -628,7 +627,7 @@ function renderChurchList(churchName, members) {
 }
 
 /* =========================================
-   [업그레이드됨] 공동체 분석 로직 (동률/균형 처리 강화)
+   [업그레이드됨] 공동체 분석 로직 (동률/균형 처리 강화 + 그래프 시각화)
    ========================================= */
 
 function analyzeAndRenderCommunity() {
@@ -649,7 +648,7 @@ function analyzeAndRenderCommunity() {
     typeCounts[t] = (typeCounts[t] || 0) + 1;
   });
 
-  // 1. 최다 유형 찾기 (동률 처리)
+  // 1. 최다 유형 찾기 (동률 포함)
   let maxVal = 0;
   for (const v of Object.values(typeCounts)) {
     if (v > maxVal) maxVal = v;
@@ -669,7 +668,7 @@ function analyzeAndRenderCommunity() {
   
   const displayCode = `${domE} - ${domS} - ${domT} - ${domJ}`;
 
-  // 데이터 조회용 키 생성 (동률일 경우 시스템상 기본값인 앞쪽 사용)
+  // 데이터 조회용 키 생성
   const safeE = counts.E >= counts.I ? "E" : "I";
   const safeS = counts.S >= counts.N ? "S" : "N";
   const safeT = counts.T >= counts.F ? "T" : "F";
@@ -678,7 +677,6 @@ function analyzeAndRenderCommunity() {
 
   const topTypeName = window.typeResults[lookupCode] ? window.typeResults[lookupCode].nameKo : lookupCode;
   
-  // 성향이 하나라도 동률이면 '복합 성향' 뱃지 추가
   const isHybrid = (counts.E === counts.I) || (counts.S === counts.N) || (counts.T === counts.F) || (counts.J === counts.P);
   const typeBadge = isHybrid ? '<span class="badge badge-balanced" style="font-size:0.75rem; margin-left:6px;">복합/균형 성향</span>' : '';
 
@@ -707,6 +705,10 @@ function analyzeAndRenderCommunity() {
         우리의 대표 성향은 <span class="insight-highlight">${displayCode}</span> 입니다.<br/>
         <div style="margin-top:4px; font-weight:600; color:#4b5563;">
           "${topTypeName}" ${typeBadge}
+        </div>
+        <div style="margin-top:12px; font-size:0.8rem; color:#94a3b8; line-height:1.5;">
+          ※ 이 분석은 에너지 비율에 따른 경향성일 뿐,<br/>
+          공동체 전체를 절대적으로 규정하는 것은 아닙니다.
         </div>
       </div>
     </div>
@@ -767,7 +769,6 @@ function renderBarEnhanced(title, leftLabel, leftVal, rightLabel, rightVal, tota
     badgeHtml = `<span class="balance-badge badge-balanced">황금 밸런스 ⚖️</span>`;
   }
 
-  // 색상 분리: 왼쪽 Rose, 오른쪽 Blue
   const colorLeft = "#f43f5e"; // Rose
   const colorRight = "#3b82f6"; // Blue
 
@@ -810,7 +811,6 @@ function getMeetingStyle(c, total) {
 
 function getMinorityCare(c, total) {
   const minorities = [];
-  // 소수자 기준 40%로 상향
   const threshold = total * 0.4; 
 
   if (c.I < threshold && c.I > 0) minorities.push("🤫 <strong>내향형(I) 지체들:</strong> 에너지가 너무 높은 모임에서 기가 빨릴 수 있어요. 생각할 시간을 주세요.");
@@ -826,7 +826,6 @@ function getMinorityCare(c, total) {
   return minorities.join("<br/><br/>");
 }
 
-// [업그레이드] 성장 가이드 (동률 시 균형 조언 제공)
 function getDetailedGrowthGuide(c, total) {
   const guides = [];
 
@@ -848,7 +847,7 @@ function getDetailedGrowthGuide(c, total) {
   // J vs P
   if (c.J === c.P) guides.push(`<div class="growth-item"><div class="growth-icon">⚓</div><div><strong>안정과 모험:</strong> 체계적인 안정감과 상황에 따른 유연함이 모두 있습니다.</div></div>`);
   else if (c.J > c.P) guides.push(`<div class="growth-item"><div class="growth-icon">🕊️</div><div><strong>여백의 미:</strong> 계획이 철저한 우리, 계획대로 되지 않는 의외성을 기쁨으로 받아들여 보세요.</div></div>`);
-  else guides.push(`<div class="growth-item"><div class="growth-icon">🧱</div><div><strong>질서의 능력:</strong> 자유로운 우리, 약속 시간과 규칙 같은 작은 질서를 지킬 때 신뢰가 더욱 단단해집니다.</div></div>`);
+  else guides.push(`<div class="growth-item"><div class="growth-icon">🧱</div><div><strong>질서의 능력:</strong> 자유로운 우리, 약속 시간과 규칙 같은 작은 질서를 지킬 때 서로를 향한 신뢰가 더욱 단단해집니다.</div></div>`);
 
   return guides.join("");
 }
@@ -961,11 +960,10 @@ if (dom.btns.invite) {
       await navigator.clipboard.writeText(`${shareTitle}\n${shareDesc}\n${baseUrl}`); 
       alert("초대 링크가 클립보드에 복사되었습니다."); 
     }
-    catch(e) { alert("공유 기능을 사용할 수 없습니다."); }
+    catch (e) { alert("공유 기능을 사용할 수 없습니다."); }
   });
 }
 
-// 그룹 결과 복사/공유 버튼 (줄바꿈 및 중복 방지)
 if (dom.btns.churchCopy) {
   dom.btns.churchCopy.addEventListener("click", async () => {
     const members = currentChurchMembers;
