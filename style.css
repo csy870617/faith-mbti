@@ -613,3 +613,30 @@ main {
   transform: translateY(-1px);
 }
 
+/* [추가] 성장 포인트 (Growth) 스타일 */
+.growth-box {
+  background: #f0fdf4; /* 연한 초록 */
+  border: 1px solid #dcfce7;
+  border-radius: 12px;
+  padding: 16px;
+  color: #166534; /* 짙은 초록 텍스트 */
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.growth-item {
+  margin-bottom: 12px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.growth-item:last-child {
+  margin-bottom: 0;
+}
+
+.growth-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
