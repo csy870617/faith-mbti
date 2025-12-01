@@ -1,5 +1,5 @@
 /**************************************************
- * Faith-MBTI Test – app.js (Final Balanced Version)
+ * Faith-MBTI Test – app.js (Final Integrated Version)
  **************************************************/
 
 /* 1. 전역 상태 및 DOM 캐싱 */
@@ -10,6 +10,7 @@ let myResultType = null;
 let currentViewType = null;
 let currentChurchMembers = []; 
 
+// DOM 요소 캐싱
 const dom = {
   sections: {
     intro: document.getElementById("intro-section"),
@@ -196,7 +197,6 @@ function goNextOrResult() {
 
     const { type, scores, axisScores } = calculateResult();
     
-    // 결과 로컬스토리지 저장
     const resultData = {
       type: type,
       scores: scores,
@@ -365,7 +365,7 @@ function updateTypeButtonsActive() {
   });
 }
 
-/* 4. 이벤트 핸들러 (모든 버튼에 안전장치 추가) */
+/* 4. 이벤트 핸들러 */
 
 if (dom.btns.todayVerse) {
   dom.btns.todayVerse.addEventListener("click", () => {
@@ -489,7 +489,7 @@ if (dom.btns.restart) {
   });
 }
 
-// 개발용 버튼
+// 개발용 버튼 (결과 바로보기 -> 검사 안 함 상태)
 if (dom.btns.goResult) {
   dom.btns.goResult.addEventListener("click", () => {
     localStorage.removeItem('faith_result_v1');
@@ -585,7 +585,7 @@ async function deleteChurchMember(churchName, password, memberId) {
   await fs.deleteDoc(fs.doc(fs.collection(churchRef, "members"), memberId));
 }
 
-// [수정됨] 결과 리스트 렌더링 (강점 요약 데이터 사용)
+// [수정됨] 강점 데이터 적용
 function renderChurchList(churchName, members) {
   if (!dom.churchList) return;
   if (!members || !members.length) {
@@ -662,17 +662,14 @@ function analyzeAndRenderCommunity() {
   const isTie = maxTypes.length > 1;
 
   // 2. 대표 성향 결정 (동률일 때 'X'로 표시하지 않고 둘 다 표시)
-  // 예: "E" vs "I"가 같으면 -> "E/I"
   const domE = counts.E === counts.I ? "E/I" : (counts.E > counts.I ? "E" : "I");
   const domS = counts.S === counts.N ? "S/N" : (counts.S > counts.N ? "S" : "N");
   const domT = counts.T === counts.F ? "T/F" : (counts.T > counts.F ? "T" : "F");
   const domJ = counts.J === counts.P ? "J/P" : (counts.J > counts.P ? "J" : "P");
   
-  // 시각적 코드 (예: E/I-S-T-J)
   const displayCode = `${domE} - ${domS} - ${domT} - ${domJ}`;
 
   // 데이터 조회용 키 생성 (동률일 경우 시스템상 기본값인 앞쪽 사용)
-  // 예: E/I -> E 사용 (단순히 이름/설명을 가져오기 위함)
   const safeE = counts.E >= counts.I ? "E" : "I";
   const safeS = counts.S >= counts.N ? "S" : "N";
   const safeT = counts.T >= counts.F ? "T" : "F";
@@ -694,6 +691,7 @@ function analyzeAndRenderCommunity() {
         <div class="summary-item">
           <div class="summary-val">${total}명</div>
           <div class="summary-label">분석 인원</div>
+          ${total < 5 ? '<div style="font-size:0.8rem; color:#ef4444; margin-top:4px;">⚠ 5명 미만은 분석이 정확하지 않아요</div>' : '<div style="font-size:0.8rem; color:#6b7280; margin-top:4px;">💡 5명 이상일 때 분석이 더 정확해요</div>'}
         </div>
         <div class="summary-item">
           <div class="summary-val" style="font-size:${isTie ? '1rem' : '1.25rem'}">
@@ -756,31 +754,22 @@ function analyzeAndRenderCommunity() {
   }
 }
 
-// 막대 그래프 렌더링 (동률 표시 강화)
+// [수정됨] 막대 그래프 렌더링 (빨강/파랑 색상 분리)
 function renderBarEnhanced(title, leftLabel, leftVal, rightLabel, rightVal, total) {
   const leftPct = Math.round((leftVal / total) * 100);
   const rightPct = 100 - leftPct;
   const gap = Math.abs(leftPct - rightPct);
   let badgeHtml = "";
   
-  // 동률일 경우 '완벽한 균형' 표시
   if (leftVal === rightVal) {
     badgeHtml = `<span class="balance-badge badge-balanced">완벽한 균형 ✨</span>`;
   } else if (gap < 15) {
     badgeHtml = `<span class="balance-badge badge-balanced">황금 밸런스 ⚖️</span>`;
   }
 
-  // 색상 처리: 동률이면 양쪽 다 진하게, 아니면 우세한 쪽만 진하게
-  let leftColor = "#ddd6fe";
-  let rightColor = "#ddd6fe";
-
-  if (leftVal === rightVal) {
-    leftColor = "#8b5cf6"; 
-    rightColor = "#8b5cf6";
-  } else {
-    leftColor = leftPct > rightPct ? "#8b5cf6" : "#ddd6fe";
-    rightColor = rightPct > leftPct ? "#8b5cf6" : "#ddd6fe";
-  }
+  // 색상 분리: 왼쪽 Rose, 오른쪽 Blue
+  const colorLeft = "#f43f5e"; // Rose
+  const colorRight = "#3b82f6"; // Blue
 
   return `
     <div style="margin-bottom:16px;">
@@ -788,8 +777,8 @@ function renderBarEnhanced(title, leftLabel, leftVal, rightLabel, rightVal, tota
         <span>${title} ${badgeHtml}</span>
       </div>
       <div class="analysis-bar-container">
-        <div style="width:${leftPct}%; background:${leftColor}; height:100%; transition: width 1s;"></div>
-        <div style="width:${rightPct}%; background:${rightColor}; height:100%; transition: width 1s;"></div>
+        <div style="width:${leftPct}%; background:${colorLeft}; height:100%; transition: width 1s;"></div>
+        <div style="width:${rightPct}%; background:${colorRight}; height:100%; transition: width 1s;"></div>
       </div>
       <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#6b7280; margin-top:4px;">
         <span>${leftLabel} <strong>${leftVal}명</strong> (${leftPct}%)</span>
@@ -799,46 +788,45 @@ function renderBarEnhanced(title, leftLabel, leftVal, rightLabel, rightVal, tota
   `;
 }
 
-// 모임 스타일 (동률 멘트 포함)
 function getMeetingStyle(c, total) {
   let text = "";
   if (c.E === c.I) {
-    text += "✨ <strong>활력과 깊이의 균형:</strong> 역동적인 에너지와 차분한 깊이가 공존하는 이상적인 분위기입니다. 상황에 따라 유연하게 모임을 이끌 수 있습니다.<br/><br/>";
+    text += "✨ <strong>활력과 깊이의 균형:</strong> 역동적인 에너지와 차분한 묵상이 공존하는 아주 이상적인 분위기입니다. 상황에 따라 유연하게 모임을 이끌 수 있습니다.<br/><br/>";
   } else if (c.E > c.I) {
-    text += "🎤 <strong>활기차고 에너지가 넘쳐요.</strong> 누군가 먼저 말을 꺼내고 분위기를 주도하는 것이 자연스럽습니다.<br/><br/>";
+    text += "🎤 <strong>활기차고 에너지가 넘쳐요.</strong> 누군가 먼저 말을 꺼내고 분위기를 주도하는 것이 자연스럽습니다. 다만 목소리 큰 사람 위주로 흘러가지 않도록 주의하세요.<br/><br/>";
   } else {
-    text += "☕ <strong>차분하고 깊이가 있어요.</strong> 왁자지껄하기보다 소그룹으로 깊게 나누는 것을 선호합니다.<br/><br/>";
+    text += "☕ <strong>차분하고 깊이가 있어요.</strong> 왁자지껄하기보다 소그룹으로 깊게 나누는 것을 선호합니다. 침묵을 어색해하지 마세요.<br/><br/>";
   }
 
   if (c.J === c.P) {
     text += "🤝 <strong>계획과 유연함의 조화!</strong> 큰 틀은 지키되 상황에 맞춰 융통성을 발휘할 줄 아는 성숙한 모임입니다.";
   } else if (c.J > c.P) {
-    text += "📅 <strong>계획대로 착착!</strong> 시작과 끝 시간이 명확하고, 정해진 순서대로 진행되는 것을 좋아합니다.";
+    text += "📅 <strong>계획대로 착착!</strong> 시작과 끝 시간이 명확하고, 정해진 순서대로 진행되는 것을 좋아합니다. 돌발 상황에는 당황할 수 있어요.";
   } else {
-    text += "🌊 <strong>그때그때 유연하게!</strong> 순서가 바뀌거나 새로운 나눔이 길어져도 즐겁게 받아들입니다.";
+    text += "🌊 <strong>그때그때 유연하게!</strong> 순서가 바뀌거나 새로운 나눔이 길어져도 즐겁게 받아들입니다. 하지만 결론 없이 끝날 수도 있으니 마무리를 챙겨주세요.";
   }
   return text;
 }
 
-// 소수자 케어
 function getMinorityCare(c, total) {
   const minorities = [];
-  const threshold = total * 0.3; 
+  // 소수자 기준 40%로 상향
+  const threshold = total * 0.4; 
 
-  if (c.I < threshold && c.I > 0) minorities.push("🤫 <strong>내향형(I):</strong> 에너지가 너무 높은 모임에서 기가 빨릴 수 있어요. 생각할 시간을 주세요.");
-  if (c.E < threshold && c.E > 0) minorities.push("📣 <strong>외향형(E):</strong> 너무 차분하면 답답할 수 있어요. 에너지를 발산할 기회를 주세요.");
-  if (c.S < threshold && c.S > 0) minorities.push("👀 <strong>현실형(S):</strong> 뜬구름 잡는 비전 나눔보다 '이번 주에 당장 무엇을 할지' 구체적인 적용점을 좋아해요.");
-  if (c.N < threshold && c.N > 0) minorities.push("🌈 <strong>직관형(N):</strong> 반복되는 일상 나눔을 지루해할 수 있어요. '꿈'과 '비전'을 나눠주세요.");
-  if (c.F < threshold && c.F > 0) minorities.push("💖 <strong>감정형(F):</strong> 일 처리보다 '서로의 마음'을 확인받고 싶어 해요. 공감의 시간이 필요해요.");
-  if (c.T < threshold && c.T > 0) minorities.push("🤔 <strong>사고형(T):</strong> 감정 호소만으로는 설득되지 않아요. 논리적인 이유를 설명해 주세요.");
+  if (c.I < threshold && c.I > 0) minorities.push("🤫 <strong>내향형(I) 지체들:</strong> 에너지가 너무 높은 모임에서 기가 빨릴 수 있어요. 생각할 시간을 주세요.");
+  if (c.E < threshold && c.E > 0) minorities.push("📣 <strong>외향형(E) 지체들:</strong> 너무 차분하면 답답할 수 있어요. 에너지를 발산할 기회를 주세요.");
+  if (c.S < threshold && c.S > 0) minorities.push("👀 <strong>현실형(S) 지체들:</strong> 뜬구름 잡는 비전 나눔보다 '이번 주에 당장 무엇을 할지' 구체적인 적용점을 좋아해요.");
+  if (c.N < threshold && c.N > 0) minorities.push("🌈 <strong>직관형(N) 지체들:</strong> 반복되는 일상 나눔을 지루해할 수 있어요. '꿈'과 '비전'을 나눠주세요.");
+  if (c.F < threshold && c.F > 0) minorities.push("💖 <strong>감정형(F) 지체들:</strong> 일 처리보다 '서로의 마음'을 확인받고 싶어 해요. 공감의 시간이 필요해요.");
+  if (c.T < threshold && c.T > 0) minorities.push("🤔 <strong>사고형(T) 지체들:</strong> 감정 호소만으로는 설득되지 않아요. 논리적인 이유를 설명해 주세요.");
 
   if (minorities.length === 0) {
-    return "⚖️ <strong>모든 성향이 골고루 섞여 있어요!</strong><br/>한쪽으로 치우치지 않은 건강한 구성입니다. 서로 다른 은사를 가진 지체들이 골고루 섞여 있습니다. 이 다양성을 유지하며 서로 배우는 관계가 되세요.";
+    return "⚖️ <strong>치우침 없이 조화로워요!</strong><br/>서로 다른 은사를 가진 지체들이 골고루 섞여 있습니다. 이 다양성을 유지하며 서로 배우는 관계가 되세요.";
   }
   return minorities.join("<br/><br/>");
 }
 
-// [업그레이드] 성장 가이드 (동률 시 균형 조언 추가)
+// [업그레이드] 성장 가이드 (동률 시 균형 조언 제공)
 function getDetailedGrowthGuide(c, total) {
   const guides = [];
 
@@ -868,6 +856,7 @@ function getDetailedGrowthGuide(c, total) {
 // 교회 섹션 이벤트
 if (dom.btns.church && dom.sections.church) {
   dom.btns.church.addEventListener("click", () => {
+    history.pushState({ page: "church" }, "", "#church");
     dom.sections.intro.classList.add("hidden");
     dom.sections.test.classList.add("hidden");
     dom.sections.result.classList.add("hidden");
@@ -875,10 +864,24 @@ if (dom.btns.church && dom.sections.church) {
   });
 }
 
+// 뒤로 가기 감지
+window.addEventListener("popstate", (event) => {
+  if (!dom.sections.church.classList.contains("hidden")) {
+    dom.sections.church.classList.add("hidden");
+    if (myResultType) dom.sections.result.classList.remove("hidden");
+    else dom.sections.intro.classList.remove("hidden");
+  }
+});
+
 if (dom.btns.churchClose) {
   dom.btns.churchClose.addEventListener("click", () => {
-    dom.sections.church.classList.add("hidden");
-    dom.sections.result.classList.remove("hidden");
+    if (location.hash === "#church") {
+      history.back(); 
+    } else {
+      dom.sections.church.classList.add("hidden");
+      if (myResultType) dom.sections.result.classList.remove("hidden");
+      else dom.sections.intro.classList.remove("hidden");
+    }
   });
 }
 
@@ -962,7 +965,7 @@ if (dom.btns.invite) {
   });
 }
 
-// [수정됨] 그룹 결과 복사/공유 버튼 (줄바꿈 및 중복 방지)
+// 그룹 결과 복사/공유 버튼 (줄바꿈 및 중복 방지)
 if (dom.btns.churchCopy) {
   dom.btns.churchCopy.addEventListener("click", async () => {
     const members = currentChurchMembers;
