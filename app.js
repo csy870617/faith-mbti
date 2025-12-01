@@ -629,7 +629,7 @@ function renderChurchList(churchName, members) {
 }
 
 /* =========================================
-   [업그레이드됨] 공동체 분석 로직
+   [업그레이드됨] 공동체 분석 로직 (성장 포인트 추가)
    ========================================= */
 
 function analyzeAndRenderCommunity() {
@@ -650,11 +650,19 @@ function analyzeAndRenderCommunity() {
     typeCounts[t] = (typeCounts[t] || 0) + 1;
   });
 
-  let maxType = "", maxVal = 0;
-  for (const [t, v] of Object.entries(typeCounts)) {
-    if (v > maxVal) { maxVal = v; maxType = t; }
+  // 1. 최다 유형 찾기 (동률 처리)
+  let maxVal = 0;
+  for (const v of Object.values(typeCounts)) {
+    if (v > maxVal) maxVal = v;
   }
-  
+  const maxTypes = [];
+  for (const [t, v] of Object.entries(typeCounts)) {
+    if (v === maxVal) maxTypes.push(t);
+  }
+  const maxTypeDisplay = maxTypes.join(", ");
+  const isTie = maxTypes.length > 1;
+
+  // 2. 대표 성향 결정
   const domE = counts.E >= counts.I ? "E" : "I";
   const domS = counts.S >= counts.N ? "S" : "N";
   const domT = counts.T >= counts.F ? "T" : "F";
@@ -663,6 +671,7 @@ function analyzeAndRenderCommunity() {
   const groupType = domE + domS + domT + domJ; 
   const topTypeName = window.typeResults[groupType] ? window.typeResults[groupType].nameKo : groupType;
 
+  // 3. HTML 생성
   let html = `
     <div class="analysis-box">
       <div class="analysis-header">📊 우리 공동체 영적 DNA</div>
@@ -673,8 +682,12 @@ function analyzeAndRenderCommunity() {
           <div class="summary-label">분석 인원</div>
         </div>
         <div class="summary-item">
-          <div class="summary-val">${maxType}</div>
-          <div class="summary-label">최다 유형 (${maxVal}명)</div>
+          <div class="summary-val" style="font-size:${isTie ? '1rem' : '1.25rem'}">
+            ${maxTypeDisplay}
+          </div>
+          <div class="summary-label">
+            최다 유형 (${maxVal}명) ${isTie ? '<span class="badge badge-leaning" style="font-size:0.6rem; vertical-align:middle;">공동</span>' : ''}
+          </div>
         </div>
       </div>
 
@@ -708,6 +721,13 @@ function analyzeAndRenderCommunity() {
       </div>
     </div>
 
+    <div class="analysis-box">
+      <div class="analysis-section-title">🌱 우리 공동체 성장 가이드</div>
+      <div class="growth-box">
+        ${getDetailedGrowthGuide(counts, total)}
+      </div>
+    </div>
+
     <button id="close-analysis-btn" class="close-analysis-btn">분석 결과 닫기 ✖</button>
   `;
 
@@ -722,10 +742,10 @@ function analyzeAndRenderCommunity() {
   }
 }
 
+// 막대 그래프 렌더링
 function renderBarEnhanced(title, leftLabel, leftVal, rightLabel, rightVal, total) {
   const leftPct = Math.round((leftVal / total) * 100);
   const rightPct = 100 - leftPct;
-  
   const gap = Math.abs(leftPct - rightPct);
   let badgeHtml = "";
   
@@ -755,20 +775,20 @@ function renderBarEnhanced(title, leftLabel, leftVal, rightLabel, rightVal, tota
   `;
 }
 
+// 모임 스타일 텍스트
 function getMeetingStyle(c, total) {
   let text = "";
-
-  if (c.E > c.I * 1.5) text += "🎤 <strong>활기차고 에너지가 넘쳐요.</strong> 누군가 먼저 말을 꺼내고 분위기를 주도하는 것이 자연스럽습니다. 다만 목소리 큰 사람 위주로 흘러가지 않도록 주의하세요.<br/><br/>";
+  if (c.E > c.I * 1.5) text += "🎤 <strong>활기차고 에너지가 넘쳐요.</strong> 누군가 먼저 말을 꺼내고 분위기를 주도하는 것이 자연스럽습니다. 목소리 큰 사람 위주로 흘러가지 않게 주의하세요.<br/><br/>";
   else if (c.I > c.E * 1.5) text += "☕ <strong>차분하고 깊이가 있어요.</strong> 왁자지껄하기보다 소그룹으로 깊게 나누는 것을 선호합니다. 침묵을 어색해하지 마세요.<br/><br/>";
   else text += "✨ <strong>역동과 정적인 분위기가 조화로워요.</strong> 상황에 따라 활발하게, 때로는 진지하게 모임을 이끌 수 있는 건강한 모임입니다.<br/><br/>";
 
   if (c.J > c.P * 1.5) text += "📅 <strong>계획대로 착착!</strong> 시작과 끝 시간이 명확하고, 정해진 순서대로 진행되는 것을 좋아합니다. 돌발 상황에는 당황할 수 있어요.";
   else if (c.P > c.J * 1.5) text += "🌊 <strong>그때그때 유연하게!</strong> 순서가 바뀌거나 새로운 나눔이 길어져도 즐겁게 받아들입니다. 하지만 결론 없이 끝날 수도 있으니 마무리를 챙겨주세요.";
   else text += "🤝 <strong>계획과 유연함의 조화!</strong> 큰 틀은 지키되 상황에 맞춰 융통성을 발휘할 줄 아는 성숙한 모임입니다.";
-
   return text;
 }
 
+// 소수자 케어 텍스트
 function getMinorityCare(c, total) {
   const minorities = [];
   const threshold = total * 0.3; 
@@ -781,10 +801,44 @@ function getMinorityCare(c, total) {
   if (c.T < threshold && c.T > 0) minorities.push("🤔 <strong>사고형(T) 지체들:</strong> 감정적인 호소만으로는 설득되지 않아요. '왜 해야 하는지' 논리적인 이유와 목적을 설명해 주세요.");
 
   if (minorities.length === 0) {
-    return "⚖️ <strong>모든 성향이 골고루 섞여 있어요!</strong><br/>한쪽으로 치우치지 않은 건강한 구성입니다. 서로 다른 은사를 가진 지체들이 협력하여 큰 시너지를 낼 수 있습니다.";
+    return "⚖️ <strong>치우침 없이 조화로워요!</strong><br/>서로 다른 은사를 가진 지체들이 골고루 섞여 있습니다. 이 다양성을 유지하며 서로 배우는 관계가 되세요.";
+  }
+  return minorities.join("<br/><br/>");
+}
+
+// [신규] 상세 성장 가이드 (축별 밸런스에 따른 조언)
+function getDetailedGrowthGuide(c, total) {
+  const guides = [];
+
+  // E vs I (소통)
+  if (c.E >= c.I) {
+    guides.push(`<div class="growth-item"><div class="growth-icon">👂</div><div><strong>경청의 영성:</strong> 에너지가 넘치는 우리, 가끔은 '거룩한 침묵'의 시간을 가져보면 어떨까요? 말하는 것보다 듣는 것에서 깊은 은혜가 시작됩니다.</div></div>`);
+  } else {
+    guides.push(`<div class="growth-item"><div class="growth-icon">🔥</div><div><strong>표현의 용기:</strong> 깊은 묵상이 있는 우리, 이제는 그 은혜를 입 밖으로 꺼내어 나누는 '3초의 용기'를 내보세요. 나눔이 풍성해집니다.</div></div>`);
   }
 
-  return minorities.join("<br/><br/>");
+  // S vs N (시선)
+  if (c.S >= c.N) {
+    guides.push(`<div class="growth-item"><div class="growth-icon">🔭</div><div><strong>거룩한 상상력:</strong> 현실에 충실한 우리, 눈앞의 문제 해결을 넘어 하나님이 이 공동체를 통해 그리시는 '큰 그림(Vision)'을 함께 꿈꿔보세요.</div></div>`);
+  } else {
+    guides.push(`<div class="growth-item"><div class="growth-icon">🧹</div><div><strong>거룩한 디테일:</strong> 비전이 큰 우리, 그 꿈을 이루기 위해 당장 오늘 해야 할 '작은 순종'과 '실무'를 놓치지 않도록 챙겨주세요.</div></div>`);
+  }
+
+  // T vs F (마음)
+  if (c.T >= c.F) {
+    guides.push(`<div class="growth-item"><div class="growth-icon">💓</div><div><strong>공감의 온도:</strong> 옳은 말을 잘하는 우리, 그 정답을 전하기 전에 따뜻한 눈빛과 공감으로 상대방의 마음을 먼저 녹여주세요.</div></div>`);
+  } else {
+    guides.push(`<div class="growth-item"><div class="growth-icon">⚖️</div><div><strong>분별의 지혜:</strong> 사랑이 넘치는 우리, 관계가 상할까 봐 덮어두기보다 건강한 공동체를 위해 '사랑 안에서 진리'를 말하는 용기를 가져보세요.</div></div>`);
+  }
+
+  // J vs P (삶)
+  if (c.J >= c.P) {
+    guides.push(`<div class="growth-item"><div class="growth-icon">🕊️</div><div><strong>여백의 미:</strong> 계획이 철저한 우리, 계획대로 되지 않는 순간이 바로 하나님이 일하시는 틈입니다. 그 의외성을 기쁨으로 받아들여 보세요.</div></div>`);
+  } else {
+    guides.push(`<div class="growth-item"><div class="growth-icon">🧱</div><div><strong>질서의 능력:</strong> 자유로운 우리, 약속 시간과 규칙 같은 작은 질서를 지킬 때 서로를 향한 신뢰가 더욱 단단해집니다.</div></div>`);
+  }
+
+  return guides.join("");
 }
 
 /* -----------------------------------------------------------
@@ -1010,3 +1064,4 @@ if (dom.btns.fontUp) {
     applyFontSize(1.0);
   });
 }
+
