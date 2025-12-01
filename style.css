@@ -546,3 +546,70 @@ main {
   transform: translateY(-1px);
 }
 
+/* =========================================
+   [추가] 공동체 분석 심화 스타일
+   ========================================= */
+
+/* 분석 섹션 카드 디자인 */
+.analysis-section {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 2px dashed #f1f5f9;
+}
+
+.analysis-section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 밸런스 배지 */
+.balance-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  margin-left: 6px;
+}
+.badge-balanced { background: #dbeafe; color: #2563eb; } /* 균형 */
+.badge-leaning { background: #f3f4f6; color: #4b5563; } /* 한쪽 우세 */
+
+/* 소수자 케어 박스 */
+.minority-box {
+  background: #fff7ed;
+  border: 1px solid #ffedd5;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 0.9rem;
+  color: #9a3412;
+  line-height: 1.5;
+}
+
+/* 회의 스타일 박스 */
+.meeting-style-box {
+  background: #f0f9ff;
+  border: 1px solid #e0f2fe;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 0.9rem;
+  color: #0369a1;
+  line-height: 1.5;
+}
+
+/* 닫기 버튼 강조 */
+.close-analysis-btn {
+  background: #1f2937;
+  color: #fff;
+  font-weight: 700;
+  transition: 0.2s;
+}
+.close-analysis-btn:hover {
+  background: #374151;
+  transform: translateY(-1px);
+}
+
