@@ -970,7 +970,7 @@ if (dom.btns.churchCopy) {
     if (!members || members.length === 0) return alert("복사할 데이터가 없습니다.");
 
     const groupName = dom.inputs.viewChurch.value.trim() || "우리교회";
-    const shareHeader = `${groupName} - 신앙 유형 결과`;
+    const shareHeader = `- ${groupName} 신앙 유형 결과`;
     
     let shareBody = "";
     members.forEach(m => {
@@ -1082,3 +1082,4 @@ window.addEventListener('DOMContentLoaded', () => {
     dom.inputs.rememberCreds.checked = true;
   }
 });
+
