@@ -1,5 +1,5 @@
 /**************************************************
- * Faith-MBTI Test – app.js (Balanced Analysis Version)
+ * Faith-MBTI Test – app.js (Final Balanced Version)
  **************************************************/
 
 /* 1. 전역 상태 및 DOM 캐싱 */
@@ -10,7 +10,6 @@ let myResultType = null;
 let currentViewType = null;
 let currentChurchMembers = []; 
 
-// DOM 요소 캐싱
 const dom = {
   sections: {
     intro: document.getElementById("intro-section"),
@@ -586,7 +585,7 @@ async function deleteChurchMember(churchName, password, memberId) {
   await fs.deleteDoc(fs.doc(fs.collection(churchRef, "members"), memberId));
 }
 
-// [수정됨] 강점 데이터 적용
+// [수정됨] 결과 리스트 렌더링 (강점 요약 데이터 사용)
 function renderChurchList(churchName, members) {
   if (!dom.churchList) return;
   if (!members || !members.length) {
@@ -596,6 +595,7 @@ function renderChurchList(churchName, members) {
   const rows = members.map(m => {
     const typeData = window.typeResults[m.type];
     const desc = typeData ? typeData.strengthShort : (m.shortText || "");
+    
     return `
     <tr>
       <td>${m.name || ""}</td><td>${m.type || ""}</td><td>${desc}</td>
@@ -628,7 +628,7 @@ function renderChurchList(churchName, members) {
 }
 
 /* =========================================
-   [업그레이드됨] 공동체 분석 로직
+   [업그레이드됨] 공동체 분석 로직 (동률/균형 처리 강화)
    ========================================= */
 
 function analyzeAndRenderCommunity() {
@@ -649,7 +649,7 @@ function analyzeAndRenderCommunity() {
     typeCounts[t] = (typeCounts[t] || 0) + 1;
   });
 
-  // 1. 최다 유형 찾기 (동률 포함)
+  // 1. 최다 유형 찾기 (동률 처리)
   let maxVal = 0;
   for (const v of Object.values(typeCounts)) {
     if (v > maxVal) maxVal = v;
@@ -661,14 +661,29 @@ function analyzeAndRenderCommunity() {
   const maxTypeDisplay = maxTypes.join(", ");
   const isTie = maxTypes.length > 1;
 
-  // 2. 대표 성향 (단순 합산)
-  const domE = counts.E >= counts.I ? "E" : "I";
-  const domS = counts.S >= counts.N ? "S" : "N";
-  const domT = counts.T >= counts.F ? "T" : "F";
-  const domJ = counts.J >= counts.P ? "J" : "P";
+  // 2. 대표 성향 결정 (동률일 때 'X'로 표시하지 않고 둘 다 표시)
+  // 예: "E" vs "I"가 같으면 -> "E/I"
+  const domE = counts.E === counts.I ? "E/I" : (counts.E > counts.I ? "E" : "I");
+  const domS = counts.S === counts.N ? "S/N" : (counts.S > counts.N ? "S" : "N");
+  const domT = counts.T === counts.F ? "T/F" : (counts.T > counts.F ? "T" : "F");
+  const domJ = counts.J === counts.P ? "J/P" : (counts.J > counts.P ? "J" : "P");
   
-  const groupType = domE + domS + domT + domJ; 
-  const topTypeName = window.typeResults[groupType] ? window.typeResults[groupType].nameKo : groupType;
+  // 시각적 코드 (예: E/I-S-T-J)
+  const displayCode = `${domE} - ${domS} - ${domT} - ${domJ}`;
+
+  // 데이터 조회용 키 생성 (동률일 경우 시스템상 기본값인 앞쪽 사용)
+  // 예: E/I -> E 사용 (단순히 이름/설명을 가져오기 위함)
+  const safeE = counts.E >= counts.I ? "E" : "I";
+  const safeS = counts.S >= counts.N ? "S" : "N";
+  const safeT = counts.T >= counts.F ? "T" : "F";
+  const safeJ = counts.J >= counts.P ? "J" : "P";
+  const lookupCode = safeE + safeS + safeT + safeJ;
+
+  const topTypeName = window.typeResults[lookupCode] ? window.typeResults[lookupCode].nameKo : lookupCode;
+  
+  // 성향이 하나라도 동률이면 '복합 성향' 뱃지 추가
+  const isHybrid = (counts.E === counts.I) || (counts.S === counts.N) || (counts.T === counts.F) || (counts.J === counts.P);
+  const typeBadge = isHybrid ? '<span class="badge badge-balanced" style="font-size:0.75rem; margin-left:6px;">복합/균형 성향</span>' : '';
 
   // 3. HTML 생성
   let html = `
@@ -691,10 +706,10 @@ function analyzeAndRenderCommunity() {
       </div>
 
       <div class="insight-text" style="text-align:center; margin-top:16px;">
-        우리의 대표 성향은 <span class="insight-highlight">${topTypeName}</span> 입니다.<br/>
-        <span style="font-size:0.85rem; color:#6b7280; font-weight:400;">
-          (전체 비율을 합산하여 도출된 결과입니다)
-        </span>
+        우리의 대표 성향은 <span class="insight-highlight">${displayCode}</span> 입니다.<br/>
+        <div style="margin-top:4px; font-weight:600; color:#4b5563;">
+          "${topTypeName}" ${typeBadge}
+        </div>
       </div>
     </div>
 
@@ -741,20 +756,31 @@ function analyzeAndRenderCommunity() {
   }
 }
 
+// 막대 그래프 렌더링 (동률 표시 강화)
 function renderBarEnhanced(title, leftLabel, leftVal, rightLabel, rightVal, total) {
   const leftPct = Math.round((leftVal / total) * 100);
   const rightPct = 100 - leftPct;
   const gap = Math.abs(leftPct - rightPct);
   let badgeHtml = "";
   
+  // 동률일 경우 '완벽한 균형' 표시
   if (leftVal === rightVal) {
     badgeHtml = `<span class="balance-badge badge-balanced">완벽한 균형 ✨</span>`;
   } else if (gap < 15) {
     badgeHtml = `<span class="balance-badge badge-balanced">황금 밸런스 ⚖️</span>`;
   }
 
-  const leftColor = leftPct >= rightPct ? "#8b5cf6" : "#ddd6fe";
-  const rightColor = rightPct > leftPct ? "#8b5cf6" : "#ddd6fe";
+  // 색상 처리: 동률이면 양쪽 다 진하게, 아니면 우세한 쪽만 진하게
+  let leftColor = "#ddd6fe";
+  let rightColor = "#ddd6fe";
+
+  if (leftVal === rightVal) {
+    leftColor = "#8b5cf6"; 
+    rightColor = "#8b5cf6";
+  } else {
+    leftColor = leftPct > rightPct ? "#8b5cf6" : "#ddd6fe";
+    rightColor = rightPct > leftPct ? "#8b5cf6" : "#ddd6fe";
+  }
 
   return `
     <div style="margin-bottom:16px;">
@@ -773,6 +799,7 @@ function renderBarEnhanced(title, leftLabel, leftVal, rightLabel, rightVal, tota
   `;
 }
 
+// 모임 스타일 (동률 멘트 포함)
 function getMeetingStyle(c, total) {
   let text = "";
   if (c.E === c.I) {
@@ -793,6 +820,7 @@ function getMeetingStyle(c, total) {
   return text;
 }
 
+// 소수자 케어
 function getMinorityCare(c, total) {
   const minorities = [];
   const threshold = total * 0.3; 
@@ -805,11 +833,12 @@ function getMinorityCare(c, total) {
   if (c.T < threshold && c.T > 0) minorities.push("🤔 <strong>사고형(T):</strong> 감정 호소만으로는 설득되지 않아요. 논리적인 이유를 설명해 주세요.");
 
   if (minorities.length === 0) {
-    return "⚖️ <strong>모든 성향이 골고루 섞여 있어요!</strong><br/>한쪽으로 치우치지 않은 건강한 구성입니다.";
+    return "⚖️ <strong>모든 성향이 골고루 섞여 있어요!</strong><br/>한쪽으로 치우치지 않은 건강한 구성입니다. 서로 다른 은사를 가진 지체들이 골고루 섞여 있습니다. 이 다양성을 유지하며 서로 배우는 관계가 되세요.";
   }
   return minorities.join("<br/><br/>");
 }
 
+// [업그레이드] 성장 가이드 (동률 시 균형 조언 추가)
 function getDetailedGrowthGuide(c, total) {
   const guides = [];
 
