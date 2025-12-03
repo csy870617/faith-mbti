@@ -12,12 +12,18 @@ html {
 
 body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  /* [중요] 배경 고정 (fixed) 설정으로 긴 글에서도 배경이 깨지지 않음 */
   background: radial-gradient(circle at top, #f3f0ff, #f8fafc);
+  background-attachment: fixed; 
+  background-size: cover;
+  
   color: #111827;
   min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  padding: 40px 20px; /* 데스크탑 상하 여백 추가 */
+  
+  /* Flex 제거하고 Block 레이아웃으로 변경하여 스크롤 문제 방지 */
+  display: block; 
+  padding: 40px 20px;
+  
   font-size: 1.125rem; 
   line-height: 1.7;
   word-break: keep-all;
@@ -28,18 +34,24 @@ body {
 
 .app {
   width: 100%;
-  max-width: 1200px; /* [변경] 960px -> 1200px (넓은 화면 대응) */
+  max-width: 1200px;
+  margin: 0 auto; /* 가운데 정렬 */
   background: #ffffff;
-  border-radius: 32px; /* 라운드 더 부드럽게 */
-  box-shadow: 0 10px 40px rgba(15, 23, 42, 0.08); /* 그림자 고급화 */
+  border-radius: 32px;
+  box-shadow: 0 10px 40px rgba(15, 23, 42, 0.08);
+  
+  /* [중요] 높이 자동 조절 */
+  height: auto;
+  min-height: 100vh; 
   overflow: visible;
+  
   display: flex;
   flex-direction: column;
 }
 
 /* HEADER */
 header {
-  padding: 24px 40px; /* 내부 여백 확장 */
+  padding: 24px 40px;
   border-bottom: 1px solid #f1f5f9;
   display: flex;
   flex-direction: column;
@@ -63,7 +75,6 @@ header {
 }
 .logo-sub { font-size: 0.875rem; color: #64748b; font-weight: 500; }
 
-/* 글자 크기 조절 버튼 */
 .font-controls {
   display: flex; gap: 4px; background: #f1f5f9; padding: 4px; border-radius: 10px; flex-shrink: 0;
 }
@@ -77,35 +88,29 @@ header {
 
 /* MAIN */
 main { 
-  padding: 40px; /* 내부 여백 확장 */
+  padding: 40px; 
   display: flex; flex-direction: column; gap: 40px; 
+  flex: 1; /* 남은 공간 채우기 */
 }
 
-/* ■■■ INTRO (구조 개선) ■■■ */
-/* HTML 구조: div(타이틀) / div(시작카드) / div(배너들) 
-   -> Grid를 이용해 왼쪽(타이틀)은 전체 높이를 쓰고, 오른쪽은 카드를 쌓음
-*/
+/* INTRO */
 .intro { 
   display: grid; 
-  grid-template-columns: 1.2fr 1fr; /* 왼쪽 글씨 영역을 좀 더 넓게 */
-  grid-template-rows: auto auto; /* 오른쪽 아이템들이 자연스럽게 쌓이도록 */
+  grid-template-columns: 1.2fr 1fr; 
+  grid-template-rows: auto auto; 
   gap: 40px; 
-  align-items: start; /* 상단 정렬 기준 */
+  align-items: start; 
 }
-
-/* 첫 번째 div (타이틀 영역) */
 .intro > div:nth-child(1) {
   grid-column: 1 / 2;
-  grid-row: 1 / 3; /* 세로로 길게 차지 */
-  align-self: center; /* 수직 중앙 정렬 */
+  grid-row: 1 / 3; 
+  align-self: center; 
   padding-right: 20px;
 }
 
-/* 두 번째, 세 번째 div (카드 영역) -> 자동으로 오른쪽 컬럼(2열)에 배치됨 */
-
 .intro-title { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 20px; line-height: 1.3; }
 .intro-highlight { background: linear-gradient(120deg, #4f46e5, #a855f7); -webkit-background-clip: text; color: transparent; }
-.intro-text { font-size: 1.1rem; font-weight: 500; color: #475569; line-height: 1.7; margin-bottom: 24px; word-break: keep-all; }
+.intro-text { font-size: 1.1rem; font-weight: 500; color: #475569; line-height: 1.7; margin-bottom: 24px; }
 .intro-tags { display: flex; flex-wrap: wrap; gap: 10px; }
 .tag { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; font-size: 0.875rem; border-radius: 999px; background: #f5f3ff; color: #5b21b6; font-weight: 600; }
 .tag-dot { width: 6px; height: 6px; background: #7c3aed; border-radius: 999px; }
@@ -133,10 +138,29 @@ main {
 
 .btn, .btn-secondary { border-radius: 12px; border: 1px solid #e2e8f0; background: #fff; padding: 8px 16px; font-size: 0.85rem; font-weight: 600; color: #475569; cursor: pointer; transition: 0.2s; }
 .btn:hover, .btn-secondary:hover { background: #f8fafc; border-color: #cbd5e1; }
-
 .btn-primary { padding: 8px 16px; border-radius: 12px; border: none; background: var(--primary-gradient); color: #fff; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: 0.2s; }
 .btn-primary:hover { opacity: 0.9; }
 .btn-primary.small { padding: 6px 12px; font-size: 0.75rem; }
+
+/* BLOG ENTRY BANNER (New Design) */
+.blog-entry-banner {
+  display: flex; align-items: center; justify-content: space-between; width: 100%; margin-top: 1rem; padding: 1.25rem 1.5rem;
+  background: #ffffff; border: 2px solid #eef2ff; border-radius: 1.25rem; text-decoration: none;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02); transition: all 0.2s ease; cursor: pointer;
+}
+.blog-entry-banner:hover { border-color: #818cf8; background: #f5f3ff; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(99, 102, 241, 0.15); }
+.blog-text-group { display: flex; flex-direction: column; gap: 0.35rem; text-align: left; }
+.blog-title { font-size: 1.05rem; font-weight: 800; color: #1e293b; letter-spacing: -0.01em; }
+.blog-desc { font-size: 0.9rem; font-weight: 500; color: #64748b; }
+.blog-icon-arrow { font-size: 1.4rem; color: #cbd5e1; font-weight: 700; transition: 0.2s; }
+.blog-entry-banner:hover .blog-icon-arrow { color: #4f46e5; transform: translateX(4px); }
+
+/* SEO Content Box (Intro Bottom) */
+.seo-content-box { grid-column: 1 / -1; margin-top: 40px; padding: 32px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 24px; color: #475569; line-height: 1.8; }
+.seo-content-box h2 { font-size: 1.1rem; font-weight: 800; color: #1e293b; margin-bottom: 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; }
+.seo-content-box h3 { font-size: 1rem; font-weight: 700; color: #334155; margin-top: 24px; margin-bottom: 8px; }
+.seo-content-box p { font-size: 0.9rem; margin-bottom: 12px; }
+.seo-content-box ul { list-style: disc; padding-left: 20px; font-size: 0.9rem; }
 
 /* TEST SECTION */
 .progress-wrapper { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
@@ -145,11 +169,8 @@ main {
 .progress-fill { width: 0%; height: 100%; background: var(--primary-gradient); transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
 
 .question-card { 
-  margin-top: 0; /* 간격 조정 */
-  border-radius: 24px; padding: 32px; background: #ffffff; border: 1px solid #e2e8f0; 
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
-  display: flex; flex-direction: column; gap: 20px;
-  min-height: 300px; justify-content: center;
+  margin-top: 0; border-radius: 24px; padding: 32px; background: #ffffff; border: 1px solid #e2e8f0; 
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); display: flex; flex-direction: column; gap: 20px; min-height: 300px; justify-content: center;
 }
 .question-code { font-size: 0.9rem; font-weight: 700; color: #8b5cf6; letter-spacing: 0.1em; text-transform: uppercase; }
 .question-text { font-size: 1.5rem; font-weight: 700; color: #1e293b; line-height: 1.5; }
@@ -158,40 +179,17 @@ main {
 .scale-labels { display: flex; justify-content: space-between; font-size: 0.85rem; color: #64748b; margin-bottom: 12px; font-weight: 500; }
 .scale-inputs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
 .scale-option input { display: none; }
-.scale-pill { 
-  padding: 12px 0; border-radius: 12px; border: 2px solid #f1f5f9; background: #fff; 
-  font-size: 1.1rem; font-weight: 700; color: #94a3b8; cursor: pointer; text-align: center; transition: all 0.2s; 
-}
+.scale-pill { padding: 12px 0; border-radius: 12px; border: 2px solid #f1f5f9; background: #fff; font-size: 1.1rem; font-weight: 700; color: #94a3b8; cursor: pointer; text-align: center; transition: all 0.2s; }
 .scale-pill:hover { border-color: #c4b5fd; color: #7c3aed; }
 .scale-option input:checked + .scale-pill { border-color: #7c3aed; background: #f5f3ff; color: #7c3aed; box-shadow: 0 4px 6px rgba(124, 58, 237, 0.15); }
-
 .nav-buttons { display: flex; gap: 12px; width: 100%; margin-top: 20px; }
 #skip-btn { margin-left: auto; color: #94a3b8; border: none; }
 
-/* ■■■ RESULT SECTION (구조 개선) ■■■ */
-.type-pill { 
-  display: inline-block; padding: 6px 12px; background: #f5f3ff; color: #7c3aed; 
-  border-radius: 999px; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.1em; margin-bottom: 16px; 
-}
-
-/* 2열 구조: 왼쪽은 고정(Sticky), 오른쪽은 스크롤 */
-.result-layout { 
-  display: grid; 
-  grid-template-columns: 380px 1fr; /* 왼쪽 고정폭, 오른쪽 나머지 */
-  gap: 32px; 
-  align-items: start; /* 상단 정렬 중요 */
-}
-
-/* 왼쪽 컬럼 (Sticky 적용) */
-.result-main-column { 
-  display: flex; flex-direction: column; gap: 16px; 
-  position: sticky; /* 스크롤 따라오기 */
-  top: 20px;
-}
-
-/* 오른쪽 컬럼 */
+/* RESULT SECTION */
+.type-pill { display: inline-block; padding: 6px 12px; background: #f5f3ff; color: #7c3aed; border-radius: 999px; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.1em; margin-bottom: 16px; }
+.result-layout { display: grid; grid-template-columns: 380px 1fr; gap: 32px; align-items: start; }
+.result-main-column { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 20px; }
 .result-side-column { display: flex; flex-direction: column; gap: 16px; }
-
 .result-card { border-radius: 20px; padding: 24px; background: #ffffff; border: 1px solid #e2e8f0; font-size: 0.95rem; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
 
 .result-main-title { font-size: 2.5rem; font-weight: 900; letter-spacing: -0.02em; color: #4f46e5; line-height: 1; }
@@ -208,17 +206,9 @@ main {
 .result-card ul { list-style: none; display: grid; gap: 8px; }
 .result-card li { padding-left: 4px; }
 .result-card li::before { content: "›"; color: #6366f1; margin-right: 8px; font-weight: 800; }
+#result-features li, #result-growth li, #result-ministries li { font-size: 1rem; color: #334155; }
+#result-strength, #result-weakness, #result-warning { font-size: 1rem; line-height: 1.6; color: #334155; }
 
-/* 폰트 적용 타겟 */
-#result-features li, 
-#result-growth li, 
-#result-ministries li { font-size: 1rem; color: #334155; }
-
-#result-strength,
-#result-weakness,
-#result-warning { font-size: 1rem; line-height: 1.6; color: #334155; }
-
-/* Verse & Charts */
 .verse-box { padding: 16px; border-radius: 16px; background: #f0fdf4; border: 1px dashed #86efac; font-size: 0.9rem; margin-top: 12px; }
 .verse-ref { font-weight: 800; margin-bottom: 6px; font-size: 1rem; color: #166534; }
 .verse-text { margin-bottom: 8px; font-size: 1.05rem; font-style: italic; color: #14532d; }
@@ -229,11 +219,9 @@ main {
 .axis-bar-bg, .detail-score-bar-bg { width: 100%; height: 8px; border-radius: 999px; background: #f1f5f9; overflow: hidden; }
 .axis-bar-fill, .detail-score-bar-fill { height: 100%; background: var(--primary-gradient); }
 .detail-score-bar-fill { background: #8b5cf6; }
-
 .axis-sub-label { font-size: 0.75rem; color: #94a3b8; }
 .analysis-label-row { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px; font-weight: 600; color: #475569; }
 
-/* Match & Others */
 .match-card { padding: 12px 16px; border-radius: 12px; background: #ffffff; border: 1px solid #e2e8f0; margin-top: 8px; }
 .match-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 6px; color: #334155; }
 .match-item { padding: 8px 12px; border-radius: 8px; background: #eff6ff; font-size: 0.85rem; margin-bottom: 6px; border: 1px solid #dbeafe; }
@@ -261,7 +249,14 @@ main {
 #church-result-list th, #church-result-list td { border-bottom: 1px solid #e2e8f0; padding: 10px 8px; text-align: left; font-size: 0.9rem; }
 #church-result-list th { font-size: 0.85rem; color: #64748b; font-weight: 700; background: #f8fafc; }
 
-/* 공동체 분석 (Community Analysis) */
+/* 기억하기 체크박스 */
+.remember-check-box { display: flex; align-items: center; gap: 6px; margin-top: 4px; margin-bottom: 8px; }
+.remember-check-box input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: #4f46e5; }
+.remember-check-box label { font-size: 0.85rem; color: #64748b; cursor: pointer; user-select: none; }
+.btn-secondary.big { width: 100%; margin-top: 16px; padding: 14px; font-size: 1rem; font-weight: 700; border-radius: 14px; background-color: #f8fafc; border: 2px solid #e2e8f0; color: #475569; transition: all 0.2s; }
+.btn-secondary.big:hover { background-color: #f1f5f9; border-color: #cbd5e1; transform: translateY(-1px); }
+
+/* 공동체 분석 */
 .analysis-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
 .analysis-header { font-size: 1.1rem; font-weight: 700; color: #4f46e5; margin-bottom: 16px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
 .analysis-summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -273,66 +268,25 @@ main {
 .insight-highlight { font-weight: 700; color: #2563eb; }
 .close-analysis-btn { width: 100%; margin-top: 12px; padding: 10px; background: #f1f5f9; color: #475569; border: none; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
 .close-analysis-btn:hover { background: #e2e8f0; }
+.analysis-section { margin-top: 20px; padding-top: 16px; border-top: 2px dashed #f1f5f9; }
+.analysis-section-title { font-size: 1rem; font-weight: 700; color: #1e293b; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.balance-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.7rem; font-weight: 700; margin-left: 6px; vertical-align: middle; }
+.badge-balanced { background: #dbeafe; color: #2563eb; }
+.badge-leaning { background: #f3f4f6; color: #4b5563; }
+.minority-box { background: #fff7ed; border: 1px solid #ffedd5; border-radius: 12px; padding: 12px; font-size: 0.9rem; color: #9a3412; line-height: 1.5; }
+.meeting-style-box { background: #f0f9ff; border: 1px solid #e0f2fe; border-radius: 12px; padding: 12px; font-size: 0.9rem; color: #0369a1; line-height: 1.5; }
+.growth-box { background: #f0fdf4; border: 1px solid #dcfce7; border-radius: 12px; padding: 16px; color: #166534; font-size: 0.95rem; line-height: 1.6; }
+.growth-item { margin-bottom: 12px; display: flex; gap: 8px; align-items: flex-start; }
+.growth-item:last-child { margin-bottom: 0; }
+.growth-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; }
 
 /* Book Banner */
-.book-banner-simple {
-  margin-top: 24px;
-  padding: 20px 24px;
-  border-radius: 20px;
-  background: #e0e7ff;
-  color: #1e1b4b;
-  display: flex;
-  align-items: center; /* 수직 중앙 */
-  justify-content: space-between;
-  gap: 16px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  flex-wrap: wrap; /* [중요] 공간 부족하면 줄바꿈 허용 */
-}
-
-.book-banner-simple-text {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1 1 240px; /* 텍스트 영역 최소 너비 확보 */
-}
-
-.book-banner-simple-title {
-  font-size: 0.9375rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.book-banner-simple-sub {
-  font-size: 0.8125rem;
-  font-weight: 540;
-  opacity: 0.8;
-  color: #0f326e;
-}
-
-.book-banner-simple-btn {
-  flex-shrink: 0;
-  padding: 10px 16px;
-  border-radius: 12px;
-  border: none;
-  background: #ffffff;
-  color: #4338ca;
-  font-size: 0.85rem;
-  font-weight: 700;
-  text-decoration: none;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: 0.2s;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  text-align: center;
-  /* 공간 부족해서 줄바꿈 되면 버튼을 꽉 채우기 */
-  flex: 1 1 auto; 
-  max-width: 100%; /* 필요시 전체 너비 사용 */
-}
-
-.book-banner-simple-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
+.book-banner-simple { margin-top: 24px; padding: 20px 24px; border-radius: 20px; background:#e0e7ff; color: #1e1b4b; display: flex; align-items: center; justify-content: space-between; gap: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex-wrap: wrap; }
+.book-banner-simple-text { display: flex; flex-direction: column; gap: 4px; flex: 1 1 240px; }
+.book-banner-simple-title { font-size: 0.9375rem; font-weight: 700; letter-spacing: -0.02em; }
+.book-banner-simple-sub { font-size: 0.8125rem; font-weight: 540; opacity: 0.8; color: #0f326e; }
+.book-banner-simple-btn { flex-shrink: 0; padding: 10px 16px; border-radius: 12px; border: none; background: #ffffff; color: #4338ca; font-size: 0.85rem; font-weight: 700; text-decoration: none; cursor: pointer; white-space: nowrap; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center; flex: 1 1 auto; max-width: 100%; }
+.book-banner-simple-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 
 /* ENGO 하단 와이드 배너 */
 .engo-bottom-banner {
@@ -349,372 +303,165 @@ main {
 .engo-desc { font-size: 0.95rem; font-weight: 500; color: rgba(255, 255, 255, 0.9); }
 .intro .engo-bottom-banner { grid-column: 1 / -1; }
 
-/* ■■■ 반응형 (모바일 & 폴더블) 처리 ■■■ */
-
-/* 1. 폴더블(펼침) & 태블릿 (폭 681px ~ 1024px) */
-/* [변경] 기준점을 768px -> 680px로 낮춰서 더 좁은 화면도 2열 유지 */
-@media (min-width: 681px) and (max-width: 1024px) {
-  .app { 
-    max-width: 100%; 
-    border-radius: 0; 
-    box-shadow: none; 
-  }
-  
-  body { 
-    padding: 0; 
-    background: #ffffff; 
-  }
-
-  main { padding: 40px 28px; }
-
-  /* 인트로: 2열 유지 */
-  .intro { 
-    grid-template-columns: 1fr 1fr; 
-    gap: 24px; 
-  }
-  
-  /* 결과 페이지: 2열 유지 */
-  .result-layout { 
-    grid-template-columns: 1fr 1.1fr; 
-    gap: 20px; 
-  }
-
-  /* [수정] 좁은 2열 화면에서 책 배너가 깨지지 않게 조정 */
-  .book-banner-simple {
-    padding: 16px;
-  }
-  .book-banner-simple-btn {
-    width: 100%; /* 버튼을 아래로 내리고 꽉 채움 */
-    margin-top: 4px;
-  }
+/* ----------------------------------------------------
+   BLOG SPECIFIC STYLES (문서형 디자인 - 투명 배경X, 흰색O)
+   ---------------------------------------------------- */
+.app main article.result-card {
+  background-color: #ffffff !important; /* 배경 흰색 유지 (투명X) */
+  border: none !important; /* 테두리만 제거하여 자연스럽게 */
+  box-shadow: none !important; /* 그림자 제거 */
+  padding: 0 !important; /* 내부 여백 초기화 (main 패딩 사용) */
+  margin-top: 0 !important;
+  max-width: 100%;
 }
 
-/* 2. 일반 스마트폰 (폭 680px 이하) */
+.app main article h1 {
+  margin-top: 0; margin-bottom: 1rem; line-height: 1.3; word-break: keep-all; color: #1e293b; border-bottom: none;
+}
+.app main article p { margin-bottom: 1.5rem; color: #334155; }
+.app main article blockquote {
+  background-color: #f8fafc; border-left: 4px solid #4f46e5; padding: 20px; border-radius: 0 12px 12px 0; margin: 24px 0; color: #475569;
+}
+
+/* ■■■ 반응형 (모바일 & 폴더블) ■■■ */
+
+/* 1. 폴더블(펼침) & 태블릿 (폭 681px ~ 1024px) - 2열 유지 */
+@media (min-width: 681px) and (max-width: 1024px) {
+  .app { max-width: 100%; border-radius: 0; box-shadow: none; }
+  body { padding: 0; background: #ffffff; }
+  main { padding: 40px 28px; }
+  .intro { grid-template-columns: 1fr 1fr; gap: 24px; }
+  .result-layout { grid-template-columns: 1fr 1.1fr; gap: 20px; }
+  .book-banner-simple { padding: 16px; }
+  .book-banner-simple-btn { width: 100%; margin-top: 4px; }
+}
+
+/* 2. 일반 스마트폰 (폭 680px 이하) - 1열 변경 */
 @media (max-width: 680px) {
   main { padding: 32px 20px; }
-
-  /* 헤더 */
   .logo { font-size: 1.25rem; }
   .logo-badge { width: 28px; height: 28px; font-size: 0.9rem; }
   .font-controls button { padding: 6px 8px; font-size: 0.7rem; }
-
-  /* 인트로 */
+  
   .intro { grid-template-columns: 1fr; gap: 32px; }
   .intro > div:nth-child(1) { grid-row: auto; grid-column: auto; text-align: left; padding-right: 0; }
-  .intro-tags { justify-content: flex-start; }
-
-  /* 결과 페이지 */
+  
   .result-layout { grid-template-columns: 1fr; gap: 32px; }
   .result-main-column { position: static; }
   
   .scale-inputs { gap: 6px; }
   .scale-pill { padding: 10px 0; font-size: 1rem; }
-
-  /* [수정됨] 배너 정렬: 세로 배치 및 간격 축소 */
-  .book-banner-simple { 
-    flex-direction: column; 
-    align-items: stretch; /* 버튼을 가로로 꽉 채움 */
-    gap: 8px; /* 간격을 16px -> 8px로 대폭 줄임 */
-    padding: 20px; /* 내부 여백 미세 조정 */
-  }
   
-  .book-banner-simple-text {
-    flex: 0 0 auto; /* 크기 자동 */
-    gap: 2px; /* 텍스트 줄 간격도 살짝 좁힘 */
-  }
+  /* 책 배너 */
+  .book-banner-simple { flex-direction: column; align-items: stretch; gap: 8px; padding: 20px; }
+  .book-banner-simple-text { flex: 0 0 auto; gap: 2px; }
+  .book-banner-simple-btn { width: 100%; text-align: center; margin-top: 4px; }
 
-  .book-banner-simple-btn { 
-    width: 100%; 
-    text-align: center; 
-    margin-top: 4px; /* 최소한의 분리감만 유지 */
-  }
+  /* 블로그 모바일 최적화 */
+  .app main article h1 { font-size: 1.6rem !important; }
+  .app main article p, .app main article li { font-size: 1rem !important; line-height: 1.7; }
+  .seo-content-box { padding: 20px; margin-top: 32px; }
+  
+  /* 공동체 리스트 카드뷰 */
+  #church-result-list thead { display: none; }
+  #church-result-list table, #church-result-list tbody, #church-result-list tr, #church-result-list td { display: block; width: 100%; }
+  #church-result-list tr { margin-bottom: 12px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+  #church-result-list td { padding: 4px 0; border: none; font-size: 0.95rem; }
+  #church-result-list td:nth-child(1) { font-weight: 800; font-size: 1.1rem; color: #1e293b; margin-bottom: 4px; }
+  #church-result-list td:nth-child(2)::before { content: "유형: "; color: #64748b; font-weight: 600; }
+  #church-result-list td:nth-child(3)::before { content: "설명: "; color: #64748b; font-weight: 600; }
+  #church-result-list td:nth-child(4) { margin-top: 8px; text-align: right; border-top: 1px dashed #e2e8f0; padding-top: 8px; }
 }
 
-/* 3. 초소형/폴더블 커버 화면 (폭 380px 이하) */
+/* 3. 초소형 화면 (폭 380px 이하) */
 @media (max-width: 380px) {
   header { padding: 16px 20px; }
   main { padding: 24px 16px; }
-
   .intro-title { font-size: 1.5rem; word-break: keep-all; }
   .result-main-title { font-size: 1.8rem; }
-
   .scale-inputs { gap: 4px; }
   .scale-pill { padding: 8px 0; font-size: 0.9rem; border-width: 1px; }
-  
   .logo { font-size: 1.1rem; gap: 6px; }
-  
   .engo-icon { width: 40px; height: 40px; }
   .engo-title { font-size: 0.95rem; }
   .engo-desc { font-size: 0.8rem; }
 }
 
 /* =========================================
-   우리교회 결과 리스트 모바일 최적화 (Card View)
+   [수정] 타이틀 및 배너 사이즈 최적화
    ========================================= */
 
-/* PC/태블릿 기본 테이블 스타일 */
-#church-result-list table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-#church-result-list th, #church-result-list td { border-bottom: 1px solid #e2e8f0; padding: 10px 8px; text-align: left; font-size: 0.9rem; vertical-align: middle; }
-#church-result-list th { font-size: 0.85rem; color: #64748b; font-weight: 700; background: #f8fafc; }
-
-/* 모바일 화면 (폭 680px 이하)에서 카드 형태로 변환 */
-@media (max-width: 680px) {
-  /* 테이블 헤더 숨김 */
-  #church-result-list thead { display: none; }
-  
-  #church-result-list table, 
-  #church-result-list tbody, 
-  #church-result-list tr, 
-  #church-result-list td { 
-    display: block; 
-    width: 100%; 
-  }
-
-  #church-result-list tr {
-    margin-bottom: 12px;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 12px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  }
-
-  #church-result-list td {
-    padding: 4px 0;
-    border: none;
-    font-size: 0.95rem;
-  }
-
-  /* 각 항목에 라벨 붙이기 (CSS 가상 요소) */
-  #church-result-list td:nth-child(1) { font-weight: 800; font-size: 1.1rem; color: #1e293b; margin-bottom: 4px; } /* 이름 */
-  #church-result-list td:nth-child(2)::before { content: "유형: "; color: #64748b; font-weight: 600; }
-  #church-result-list td:nth-child(3)::before { content: "설명: "; color: #64748b; font-weight: 600; }
-  
-  /* 삭제 버튼 영역 */
-  #church-result-list td:nth-child(4) {
-    margin-top: 8px;
-    text-align: right;
-    border-top: 1px dashed #e2e8f0;
-    padding-top: 8px;
-  }
+/* 1. 인트로 타이틀 크기 축소 (PC/기본) */
+.intro-title {
+  font-size: 1.6rem; /* 기존 2.2rem -> 1.6rem 축소 */
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 16px;
+  line-height: 1.3;
 }
 
-/* =========================================
-   추가 기능 스타일 (기억하기 & 큰 버튼)
-   ========================================= */
-
-/* 기억하기 체크박스 영역 */
-.remember-check-box {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 4px;
-  margin-bottom: 8px;
-}
-
-.remember-check-box input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-  accent-color: #4f46e5; /* 보라색 테마 */
-}
-
-.remember-check-box label {
-  font-size: 0.85rem;
-  color: #64748b;
-  cursor: pointer;
-  user-select: none; /* 드래그 방지 */
-}
-
-/* 큰 버튼 스타일 (기존 btn-secondary 확장) */
-.btn-secondary.big {
-  width: 100%;
-  margin-top: 16px;
-  padding: 14px;
-  font-size: 1rem; /* 글자 크기 확대 */
-  font-weight: 700;
-  border-radius: 14px;
-  background-color: #f8fafc;
-  border: 2px solid #e2e8f0;
-  color: #475569;
-  transition: all 0.2s;
-}
-
-.btn-secondary.big:hover {
-  background-color: #f1f5f9;
-  border-color: #cbd5e1;
-  transform: translateY(-1px);
-}
-
-/* =========================================
-   [추가] 공동체 분석 심화 스타일
-   ========================================= */
-
-/* 분석 섹션 카드 디자인 */
-.analysis-section {
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 2px dashed #f1f5f9;
-}
-
-.analysis-section-title {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-/* 밸런스 배지 */
-.balance-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 99px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  margin-left: 6px;
-}
-.badge-balanced { background: #dbeafe; color: #2563eb; } /* 균형 */
-.badge-leaning { background: #f3f4f6; color: #4b5563; } /* 한쪽 우세 */
-
-/* 소수자 케어 박스 */
-.minority-box {
-  background: #fff7ed;
-  border: 1px solid #ffedd5;
-  border-radius: 12px;
-  padding: 12px;
-  font-size: 0.9rem;
-  color: #9a3412;
-  line-height: 1.5;
-}
-
-/* 회의 스타일 박스 */
-.meeting-style-box {
-  background: #f0f9ff;
-  border: 1px solid #e0f2fe;
-  border-radius: 12px;
-  padding: 12px;
-  font-size: 0.9rem;
-  color: #0369a1;
-  line-height: 1.5;
-}
-
-/* 닫기 버튼 강조 */
-.close-analysis-btn {
-  background: #1f2937;
-  color: #fff;
-  font-weight: 700;
-  transition: 0.2s;
-}
-.close-analysis-btn:hover {
-  background: #374151;
-  transform: translateY(-1px);
-}
-
-/* [추가] 성장 포인트 (Growth) 스타일 */
-.growth-box {
-  background: #f0fdf4; /* 연한 초록 */
-  border: 1px solid #dcfce7;
-  border-radius: 12px;
-  padding: 16px;
-  color: #166534; /* 짙은 초록 텍스트 */
-  font-size: 0.95rem;
-  line-height: 1.6;
-}
-
-.growth-item {
-  margin-bottom: 12px;
-  display: flex;
-  gap: 8px;
-  align-items: flex-start;
-}
-
-.growth-item:last-child {
-  margin-bottom: 0;
-}
-
-.growth-icon {
-  font-size: 1.2rem;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-/* =========================================
-   [추가] 블로그 가이드 배너 디자인 (고급형)
-   ========================================= */
+/* 2. 블로그 배너를 '1줄 버튼' 스타일로 변경 */
 .blog-entry-banner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center; /* [변경] 중앙 정렬 */
   width: 100%;
-  margin-top: 1rem; /* 16px */
-  padding: 1.25rem 1.5rem; /* 20px 24px (여백 확보) */
+  margin-top: 1rem;
+  padding: 12px 20px; 
   background: #ffffff;
-  border: 2px solid #eef2ff; /* 아주 연한 보라빛 테두리 */
-  border-radius: 1.25rem; /* 둥근 모서리 */
+  border: 2px solid #eef2ff;
+  border-radius: 16px;
   text-decoration: none;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
   transition: all 0.2s ease;
   cursor: pointer;
 }
 
 .blog-entry-banner:hover {
-  border-color: #818cf8; /* 호버 시 보라색 테두리 */
-  background: #f5f3ff;   /* 호버 시 연한 보라 배경 */
-  transform: translateY(-3px); /* 살짝 위로 떠오름 */
-  box-shadow: 0 10px 20px rgba(99, 102, 241, 0.15); /* 그림자 강조 */
+  border-color: #818cf8;
+  background: #f5f3ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
 }
 
-/* 텍스트 그룹 */
+/* 텍스트 그룹 (세로 정렬 -> 가로 정렬 느낌으로) */
 .blog-text-group {
   display: flex;
-  flex-direction: column;
-  gap: 0.35rem; /* 줄 간격 */
-  text-align: left;
+  flex-direction: row; /* 설명이 없어졌으므로 기본 정렬 */
+  align-items: center;
 }
 
 .blog-title {
-  font-size: 1.05rem; /* 제목 크기 키움 (약 17px) */
-  font-weight: 800;
-  color: #1e293b; /* 진한 남색 */
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e293b;
   letter-spacing: -0.01em;
+  margin: 0;
+  text-align: center; /* 텍스트 자체도 중앙 정렬 */
 }
 
-.blog-desc {
-  font-size: 0.9rem; /* 설명 크기 키움 (약 14.5px) */
-  font-weight: 500;
-  color: #64748b; /* 회색 */
-}
-
-/* 화살표 아이콘 */
 .blog-icon-arrow {
-  font-size: 1.4rem;
+  font-size: 1.1rem;
   color: #cbd5e1;
   font-weight: 700;
-  transition: 0.2s;
 }
 
-.blog-entry-banner:hover .blog-icon-arrow {
-  color: #4f46e5; /* 호버 시 진한 보라색 */
-  transform: translateX(4px); /* 오른쪽으로 살짝 이동 */
-}
-
-/* =========================================
-   [추가] 블로그 상세 페이지 모바일 최적화
-   ========================================= */
+/* ■■■ 모바일 반응형 수정 (맨 아래 Media Query 덮어쓰기) ■■■ */
 @media (max-width: 768px) {
-  /* 블로그 상세 페이지의 제목(h1) 강제 축소 */
-  .app main article h1 {
-    font-size: 1.5rem !important; /* 기존 2.2rem -> 1.5rem으로 축소 */
-    line-height: 1.3 !important;
-    word-break: keep-all;
-    margin-bottom: 6px !important;
+  /* 모바일에서 타이틀을 한 줄에 들어오게 강제 축소 */
+  .intro-title {
+    font-size: 1.25rem !important; /* 약 20px (모바일 한 줄 가능 크기) */
+    line-height: 1.4;
+    margin-bottom: 12px;
   }
 
-  /* 영문 부제목 크기도 살짝 축소 */
-  .app main article p {
-    font-size: 0.9rem !important;
+  /* 설명 텍스트도 비율 맞게 살짝 축소 */
+  .intro-text {
+    font-size: 0.95rem; 
+  }
+
+  /* 블로그 상세페이지 제목도 너무 크지 않게 제어 */
+  .app main article h1 {
+    font-size: 1.4rem !important; 
   }
 }
