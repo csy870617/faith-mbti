@@ -446,11 +446,11 @@ main {
   font-weight: 700;
 }
 
-/* 2. [모바일] 한 줄에 꽉 차게 들어오도록 축소 */
+/* 2. [모바일] 한 줄 유지하면서 크기 살짝 키움 */
   @media (max-width: 768px) {
   .intro-title {
-    font-size: 1.3rem !important; /* 1.55rem -> 1.3rem 로 대폭 축소 */
-    letter-spacing: -0.05em;      /* 자간을 좁혀서 한 줄 확보 */
+    font-size: 1.45rem !important; /* 기존 1.3rem -> 1.45rem로 확대 */
+    letter-spacing: -0.07em;      /* 자간을 좀 더 좁혀서 한 줄 공간 확보 */
     line-height: 1.3;
     margin-bottom: 12px;
     white-space: nowrap;          /* 강제로 줄바꿈 방지 */
