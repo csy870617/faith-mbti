@@ -9,8 +9,17 @@
   <meta property="og:type" content="website" />
   <meta property="og:title" content="FAITH MBTI 신앙 유형 테스트" />
   <meta property="og:description" content="당신의 신앙 유형은 무엇인가요?" />
+  <meta property="og:site_name" content="FAITHES" />
+  <meta property="og:locale" content="ko_KR" />
+  <meta property="og:url" content="https://faiths.life" />
   <meta property="og:image" content="https://csy870617.github.io/faith-mbti/images/thumbnail.jpg" />
-  
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="FAITH MBTI 신앙 유형 테스트" />
+  <meta name="twitter:description" content="당신의 신앙 유형은 무엇인가요?" />
+  <meta name="twitter:image" content="https://csy870617.github.io/faith-mbti/images/thumbnail.jpg" />
+
   <link rel="stylesheet" href="style.css" />
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2078760660134095" crossorigin="anonymous"></script>
@@ -32,10 +41,11 @@
       if (typeof Kakao !== 'undefined' && !Kakao.isInitialized()) {
           Kakao.init("9bde8b67ddb17b795d596ab3bd943668");
       }
-    } catch (e) { console.warn("Kakao SDK Error:", e); }
+    } catch (e) {
+      console.warn("Kakao SDK 로드 실패:", e);
+    }
   </script>
 
-  <script src="data.js" defer></script>
   <script src="app.js" defer></script>
 </head>
 
@@ -55,6 +65,7 @@
           <button id="font-up" aria-label="글자 크게">A+</button>
         </div>
       </div>
+
       <div class="logo-sub">하나님을 만나는 공동체 신앙 유형 테스트</div>
     </header>
 
@@ -111,19 +122,6 @@
             <div class="engo-desc">English & Go! 완전무료!</div>
           </div>
         </a>
-
-        <article class="seo-content-box">
-          <h2>🕊️ FAITH MBTI란 무엇인가요?</h2>
-          <p>
-            FAITH MBTI는 일반적인 성격 유형 검사(MBTI)를 <strong>기독교 신앙 생활과 교회 공동체</strong>의 관점에서 재해석한 영적 성향 분석 도구입니다. 
-            우리가 하나님을 만나는 방식, 예배드리는 태도, 그리고 교회 안에서 봉사하고 교제하는 스타일은 저마다 다릅니다.
-          </p>
-          <h3>왜 신앙 유형을 알아야 할까요?</h3>
-          <p>
-            나의 신앙 유형을 알면 내가 지치지 않고 기쁘게 신앙생활 할 수 있는 방법을 찾을 수 있습니다. 
-            또한 <strong>'우리교회 그룹 기능'</strong>을 통해 서로 다른 유형의 지체들을 이해하고, 건강한 공동체를 세워갈 수 있습니다.
-          </p>
-        </article>
       </section>
 
        <section id="test-section" class="hidden">
