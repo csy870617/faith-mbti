@@ -1,5 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+  /* =========================================
+     1. DOM 요소 캐싱 & 전역 변수
+     ========================================= */
   const dom = {
     sections: {
       intro: document.getElementById("intro-section"),
@@ -22,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
       churchSummary: document.getElementById("church-summary-btn"),
       churchAnalysis: document.getElementById("church-analysis-btn"), 
       invite: document.getElementById("invite-btn"),
+      inviteBottom: document.getElementById("invite-btn-bottom"), // 하단 초대 버튼
       churchCopy: document.getElementById("church-copy-btn"),
       fontUp: document.getElementById("font-up"),
       fontDown: document.getElementById("font-down"),
@@ -80,10 +84,10 @@ document.addEventListener('DOMContentLoaded', () => {
     churchList: document.getElementById("church-result-list"),
     churchAnalysisResult: document.getElementById("church-analysis-result"),
     churchViewToggle: document.getElementById("church-view-toggle"),
-    churchViewContent: document.getElementById("church-view-content")
+    churchViewContent: document.getElementById("church-view-content"),
+    churchAfterActions: document.getElementById("church-after-actions") // 분석/초대 버튼 컨테이너
   };
 
-  // 전역 상태 변수
   let currentIndex = 0;
   let questions = []; 
   const answers = {};
@@ -92,9 +96,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentChurchMembers = []; 
 
   /* =========================================
-     3. 함수 정의
+     2. 유틸리티 함수 (셔플, 복사 등)
      ========================================= */
-
   function shuffle(array) {
     if (!array) return [];
     const arr = array.slice();
@@ -105,6 +108,36 @@ document.addEventListener('DOMContentLoaded', () => {
     return arr;
   }
 
+  function copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).catch(() => fallbackCopyText(text));
+    } else {
+      return Promise.resolve(fallbackCopyText(text));
+    }
+  }
+
+  function fallbackCopyText(text) {
+    try {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-9999px";
+      textArea.style.top = "0";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      return successful;
+    } catch (err) {
+      console.error("복사 실패", err);
+      return false;
+    }
+  }
+
+  /* =========================================
+     3. 테스트 로직 (렌더링, 계산)
+     ========================================= */
   function renderScale(questionId) {
     if (!dom.question.inputs) return;
     const container = dom.question.inputs;
@@ -152,12 +185,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if(dom.progress.label) dom.progress.label.textContent = `문항 ${idx} / ${total}`;
     if(dom.progress.fill) dom.progress.fill.style.width = `${(idx / total) * 100}%`;
-
     if(dom.question.code) dom.question.code.textContent = `Q${idx}`;
     if(dom.question.text) dom.question.text.textContent = q.text;
 
     renderScale(q.id);
-    
     if(dom.btns.back) dom.btns.back.disabled = false; 
   }
 
@@ -165,15 +196,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const scores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
     const axisScores = { EI: 0, SN: 0, TF: 0, JP: 0 };
 
-    // window.originalQuestions 사용
     if (typeof originalQuestions === 'undefined') return { type: "ISTJ", scores, axisScores };
 
     originalQuestions.forEach((q) => {
       const v = answers[q.id];
       if (!v) return;
-
       scores[q.side] += v;
-      const centered = v - 3;
+      const centered = v - 3; 
 
       if (q.axis === "EI") axisScores.EI += q.side === "E" ? centered : -centered;
       else if (q.axis === "SN") axisScores.SN += q.side === "S" ? centered : -centered;
@@ -201,10 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const { type, scores, axisScores } = calculateResult();
       
       const resultData = {
-        type: type,
-        scores: scores,
-        axisScores: axisScores,
-        date: new Date().getTime()
+        type: type, scores: scores, axisScores: axisScores, date: new Date().getTime()
       };
       localStorage.setItem('faith_result_v1', JSON.stringify(resultData));
 
@@ -219,6 +245,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  /* =========================================
+     4. 결과 화면 렌더링
+     ========================================= */
   function renderResult(type) {
     if (typeof typeResults === 'undefined') return;
     const data = typeResults[type];
@@ -261,7 +290,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if(dom.btns.bibleToggle) dom.btns.bibleToggle.textContent = "📖 성경 인물 보기";
     
     if(dom.verse.box) dom.verse.box.classList.add("hidden");
-
     if(dom.character.emoji) dom.character.emoji.textContent = data.characterEmoji;
     if(dom.character.title) dom.character.title.textContent = data.characterTitle;
     if(dom.character.text) dom.character.text.textContent = data.characterStory;
@@ -371,199 +399,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* ------------------------------------------------
-     [추가] 인앱 브라우저(카톡, 인스타 등) 호환 복사 함수
-     ------------------------------------------------ */
-  function copyToClipboard(text) {
-    // 1. 최신 방식 시도 (Navigator API)
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      return navigator.clipboard.writeText(text).catch(() => {
-        // 실패 시 폴백(구형 방식) 실행
-        return fallbackCopyText(text);
-      });
-    } else {
-      // 2. 구형 방식(폴백) 실행
-      return Promise.resolve(fallbackCopyText(text));
-    }
-  }
-
-  function fallbackCopyText(text) {
-    try {
-      const textArea = document.createElement("textarea");
-      textArea.value = text;
-      // 화면 밖으로 숨김
-      textArea.style.position = "fixed";
-      textArea.style.left = "-9999px";
-      textArea.style.top = "0";
-      document.body.appendChild(textArea);
-      
-      textArea.focus();
-      textArea.select();
-      
-      const successful = document.execCommand('copy');
-      document.body.removeChild(textArea);
-      return successful;
-    } catch (err) {
-      console.error("복사 실패", err);
-      return false;
-    }
-  }
-
-  /* 4. 이벤트 핸들러 */
-
-  if (dom.btns.todayVerse) {
-    dom.btns.todayVerse.addEventListener("click", () => {
-      const type = currentViewType || myResultType;
-      if (!type) return;
-      const data = typeResults[type];
-      dom.verse.ref.textContent = data.verseRef;
-      dom.verse.text.textContent = data.verseText;
-      dom.verse.apply.textContent = data.verseApply || "";
-      dom.verse.box.classList.toggle("hidden");
-    });
-  }
-
-  if (dom.btns.bibleToggle) {
-    dom.btns.bibleToggle.addEventListener("click", () => {
-      const isHidden = dom.bible.box.classList.contains("hidden");
-      dom.bible.box.classList.toggle("hidden");
-      dom.btns.bibleToggle.textContent = isHidden ? "📖 성경 인물 닫기" : "📖 성경 인물 보기";
-    });
-  }
-
-  // [수정됨] 공유하기 버튼
-  if (dom.btns.share) {
-    dom.btns.share.addEventListener("click", async () => {
-      const targetType = myResultType || currentViewType;
-      if (!targetType) return alert("먼저 검사를 완료하거나, 공유할 유형을 선택해 주세요.");
-      
-      const baseUrl = "https://faiths.life/";
-      const data = typeResults[targetType];
-      
-      const shareTitle = "FAITH MBTI 신앙 유형 테스트";
-      const shareDesc = `나의 유형은 ${targetType} (${data.nameKo}) 입니다.`;
-
-      // 1. 카카오톡 공유 시도
-      if (typeof Kakao !== "undefined" && Kakao.isInitialized && Kakao.isInitialized()) {
-        try {
-          Kakao.Share.sendDefault({
-            objectType: "feed",
-            content: {
-              title: shareTitle,
-              description: shareDesc,
-              imageUrl: "https://csy870617.github.io/faith-mbti/images/thumbnail.jpg",
-              link: { mobileWebUrl: baseUrl, webUrl: baseUrl },
-            },
-            buttons: [{ title: "테스트 하러가기", link: { mobileWebUrl: baseUrl, webUrl: baseUrl } }]
-          });
-          return; 
-        } catch (e) { console.error(e); }
-      }
-      
-      // 2. Web Share API
-      if (navigator.share) {
-        try { 
-          await navigator.share({ 
-            title: shareTitle, 
-            text: shareDesc, 
-            url: baseUrl 
-          }); 
-          return; 
-        } catch(e) { console.log("Share API 취소/에러", e); }
-      }
-      
-      // 3. 복사 (인앱 브라우저 호환)
-      const copyText = `${shareTitle}\n${shareDesc}\n${baseUrl}`;
-      const success = await copyToClipboard(copyText);
-      if (success !== false) {
-        alert("결과 링크가 복사되었습니다.\n원하는 곳에 붙여넣기 하세요!");
-      } else {
-        alert("공유하기를 지원하지 않는 브라우저입니다.\n링크를 직접 복사해 주세요.");
-      }
-    });
-  }
-
-  // 시작 버튼
-  if (dom.btns.start) {
-    dom.btns.start.addEventListener("click", () => {
-      localStorage.removeItem('faith_result_v1');
-      
-      // 전역변수 originalQuestions 확인 (data.js에서 로드됨)
-      if (typeof originalQuestions === 'undefined') {
-          alert("데이터를 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
-          return;
-      }
-
-      questions = shuffle(originalQuestions);
-      for (let k in answers) delete answers[k];
-      currentIndex = 0;
-      myResultType = null;
-      currentViewType = null;
-
-      dom.verse.box.classList.add("hidden");
-      dom.bible.box.classList.add("hidden");
-      dom.sections.intro.classList.add("hidden");
-      dom.sections.test.classList.remove("hidden");
-      dom.sections.result.classList.add("hidden");
-
-      renderQuestion();
-    });
-  }
-
-  // 이전 버튼
-  if (dom.btns.back) {
-    dom.btns.back.addEventListener("click", () => {
-      if (currentIndex > 0) {
-        currentIndex--;
-        renderQuestion();
-      } else {
-        dom.sections.test.classList.add("hidden");
-        dom.sections.intro.classList.remove("hidden");
-      }
-    });
-  }
-
-  if (dom.btns.skip) {
-    dom.btns.skip.addEventListener("click", goNextOrResult);
-  }
-
-  // 처음으로 버튼
-  if (dom.btns.restart) {
-    dom.btns.restart.addEventListener("click", () => {
-      if(confirm("결과가 초기화됩니다. 처음 화면으로 돌아가시겠습니까?")) {
-        localStorage.removeItem('faith_result_v1');
-        myResultType = null;
-        currentViewType = null;
-        dom.sections.result.classList.add("hidden");
-        dom.sections.intro.classList.remove("hidden");
-      }
-    });
-  }
-
-  // 개발용 버튼
-  if (dom.btns.goResult) {
-    dom.btns.goResult.addEventListener("click", () => {
-      localStorage.removeItem('faith_result_v1');
-      myResultType = null;
-      
-      currentViewType = "ENFJ";
-      
-      const dummyScores = { E: 20, I: 5, S: 20, N: 5, T: 20, F: 5, J: 20, P: 5 };
-      const dummyAxis = { EI: 15, SN: 15, TF: 15, JP: 15 };
-
-      dom.sections.intro.classList.add("hidden");
-      dom.sections.test.classList.add("hidden");
-      dom.sections.result.classList.remove("hidden");
-
-      renderResult("ENFJ");
-      renderAxisUpgraded(dummyAxis);
-      renderDetailScores(dummyScores);
-      renderMatchCards("ENFJ");
-      buildOtherTypesGrid();
-    });
-  }
-
-  /* 5. Firebase & 우리교회 */
+  /* =========================================
+     5. Firebase & 우리교회 기능
+     ========================================= */
   const CHURCH_COLLECTION = "faith_churches";
   let _firebaseDb = null, _firebaseFsModule = null;
 
@@ -586,11 +424,8 @@ document.addEventListener('DOMContentLoaded', () => {
   async function saveMyResultToChurch(name, churchName, password) {
     const n = name.trim(), c = churchName.trim(), p = password.trim();
     if (!n || !c || !p) throw new Error("모든 항목을 입력해 주세요.");
-
     const targetType = currentViewType || myResultType;
     if (!targetType) throw new Error("먼저 검사를 완료하거나, '다른 유형 보기'에서 내 유형을 선택해 주세요.");
-    
-    // typeResults 전역 확인
     if (typeof typeResults === 'undefined') throw new Error("데이터를 로드할 수 없습니다.");
 
     const { db, fs } = await ensureFirebase();
@@ -602,9 +437,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const data = typeResults[targetType];
     await fs.addDoc(fs.collection(churchRef, "members"), {
-      name: n, 
-      type: targetType, 
-      shortText: data.summary || data.nameKo || "",
+      name: n, type: targetType, shortText: data.summary || data.nameKo || "",
       createdAt: fs.serverTimestamp ? fs.serverTimestamp() : Date.now()
     });
   }
@@ -622,7 +455,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const q = fs.query(fs.collection(churchRef, "members"), fs.orderBy("createdAt", "asc"));
     const membersSnap = await fs.getDocs(q);
-    
     const membersData = membersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
     currentChurchMembers = membersData;
 
@@ -633,7 +465,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const { db, fs } = await ensureFirebase();
     const churchRef = fs.doc(db, CHURCH_COLLECTION, churchName.trim());
     const snap = await fs.getDoc(churchRef);
-    
     if (!snap.exists() || snap.data().password !== password.trim()) throw new Error("권한이 없습니다.");
     await fs.deleteDoc(fs.doc(fs.collection(churchRef, "members"), memberId));
   }
@@ -641,28 +472,28 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderChurchList(churchName, members) {
     if (!dom.churchList) return;
     if (!members || !members.length) {
-      dom.churchList.innerHTML = `<div class="result-card"><p class="gray">저장된 결과가 없습니다.</p></div>`;
+      dom.churchList.innerHTML = `<div style="padding:20px; text-align:center; color:#94a3b8;">저장된 결과가 없습니다.</div>`;
       return;
     }
     const rows = members.map(m => {
-      // typeResults 전역 확인
       const typeData = (typeof typeResults !== 'undefined') ? typeResults[m.type] : null;
       const desc = typeData ? typeData.strengthShort : (m.shortText || "");
       return `
       <tr>
-        <td>${m.name || ""}</td><td>${m.type || ""}</td><td>${desc}</td>
-        <td><button class="btn-secondary member-delete-btn" data-id="${m.id}" data-church="${churchName}">삭제</button></td>
+        <td style="font-weight:600;">${m.name || ""}</td>
+        <td><span class="type-pill" style="margin:0; padding:2px 8px; font-size:0.75rem;">${m.type || ""}</span></td>
+        <td style="font-size:0.85rem; color:#64748b;">${desc}</td>
+        <td style="text-align:right;"><button class="btn-secondary member-delete-btn" style="padding:4px 8px; font-size:0.75rem;" data-id="${m.id}" data-church="${churchName}">삭제</button></td>
       </tr>`;
     }).join('');
       
     dom.churchList.innerHTML = `
-      <div class="result-card"><div class="card-title">🏠 ${churchName}</div>
-        <div style="overflow-x:auto;">
-          <table style="width:100%;border-collapse:collapse;font-size:12px;">
-            <thead><tr style="border-bottom:1px solid #e5e7eb;"><th>이름</th><th>유형</th><th>설명</th><th>관리</th></tr></thead>
-            <tbody>${rows}</tbody>
-          </table>
-        </div>
+      <div class="church-list-header">🏠 ${churchName} <span style="font-size:0.9rem; font-weight:400; color:#64748b; margin-left:auto;">${members.length}명</span></div>
+      <div class="member-table-container">
+        <table>
+          <thead><tr><th>이름</th><th>유형</th><th>설명</th><th style="text-align:right;">관리</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
       </div>`;
 
     dom.churchList.querySelectorAll(".member-delete-btn").forEach(btn => {
@@ -679,18 +510,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 공동체 분석 로직
   function analyzeAndRenderCommunity() {
     const members = currentChurchMembers;
     if (!members || members.length === 0) {
       alert("먼저 [공동체 유형 확인] 버튼을 눌러 데이터를 불러와 주세요.");
       return;
     }
-
-    if (typeof typeResults === 'undefined') {
-       alert("데이터 로드 중 오류가 발생했습니다.");
-       return;
-    }
+    if (typeof typeResults === 'undefined') { alert("데이터 로드 중 오류가 발생했습니다."); return; }
 
     const total = members.length;
     const counts = { E:0, I:0, S:0, N:0, T:0, F:0, J:0, P:0 };
@@ -704,13 +530,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     let maxVal = 0;
-    for (const v of Object.values(typeCounts)) {
-      if (v > maxVal) maxVal = v;
-    }
-    const maxTypes = [];
-    for (const [t, v] of Object.entries(typeCounts)) {
-      if (v === maxVal) maxTypes.push(t);
-    }
+    for (const v of Object.values(typeCounts)) if (v > maxVal) maxVal = v;
+    const maxTypes = Object.entries(typeCounts).filter(([t, v]) => v === maxVal).map(([t]) => t);
     const maxTypeDisplay = maxTypes.join(", ");
     const isTie = maxTypes.length > 1;
 
@@ -718,86 +539,66 @@ document.addEventListener('DOMContentLoaded', () => {
     const domS = counts.S === counts.N ? "S/N" : (counts.S > counts.N ? "S" : "N");
     const domT = counts.T === counts.F ? "T/F" : (counts.T > counts.F ? "T" : "F");
     const domJ = counts.J === counts.P ? "J/P" : (counts.J > counts.P ? "J" : "P");
-    
     const displayCode = `${domE} - ${domS} - ${domT} - ${domJ}`;
 
-    const safeE = counts.E >= counts.I ? "E" : "I";
-    const safeS = counts.S >= counts.N ? "S" : "N";
-    const safeT = counts.T >= counts.F ? "T" : "F";
-    const safeJ = counts.J >= counts.P ? "J" : "P";
-    const lookupCode = safeE + safeS + safeT + safeJ;
+    const lookupCode = (counts.E >= counts.I ? "E" : "I") + (counts.S >= counts.N ? "S" : "N") + 
+                       (counts.T >= counts.F ? "T" : "F") + (counts.J >= counts.P ? "J" : "P");
 
     const topTypeName = typeResults[lookupCode] ? typeResults[lookupCode].nameKo : lookupCode;
     const isHybrid = (counts.E === counts.I) || (counts.S === counts.N) || (counts.T === counts.F) || (counts.J === counts.P);
-    const typeBadge = isHybrid ? '<span class="badge badge-balanced" style="font-size:0.75rem; margin-left:6px;">복합/균형 성향</span>' : '';
+    const typeBadge = isHybrid ? '<span class="badge badge-balanced" style="font-size:0.75rem; margin-left:6px;">복합/균형</span>' : '';
 
     let html = `
-      <div class="analysis-box">
-        <div class="analysis-header">📊 우리 공동체 영적 DNA</div>
-        <div class="analysis-summary-grid">
-          <div class="summary-item">
-            <div class="summary-val">${total}명</div>
-            <div class="summary-label">분석 인원</div>
-            ${total < 5 ? '<div style="font-size:0.8rem; color:#ef4444; margin-top:4px;">⚠ 5명 미만은 분석이 정확하지 않아요</div>' : '<div style="font-size:0.8rem; color:#6b7280; margin-top:4px;">💡 5명 이상일 때 분석이 더 정확해요</div>'}
-          </div>
-          <div class="summary-item">
-            <div class="summary-val" style="font-size:${isTie ? '1rem' : '1.25rem'}">
-              ${maxTypeDisplay}
+      <div class="analysis-report-container">
+        <div class="analysis-section-flat">
+          <div class="analysis-header">📊 우리 공동체 영적 DNA</div>
+          <div class="analysis-summary-grid">
+            <div class="summary-item">
+              <div class="summary-val">${total}명</div>
+              <div class="summary-label">분석 인원</div>
             </div>
-            <div class="summary-label">
-              최다 유형 (${maxVal}명) ${isTie ? '<span class="badge badge-leaning" style="font-size:0.6rem; vertical-align:middle;">공동</span>' : ''}
+            <div class="summary-item">
+              <div class="summary-val" style="font-size:${isTie ? '1rem' : '1.3rem'}">${maxTypeDisplay}</div>
+              <div class="summary-label">최다 유형 (${maxVal}명)</div>
             </div>
           </div>
-        </div>
-
-        <div class="insight-text" style="text-align:center; margin-top:16px;">
-          우리의 대표 성향은 <span class="insight-highlight">${displayCode}</span> 입니다.<br/>
-          <div style="margin-top:4px; font-weight:600; color:#4b5563;">
-            "${topTypeName}" ${typeBadge}
-          </div>
-          <div style="margin-top:12px; font-size:0.8rem; color:#94a3b8; line-height:1.5;">
-            ※ 이 분석은 에너지 비율에 따른 경향성일 뿐,<br/>
-            공동체 전체를 절대적으로 규정하는 것은 아닙니다.
+          <div class="insight-text">
+            우리의 대표 성향은 <span class="insight-highlight">${displayCode}</span> 입니다.<br/>
+            <div style="margin-top:6px; font-weight:700; color:#1e293b; font-size:1.05rem;">"${topTypeName}" ${typeBadge}</div>
+            <div style="margin-top:10px; font-size:0.8rem; color:#94a3b8;">* 에너지 비율에 따른 전체 경향성입니다.</div>
           </div>
         </div>
-      </div>
 
-      <div class="analysis-box">
-        <div class="analysis-header">⚖️ 에너지 균형 (Energy Balance)</div>
-        ${renderBarEnhanced("관계 에너지", "외향 (E)", counts.E, "내향 (I)", counts.I, total)}
-        ${renderBarEnhanced("인식 스타일", "현실 (S)", counts.S, "이상 (N)", counts.N, total)}
-        ${renderBarEnhanced("판단 기준", "이성 (T)", counts.T, "감성 (F)", counts.F, total)}
-        ${renderBarEnhanced("생활 패턴", "계획 (J)", counts.J, "유연 (P)", counts.P, total)}
-      </div>
-
-      <div class="analysis-box">
-        <div class="analysis-section-title">🗣️ 우리 공동체의 모임 스타일</div>
-        <div class="meeting-style-box">
-          ${getMeetingStyle(counts, total)}
+        <div class="analysis-section-flat">
+          <div class="analysis-header">⚖️ 에너지 균형</div>
+          <div style="background:#fff; padding:16px; border-radius:12px; border:1px solid #e2e8f0;">
+            ${renderBarEnhanced("관계 에너지", "외향 E", counts.E, "내향 I", counts.I, total)}
+            ${renderBarEnhanced("인식 스타일", "현실 S", counts.S, "이상 N", counts.N, total)}
+            ${renderBarEnhanced("판단 기준", "이성 T", counts.T, "감성 F", counts.F, total)}
+            ${renderBarEnhanced("생활 패턴", "계획 J", counts.J, "유연 P", counts.P, total)}
+          </div>
         </div>
-      </div>
 
-      <div class="analysis-box">
-        <div class="analysis-section-title">💎 놓치지 말아야 할 '숨은 보석'</div>
-        <div class="minority-box">
-          ${getMinorityCare(counts, total)}
+        <div class="analysis-section-flat">
+          <div class="analysis-header">🗣️ 모임 스타일</div>
+          <div class="content-box-flat">${getMeetingStyle(counts, total)}</div>
         </div>
-      </div>
 
-      <div class="analysis-box">
-        <div class="analysis-section-title">🌱 우리 공동체 성장 가이드</div>
-        <div class="growth-box">
-          ${getDetailedGrowthGuide(counts, total)}
+        <div class="analysis-section-flat">
+          <div class="analysis-header">💎 배려가 필요한 '숨은 보석'</div>
+          <div class="content-box-flat" style="background:#fff7ed; border-color:#ffedd5;">${getMinorityCare(counts, total)}</div>
         </div>
-      </div>
 
-      <button id="close-analysis-btn" class="close-analysis-btn">분석 결과 닫기 ✖</button>
-    `;
+        <div class="analysis-section-flat">
+          <div class="analysis-header">🌱 성장 가이드</div>
+          <div class="content-box-flat" style="background:#f0fdf4; border-color:#dcfce7;">${getDetailedGrowthGuide(counts, total)}</div>
+        </div>
+        <button id="close-analysis-btn" class="close-analysis-btn">분석 결과 닫기 ✖</button>
+      </div>`;
 
     if (dom.churchAnalysisResult) {
       dom.churchAnalysisResult.innerHTML = html;
       dom.churchAnalysisResult.classList.remove("hidden");
-      
       document.getElementById("close-analysis-btn").addEventListener("click", () => {
         dom.churchAnalysisResult.classList.add("hidden");
         dom.btns.churchSummary.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -810,92 +611,146 @@ document.addEventListener('DOMContentLoaded', () => {
     const rightPct = 100 - leftPct;
     const gap = Math.abs(leftPct - rightPct);
     let badgeHtml = "";
-    
-    if (leftVal === rightVal) {
-      badgeHtml = `<span class="balance-badge badge-balanced">완벽한 균형 ✨</span>`;
-    } else if (gap < 15) {
-      badgeHtml = `<span class="balance-badge badge-balanced">황금 밸런스 ⚖️</span>`;
-    }
-
-    const colorLeft = "#f43f5e"; // Rose
-    const colorRight = "#3b82f6"; // Blue
+    if (leftVal === rightVal) badgeHtml = `<span class="balance-badge badge-balanced">완벽한 균형 ✨</span>`;
+    else if (gap < 15) badgeHtml = `<span class="balance-badge badge-balanced">황금 밸런스 ⚖️</span>`;
 
     return `
       <div style="margin-bottom:16px;">
-        <div class="analysis-label-row">
-          <span>${title} ${badgeHtml}</span>
-        </div>
+        <div class="analysis-label-row"><span>${title} ${badgeHtml}</span></div>
         <div class="analysis-bar-container">
-          <div style="width:${leftPct}%; background:${colorLeft}; height:100%; transition: width 1s;"></div>
-          <div style="width:${rightPct}%; background:${colorRight}; height:100%; transition: width 1s;"></div>
+          <div style="width:${leftPct}%; background:#f43f5e; height:100%; transition: width 1s;"></div>
+          <div style="width:${rightPct}%; background:#3b82f6; height:100%; transition: width 1s;"></div>
         </div>
         <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#6b7280; margin-top:4px;">
           <span>${leftLabel} <strong>${leftVal}명</strong> (${leftPct}%)</span>
           <span>${rightLabel} <strong>${rightVal}명</strong> (${rightPct}%)</span>
         </div>
-      </div>
-    `;
+      </div>`;
   }
 
   function getMeetingStyle(c, total) {
     let text = "";
-    if (c.E === c.I) {
-      text += "✨ <strong>활력과 깊이의 균형:</strong> 역동적인 에너지와 차분한 묵상이 공존하는 아주 이상적인 분위기입니다. 상황에 따라 유연하게 모임을 이끌 수 있습니다.<br/><br/>";
-    } else if (c.E > c.I) {
-      text += "🎤 <strong>활기차고 에너지가 넘쳐요.</strong> 누군가 먼저 말을 꺼내고 분위기를 주도하는 것이 자연스럽습니다. 다만 목소리 큰 사람 위주로 흘러가지 않도록 주의하세요.<br/><br/>";
-    } else {
-      text += "☕ <strong>차분하고 깊이가 있어요.</strong> 왁자지껄하기보다 소그룹으로 깊게 나누는 것을 선호합니다. 침묵을 어색해하지 마세요.<br/><br/>";
-    }
+    if (c.E === c.I) text += "✨ <strong>활력과 깊이의 균형:</strong> 역동적인 에너지와 차분한 묵상이 공존하는 이상적인 분위기입니다.<br/><br/>";
+    else if (c.E > c.I) text += "🎤 <strong>활기차고 에너지가 넘쳐요:</strong> 누군가 먼저 말을 꺼내고 분위기를 주도합니다. 목소리 큰 사람 위주로 흘러가지 않도록 주의하세요.<br/><br/>";
+    else text += "☕ <strong>차분하고 깊이가 있어요:</strong> 소그룹으로 깊게 나누는 것을 선호합니다. 침묵을 어색해하지 마세요.<br/><br/>";
 
-    if (c.J === c.P) {
-      text += "🤝 <strong>계획과 유연함의 조화!</strong> 큰 틀은 지키되 상황에 맞춰 융통성을 발휘할 줄 아는 성숙한 모임입니다.";
-    } else if (c.J > c.P) {
-      text += "📅 <strong>계획대로 착착!</strong> 시작과 끝 시간이 명확하고, 정해진 순서대로 진행되는 것을 좋아합니다. 돌발 상황에는 당황할 수 있어요.";
-    } else {
-      text += "🌊 <strong>그때그때 유연하게!</strong> 순서가 바뀌거나 새로운 나눔이 길어져도 즐겁게 받아들입니다. 하지만 결론 없이 끝날 수도 있으니 마무리를 챙겨주세요.";
-    }
+    if (c.J === c.P) text += "🤝 <strong>계획과 유연함의 조화:</strong> 큰 틀은 지키되 상황에 맞춰 융통성을 발휘할 줄 압니다.";
+    else if (c.J > c.P) text += "📅 <strong>계획대로 착착:</strong> 시작과 끝 시간이 명확하고 정해진 순서대로 진행되는 것을 좋아합니다.";
+    else text += "🌊 <strong>그때그때 유연하게:</strong> 순서가 바뀌어도 즐겁게 받아들입니다. 마무리를 잘 챙겨주세요.";
     return text;
   }
 
   function getMinorityCare(c, total) {
     const minorities = [];
     const threshold = total * 0.4; 
+    if (c.I < threshold && c.I > 0) minorities.push("🤫 <strong>내향형(I):</strong> 에너지가 높은 모임에서 기가 빨릴 수 있어요. 생각할 시간을 주세요.");
+    if (c.E < threshold && c.E > 0) minorities.push("📣 <strong>외향형(E):</strong> 너무 차분하면 답답할 수 있어요. 에너지를 발산할 기회를 주세요.");
+    if (c.S < threshold && c.S > 0) minorities.push("👀 <strong>현실형(S):</strong> 구체적인 적용점을 좋아해요.");
+    if (c.N < threshold && c.N > 0) minorities.push("🌈 <strong>직관형(N):</strong> '우리 공동체의 꿈' 같은 깊은 주제를 던져주세요.");
+    if (c.F < threshold && c.F > 0) minorities.push("💖 <strong>감정형(F):</strong> '서로의 마음'을 확인받고 싶어 해요.");
+    if (c.T < threshold && c.T > 0) minorities.push("🤔 <strong>사고형(T):</strong> 논리적인 이유를 설명해 주세요.");
 
-    if (c.I < threshold && c.I > 0) minorities.push("🤫 <strong>내향형(I) 지체들:</strong> 에너지가 너무 높은 모임에서 기가 빨릴 수 있어요. 생각할 시간을 주세요.");
-    if (c.E < threshold && c.E > 0) minorities.push("📣 <strong>외향형(E) 지체들:</strong> 너무 차분하면 답답할 수 있어요. 에너지를 발산할 기회를 주세요.");
-    if (c.S < threshold && c.S > 0) minorities.push("👀 <strong>현실형(S) 지체들:</strong> 뜬구름 잡는 비전 나눔보다 '이번 주에 당장 무엇을 할지' 구체적인 적용점을 좋아해요.");
-    if (c.N < threshold && c.N > 0) minorities.push("🌈 <strong>직관형(N) 지체들:</strong> 반복되는 일상 나눔을 지루해할 수 있어요. '우리 공동체의 꿈'이나 '하나님 나라' 같은 깊은 주제를 던져주세요.");
-    if (c.F < threshold && c.F > 0) minorities.push("💖 <strong>감정형(F) 지체들:</strong> 일 처리보다 '서로의 마음'을 확인받고 싶어 해요. 공감의 시간이 필요해요.");
-    if (c.T < threshold && c.T > 0) minorities.push("🤔 <strong>사고형(T) 지체들:</strong> 감정 호소만으로는 설득되지 않아요. 논리적인 이유를 설명해 주세요.");
-
-    if (minorities.length === 0) {
-      return "⚖️ <strong>치우침 없이 조화로워요!</strong><br/>서로 다른 은사를 가진 지체들이 골고루 섞여 있습니다. 이 다양성을 유지하며 서로 배우는 관계가 되세요.";
-    }
+    if (minorities.length === 0) return "⚖️ <strong>치우침 없이 조화로워요!</strong><br/>다양성을 유지하며 서로 배우는 관계가 되세요.";
     return minorities.join("<br/><br/>");
   }
 
   function getDetailedGrowthGuide(c, total) {
     const guides = [];
+    if (c.E === c.I) guides.push(`<div class="growth-item"><div class="growth-icon">⚖️</div><div><strong>소통의 균형:</strong> 말하기와 듣기의 비율이 좋습니다.</div></div>`);
+    else if (c.E > c.I) guides.push(`<div class="growth-item"><div class="growth-icon">👂</div><div><strong>경청의 영성:</strong> 가끔은 '거룩한 침묵'의 시간을 가져보세요.</div></div>`);
+    else guides.push(`<div class="growth-item"><div class="growth-icon">🔥</div><div><strong>표현의 용기:</strong> 은혜를 입 밖으로 꺼내어 나누는 용기를 내보세요.</div></div>`);
 
-    if (c.E === c.I) guides.push(`<div class="growth-item"><div class="growth-icon">⚖️</div><div><strong>소통의 균형:</strong> 말하는 사람과 듣는 사람의 비율이 좋습니다. 이 건강한 밸런스를 유지하세요.</div></div>`);
-    else if (c.E > c.I) guides.push(`<div class="growth-item"><div class="growth-icon">👂</div><div><strong>경청의 영성:</strong> 에너지가 넘치는 우리, 가끔은 '거룩한 침묵'의 시간을 가져보면 어떨까요?</div></div>`);
-    else guides.push(`<div class="growth-item"><div class="growth-icon">🔥</div><div><strong>표현의 용기:</strong> 깊은 묵상이 있는 우리, 이제는 그 은혜를 입 밖으로 꺼내어 나누는 용기를 내보세요.</div></div>`);
+    if (c.S === c.N) guides.push(`<div class="growth-item"><div class="growth-icon">🌉</div><div><strong>현실과 비전의 다리:</strong> 꿈꾸는 사람과 길을 만드는 사람이 함께 있어 든든합니다.</div></div>`);
+    else if (c.S > c.N) guides.push(`<div class="growth-item"><div class="growth-icon">🔭</div><div><strong>거룩한 상상력:</strong> 당장의 문제 해결을 넘어 '큰 그림'을 꿈꿔보세요.</div></div>`);
+    else guides.push(`<div class="growth-item"><div class="growth-icon">🧹</div><div><strong>거룩한 디테일:</strong> 꿈을 이루기 위해 오늘 해야 할 '작은 순종'을 놓치지 마세요.</div></div>`);
 
-    if (c.S === c.N) guides.push(`<div class="growth-item"><div class="growth-icon">🌉</div><div><strong>현실과 비전의 다리:</strong> 꿈을 꾸는 사람과 길을 만드는 사람이 함께 있어 든든합니다.</div></div>`);
-    else if (c.S > c.N) guides.push(`<div class="growth-item"><div class="growth-icon">🔭</div><div><strong>거룩한 상상력:</strong> 현실에 충실한 우리, 눈앞의 문제 해결을 넘어 하나님이 그리시는 '큰 그림'을 꿈꿔보세요.</div></div>`);
-    else guides.push(`<div class="growth-item"><div class="growth-icon">🧹</div><div><strong>거룩한 디테일:</strong> 비전이 큰 우리, 그 꿈을 이루기 위해 당장 오늘 해야 할 '작은 순종'을 놓치지 마세요.</div></div>`);
+    if (c.T === c.F) guides.push(`<div class="growth-item"><div class="growth-icon">🤝</div><div><strong>머리와 가슴의 조화:</strong> 냉철한 판단과 따뜻한 공감이 어우러졌습니다.</div></div>`);
+    else if (c.T > c.F) guides.push(`<div class="growth-item"><div class="growth-icon">💓</div><div><strong>공감의 온도:</strong> 정답을 전하기 전에 따뜻한 눈빛으로 마음을 녹여주세요.</div></div>`);
+    else guides.push(`<div class="growth-item"><div class="growth-icon">⚖️</div><div><strong>분별의 지혜:</strong> 건강한 관계를 위해 '사랑 안에서 진리'를 말해보세요.</div></div>`);
 
-    if (c.T === c.F) guides.push(`<div class="growth-item"><div class="growth-icon">🤝</div><div><strong>머리와 가슴의 조화:</strong> 냉철한 판단과 따뜻한 공감이 어우러진 성숙한 공동체입니다.</div></div>`);
-    else if (c.T > c.F) guides.push(`<div class="growth-item"><div class="growth-icon">💓</div><div><strong>공감의 온도:</strong> 옳은 말을 잘하는 우리, 그 정답을 전하기 전에 따뜻한 눈빛으로 마음을 먼저 녹여주세요.</div></div>`);
-    else guides.push(`<div class="growth-item"><div class="growth-icon">⚖️</div><div><strong>분별의 지혜:</strong> 사랑이 넘치는 우리, 관계가 상할까 봐 덮어두기보다 건강을 위해 '사랑 안에서 진리'를 말해보세요.</div></div>`);
-
-    if (c.J === c.P) guides.push(`<div class="growth-item"><div class="growth-icon">⚓</div><div><strong>안정과 모험:</strong> 체계적인 안정감과 상황에 따른 유연함이 모두 있습니다.</div></div>`);
-    else if (c.J > c.P) guides.push(`<div class="growth-item"><div class="growth-icon">🕊️</div><div><strong>여백의 미:</strong> 계획이 철저한 우리, 계획대로 되지 않는 의외성을 기쁨으로 받아들여 보세요.</div></div>`);
-    else guides.push(`<div class="growth-item"><div class="growth-icon">🧱</div><div><strong>질서의 능력:</strong> 자유로운 우리, 약속 시간과 규칙 같은 작은 질서를 지킬 때 신뢰가 더욱 단단해집니다.</div></div>`);
-
+    if (c.J === c.P) guides.push(`<div class="growth-item"><div class="growth-icon">⚓</div><div><strong>안정과 모험:</strong> 체계적인 안정감과 유연함이 모두 있습니다.</div></div>`);
+    else if (c.J > c.P) guides.push(`<div class="growth-item"><div class="growth-icon">🕊️</div><div><strong>여백의 미:</strong> 계획대로 되지 않는 의외성을 기쁨으로 받아들여 보세요.</div></div>`);
+    else guides.push(`<div class="growth-item"><div class="growth-icon">🧱</div><div><strong>질서의 능력:</strong> 약속 시간과 규칙 같은 작은 질서를 지킬 때 신뢰가 단단해집니다.</div></div>`);
     return guides.join("");
   }
 
+  /* =========================================
+     6. 이벤트 리스너 설정
+     ========================================= */
+  
+  // 버튼 이벤트 연결
+  if (dom.btns.start) {
+    dom.btns.start.addEventListener("click", () => {
+      localStorage.removeItem('faith_result_v1');
+      if (typeof originalQuestions === 'undefined') { alert("데이터 로딩 중..."); return; }
+      questions = shuffle(originalQuestions);
+      for (let k in answers) delete answers[k];
+      currentIndex = 0; myResultType = null; currentViewType = null;
+
+      dom.verse.box.classList.add("hidden");
+      dom.bible.box.classList.add("hidden");
+      dom.sections.intro.classList.add("hidden");
+      dom.sections.test.classList.remove("hidden");
+      dom.sections.result.classList.add("hidden");
+      renderQuestion();
+    });
+  }
+
+  if (dom.btns.back) {
+    dom.btns.back.addEventListener("click", () => {
+      if (currentIndex > 0) { currentIndex--; renderQuestion(); } 
+      else { dom.sections.test.classList.add("hidden"); dom.sections.intro.classList.remove("hidden"); }
+    });
+  }
+  if (dom.btns.skip) dom.btns.skip.addEventListener("click", goNextOrResult);
+
+  if (dom.btns.restart) {
+    dom.btns.restart.addEventListener("click", () => {
+      if(confirm("초기화 하시겠습니까?")) {
+        localStorage.removeItem('faith_result_v1');
+        myResultType = null; currentViewType = null;
+        dom.sections.result.classList.add("hidden");
+        dom.sections.intro.classList.remove("hidden");
+      }
+    });
+  }
+
+  // 공유하기
+  if (dom.btns.share) {
+    dom.btns.share.addEventListener("click", async () => {
+      const targetType = myResultType || currentViewType;
+      if (!targetType) return alert("공유할 유형이 없습니다.");
+      
+      const baseUrl = "https://faiths.life/";
+      const data = typeResults[targetType];
+      const shareTitle = "FAITH MBTI 신앙 유형 테스트";
+      const shareDesc = `나의 유형은 ${targetType} (${data.nameKo}) 입니다.`;
+
+      if (typeof Kakao !== "undefined" && Kakao.isInitialized && Kakao.isInitialized()) {
+        try {
+          Kakao.Share.sendDefault({
+            objectType: "feed",
+            content: {
+              title: shareTitle, description: shareDesc,
+              imageUrl: "https://csy870617.github.io/faith-mbti/images/thumbnail.jpg",
+              link: { mobileWebUrl: baseUrl, webUrl: baseUrl },
+            },
+            buttons: [{ title: "테스트 하러가기", link: { mobileWebUrl: baseUrl, webUrl: baseUrl } }]
+          });
+          return; 
+        } catch (e) { console.error(e); }
+      }
+      
+      if (navigator.share) {
+        try { await navigator.share({ title: shareTitle, text: shareDesc, url: baseUrl }); return; } catch(e) {}
+      }
+      
+      const success = await copyToClipboard(`${shareTitle}\n${shareDesc}\n${baseUrl}`);
+      alert(success !== false ? "링크가 복사되었습니다." : "링크 복사에 실패했습니다.");
+    });
+  }
+
+  // 교회 섹션 관련
   if (dom.btns.church && dom.sections.church) {
     dom.btns.church.addEventListener("click", () => {
       history.pushState({ page: "church" }, "", "#church");
@@ -905,21 +760,17 @@ document.addEventListener('DOMContentLoaded', () => {
       dom.sections.church.classList.remove("hidden");
     });
   }
-
-  // 뒤로 가기 감지
-  window.addEventListener("popstate", (event) => {
+  window.addEventListener("popstate", () => {
     if (!dom.sections.church.classList.contains("hidden")) {
       dom.sections.church.classList.add("hidden");
       if (myResultType) dom.sections.result.classList.remove("hidden");
       else dom.sections.intro.classList.remove("hidden");
     }
   });
-
   if (dom.btns.churchClose) {
     dom.btns.churchClose.addEventListener("click", () => {
-      if (location.hash === "#church") {
-        history.back(); 
-      } else {
+      if (location.hash === "#church") history.back(); 
+      else {
         dom.sections.church.classList.add("hidden");
         if (myResultType) dom.sections.result.classList.remove("hidden");
         else dom.sections.intro.classList.remove("hidden");
@@ -931,12 +782,11 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.btns.memberSave.addEventListener("click", async () => {
       try {
         await saveMyResultToChurch(dom.inputs.memberName.value, dom.inputs.memberChurch.value, dom.inputs.memberPw.value);
-        alert("저장되었습니다.");
-        dom.inputs.memberName.value = "";
+        alert("저장되었습니다."); dom.inputs.memberName.value = "";
       } catch (e) { alert(e.message); }
     });
   }
-
+  
   if (dom.btns.churchSummary) {
     dom.btns.churchSummary.addEventListener("click", async () => {
       if (dom.inputs.rememberCreds && dom.inputs.rememberCreds.checked) {
@@ -946,185 +796,155 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem('faith_church_name');
         localStorage.removeItem('faith_church_pw');
       }
-
       try {
         const { churchName, members } = await loadChurchMembers(dom.inputs.viewChurch.value, dom.inputs.viewPw.value);
         renderChurchList(churchName, members);
+        
+        // [수정] 데이터 로드 성공 시 하단 분석/초대 버튼 및 공유 버튼 표시
+        if (dom.churchAfterActions) dom.churchAfterActions.classList.remove("hidden");
         if (dom.btns.churchCopy) dom.btns.churchCopy.classList.remove("hidden");
-      } catch (e) { alert(e.message); }
+
+      } catch (e) { 
+        alert(e.message); 
+        // 실패 시 숨김
+        if (dom.churchAfterActions) dom.churchAfterActions.classList.add("hidden");
+        if (dom.btns.churchCopy) dom.btns.churchCopy.classList.add("hidden");
+      }
     });
   }
 
-  if (dom.btns.churchAnalysis) {
-    dom.btns.churchAnalysis.addEventListener("click", analyzeAndRenderCommunity);
-  }
+  if (dom.btns.churchAnalysis) dom.btns.churchAnalysis.addEventListener("click", analyzeAndRenderCommunity);
 
   if (dom.churchViewToggle && dom.churchViewContent) {
     dom.churchViewToggle.addEventListener("click", () => {
       const isHidden = dom.churchViewContent.classList.contains("hidden");
-      if (isHidden) {
-        dom.churchViewContent.classList.remove("hidden");
-        dom.churchViewToggle.querySelector("h3").innerText = "우리교회 신앙 유형 모아보기 ▲";
-      } else {
-        dom.churchViewContent.classList.add("hidden");
-        dom.churchViewToggle.querySelector("h3").innerText = "우리교회 신앙 유형 모아보기 ▼";
-      }
+      dom.churchViewContent.classList.toggle("hidden");
+      dom.churchViewToggle.querySelector("h3").innerText = isHidden ? "우리교회 신앙 유형 모아보기 ▲" : "우리교회 신앙 유형 모아보기 ▼";
     });
   }
 
-  // [수정됨] 멤버 초대 버튼
-  if (dom.btns.invite) {
-    dom.btns.invite.addEventListener("click", async () => {
-      const baseUrl = "https://faiths.life";
-      const rawGroupName = dom.inputs.viewChurch.value.trim();
-      const groupName = rawGroupName.length > 0 ? rawGroupName : "우리교회";
-      const shareTitle = `${groupName} 신앙 유형 모임 초대`;
-      const shareDesc = "함께 신앙 유형을 검사하고 결과를 나눠보세요!";
+  // [수정] 초대 링크 복사 핸들러 (상단, 하단 버튼 공통 사용)
+  const handleInvite = async () => {
+    const baseUrl = "https://faiths.life";
+    const gName = dom.inputs.viewChurch.value.trim() || "우리교회";
+    const shareTitle = `${gName} 신앙 유형 모임 초대`;
+    const shareDesc = "함께 신앙 유형을 검사하고 결과를 나눠보세요!";
 
-      // 1. 카카오톡
-      if (typeof Kakao !== "undefined" && Kakao.isInitialized && Kakao.isInitialized()) {
-        try {
-          Kakao.Share.sendDefault({
-            objectType: "feed",
-            content: {
-              title: shareTitle, description: shareDesc,
-              imageUrl: "https://csy870617.github.io/faith-mbti/images/thumbnail.jpg",
-              link: { mobileWebUrl: baseUrl, webUrl: baseUrl },
-            },
-            buttons: [{ title: "모임 참여하기", link: { mobileWebUrl: baseUrl, webUrl: baseUrl } }]
-          });
-          return; 
-        } catch (e) { console.error(e); }
-      }
+    if (typeof Kakao !== "undefined" && Kakao.isInitialized && Kakao.isInitialized()) {
+      try {
+        Kakao.Share.sendDefault({
+          objectType: "feed",
+          content: { title: shareTitle, description: shareDesc, imageUrl: "https://csy870617.github.io/faith-mbti/images/thumbnail.jpg", link: { mobileWebUrl: baseUrl, webUrl: baseUrl } },
+          buttons: [{ title: "모임 참여하기", link: { mobileWebUrl: baseUrl, webUrl: baseUrl } }]
+        });
+        return; 
+      } catch (e) { console.error(e); }
+    }
+    if (navigator.share) { try { await navigator.share({ title: shareTitle, text: shareDesc, url: baseUrl }); return; } catch(e) {} }
+    const success = await copyToClipboard(`${shareTitle}\n${shareDesc}\n${baseUrl}`);
+    alert(success ? "초대 링크가 복사되었습니다." : "복사에 실패했습니다.");
+  };
 
-      // 2. Web Share API
-      if (navigator.share) {
-        try { await navigator.share({ title: shareTitle, text: shareDesc, url: baseUrl }); return; } catch(e) {}
-      }
+  if (dom.btns.invite) dom.btns.invite.addEventListener("click", handleInvite);
+  if (dom.btns.inviteBottom) dom.btns.inviteBottom.addEventListener("click", handleInvite); // [추가]
 
-      // 3. 복사 (호환성 개선)
-      const copyText = `${shareTitle}\n${shareDesc}\n${baseUrl}`;
-      const success = await copyToClipboard(copyText);
-      if (success !== false) {
-        alert("초대 링크가 복사되었습니다.");
-      } else {
-        alert("링크 복사에 실패했습니다.");
-      }
-    });
-  }
-
-  // [수정됨] 그룹 결과 복사 버튼
+  // 그룹 결과 복사
   if (dom.btns.churchCopy) {
     dom.btns.churchCopy.addEventListener("click", async () => {
       const members = currentChurchMembers;
-      if (!members || members.length === 0) return alert("복사할 데이터가 없습니다.");
-
-      const groupName = dom.inputs.viewChurch.value.trim() || "우리교회";
-      const shareHeader = `${groupName} - 신앙 유형 결과`;
-      
-      let shareBody = "";
+      if (!members || !members.length) return alert("복사할 데이터가 없습니다.");
+      const gName = dom.inputs.viewChurch.value.trim() || "우리교회";
+      const header = `${gName} - 신앙 유형 결과`;
+      let body = "";
       members.forEach(m => {
-        // typeResults 전역 확인
-        const typeData = (typeof typeResults !== 'undefined') ? typeResults[m.type] : null;
-        const desc = typeData ? typeData.strengthShort : (m.shortText || "");
-        shareBody += `이름: ${m.name}\n유형: ${m.type}\n설명: ${desc}\n\n`;
+        const tData = (typeof typeResults !== 'undefined') ? typeResults[m.type] : null;
+        body += `이름: ${m.name}\n유형: ${m.type}\n설명: ${tData ? tData.strengthShort : (m.shortText || "")}\n\n`;
       });
-
-      const fullText = `${shareHeader}\n\n${shareBody}`;
+      const fullText = `${header}\n\n${body}`;
       
-      // 1. 카카오톡
       if (typeof Kakao !== "undefined" && Kakao.isInitialized && Kakao.isInitialized()) {
         try {
-          Kakao.Share.sendDefault({
-            objectType: "text",
-            text: fullText,
-            link: { mobileWebUrl: "https://faiths.life", webUrl: "https://faiths.life" },
-            buttonTitle: "검사하러 가기"
-          });
+          Kakao.Share.sendDefault({ objectType: "text", text: fullText, link: { mobileWebUrl: "https://faiths.life", webUrl: "https://faiths.life" }, buttonTitle: "검사하러 가기" });
           return; 
         } catch (e) { console.error(e); }
       }
-
-      // 2. Web Share API
-      if (navigator.share) {
-        try { 
-          await navigator.share({ 
-            title: shareHeader, 
-            text: "\n\n" + shareBody 
-          }); 
-          return; 
-        } catch(e) {}
-      }
-
-      // 3. 복사 (호환성 개선)
+      if (navigator.share) { try { await navigator.share({ title: header, text: "\n\n" + body }); return; } catch(e) {} }
       const success = await copyToClipboard(fullText);
-      if (success !== false) {
-        alert("그룹 결과가 복사되었습니다.\n메신저 등에 붙여넣기 하세요.");
-      } else {
-        alert("복사에 실패했습니다.");
-      }
+      alert(success ? "그룹 결과가 복사되었습니다." : "복사에 실패했습니다.");
     });
   }
 
-  // 폰트 조절 초기화
-  let currentFontScale = parseFloat(localStorage.getItem("faith_font_scale")) || 1.0;
+  // 기타 버튼들
+  if (dom.btns.todayVerse) {
+    dom.btns.todayVerse.addEventListener("click", () => {
+      const type = currentViewType || myResultType;
+      if (!type) return;
+      const data = typeResults[type];
+      dom.verse.ref.textContent = data.verseRef;
+      dom.verse.text.textContent = data.verseText;
+      dom.verse.apply.textContent = data.verseApply || "";
+      dom.verse.box.classList.toggle("hidden");
+    });
+  }
+  if (dom.btns.bibleToggle) {
+    dom.btns.bibleToggle.addEventListener("click", () => {
+      const isHidden = dom.bible.box.classList.contains("hidden");
+      dom.bible.box.classList.toggle("hidden");
+      dom.btns.bibleToggle.textContent = isHidden ? "📖 성경 인물 닫기" : "📖 성경 인물 보기";
+    });
+  }
+  if (dom.btns.goResult) {
+    dom.btns.goResult.addEventListener("click", () => {
+      localStorage.removeItem('faith_result_v1');
+      myResultType = null; currentViewType = "ENFJ";
+      dom.sections.intro.classList.add("hidden");
+      dom.sections.test.classList.add("hidden");
+      dom.sections.result.classList.remove("hidden");
+      renderResult("ENFJ");
+      renderAxisUpgraded({ EI: 15, SN: 15, TF: 15, JP: 15 });
+      renderDetailScores({ E: 20, I: 5, S: 20, N: 5, T: 20, F: 5, J: 20, P: 5 });
+      renderMatchCards("ENFJ");
+      buildOtherTypesGrid();
+    });
+  }
 
+  // 폰트 조절
+  let currentFontScale = parseFloat(localStorage.getItem("faith_font_scale")) || 1.0;
   function applyFontSize(scale) {
     scale = Math.round(scale * 10) / 10;
-    const root = document.documentElement;
-    const basePercent = 120; 
-    const percent = Math.round(scale * basePercent);
-    root.style.fontSize = `${percent}%`;
+    document.documentElement.style.fontSize = `${Math.round(scale * 120)}%`;
     localStorage.setItem("faith_font_scale", scale);
     currentFontScale = scale;
   }
+  applyFontSize(currentFontScale);
 
-  if (currentFontScale !== 1.0) {
-    applyFontSize(currentFontScale);
-  } else {
-    applyFontSize(1.0);
-  }
+  if (dom.btns.fontUp) dom.btns.fontUp.addEventListener("click", () => { if (currentFontScale < 1.3) applyFontSize(currentFontScale + 0.1); });
+  if (dom.btns.fontDown) dom.btns.fontDown.addEventListener("click", () => { if (currentFontScale > 0.7) applyFontSize(currentFontScale - 0.1); });
+  if (dom.btns.fontReset) dom.btns.fontReset.addEventListener("click", () => applyFontSize(1.0));
 
-  if (dom.btns.fontUp) {
-    dom.btns.fontUp.addEventListener("click", () => {
-      if (currentFontScale < 1.3) applyFontSize(currentFontScale + 0.1);
-    });
-    dom.btns.fontDown.addEventListener("click", () => {
-      if (currentFontScale > 0.7) applyFontSize(currentFontScale - 0.1);
-    });
-    dom.btns.fontReset.addEventListener("click", () => {
-      applyFontSize(1.0);
-    });
-  }
-
-  // 저장된 결과 로드
+  /* =========================================
+     7. 초기 로드 (저장된 결과 확인)
+     ========================================= */
   const savedData = localStorage.getItem('faith_result_v1');
   if (savedData) {
     try {
       const data = JSON.parse(savedData);
       if (data.type && data.scores && data.axisScores) {
-        myResultType = data.type;
-        currentViewType = data.type;
-        
+        myResultType = data.type; currentViewType = data.type;
         dom.sections.intro.classList.add("hidden");
         dom.sections.test.classList.add("hidden");
         dom.sections.result.classList.remove("hidden");
-
         renderResult(data.type);
         renderAxisUpgraded(data.axisScores);
         renderDetailScores(data.scores);
         renderMatchCards(data.type);
         buildOtherTypesGrid();
       }
-    } catch (e) {
-      console.error("저장된 데이터 로드 실패", e);
-      localStorage.removeItem('faith_result_v1');
-    }
+    } catch (e) { localStorage.removeItem('faith_result_v1'); }
   }
 
   const savedChurch = localStorage.getItem('faith_church_name');
   const savedPw = localStorage.getItem('faith_church_pw');
-  
   if (savedChurch && savedPw && dom.inputs.rememberCreds) {
     dom.inputs.viewChurch.value = savedChurch;
     dom.inputs.viewPw.value = savedPw;
