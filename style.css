@@ -283,28 +283,126 @@ main {
 .growth-item:last-child { margin-bottom: 0; }
 .growth-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; }
 
-/* Book Banner */
-.book-banner-simple { margin-top: 24px; padding: 20px 24px; border-radius: 20px; background:#e0e7ff; color: #1e1b4b; display: flex; align-items: center; justify-content: space-between; gap: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex-wrap: wrap; }
-.book-banner-simple-text { display: flex; flex-direction: column; gap: 4px; flex: 1 1 240px; }
-.book-banner-simple-title { font-size: 0.9375rem; font-weight: 700; letter-spacing: -0.02em; }
-.book-banner-simple-sub { font-size: 0.8125rem; font-weight: 540; opacity: 0.8; color: #0f326e; }
-.book-banner-simple-btn { flex-shrink: 0; padding: 10px 16px; border-radius: 12px; border: none; background: #ffffff; color: #4338ca; font-size: 0.85rem; font-weight: 700; text-decoration: none; cursor: pointer; white-space: nowrap; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center; flex: 1 1 auto; max-width: 100%; }
-.book-banner-simple-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-
-/* ENGO 하단 와이드 배너 */
-.engo-bottom-banner {
-  width: 100%; margin-top: 40px; padding: 20px 28px; border-radius: 24px;
-  background: linear-gradient(135deg, #4f46e5, #a855f7);
-  box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4);
-  color: #ffffff; text-decoration: none;
-  display: flex; align-items: center; gap: 20px; transition: transform 0.2s ease, box-shadow 0.2s ease;
+/* [style.css] Book Banner 진한 주황색 테마 수정 */
+.book-banner-simple {
+  margin-top: 24px;
+  padding: 24px 28px; /* 내부 여백 약간 확대 */
+  border-radius: 20px;
+  
+  /* 배경: 진한 주황색 그라데이션 */
+  background: linear-gradient(135deg, #f97316, #ea580c); 
+  border: none; /* 배경이 진하므로 테두리 제거 */
+  
+  /* 텍스트: 흰색 */
+  color: #ffffff;
+  
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  box-shadow: 0 10px 20px -5px rgba(234, 88, 12, 0.4); /* 주황색 그림자 */
+  flex-wrap: wrap;
 }
-.engo-bottom-banner:hover { transform: translateY(-4px); box-shadow: 0 20px 30px -10px rgba(79, 70, 229, 0.5); }
-.engo-icon { width: 56px; height: 56px; border-radius: 14px; background-color: #ffffff; object-fit: cover; border: 2px solid rgba(255, 255, 255, 0.3); flex-shrink: 0; }
-.engo-content { display: flex; flex-direction: column; justify-content: center; gap: 4px; }
-.engo-title { font-size: 1.2rem; font-weight: 800; color: #ffffff; letter-spacing: -0.01em; }
-.engo-desc { font-size: 0.95rem; font-weight: 500; color: rgba(255, 255, 255, 0.9); }
-.intro .engo-bottom-banner { grid-column: 1 / -1; }
+
+.book-banner-simple-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1 1 240px;
+}
+
+.book-banner-simple-title {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #ffffff; /* 흰색 */
+}
+
+.book-banner-simple-sub {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9); /* 흰색에 투명도 */
+  line-height: 1.5;
+}
+
+.book-banner-simple-btn {
+  flex-shrink: 0;
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: none;
+  
+  /* 버튼 배경: 흰색 */
+  background: #ffffff;
+  /* 버튼 글씨: 진한 주황색 */
+  color: #ea580c;
+  
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  flex: 1 1 auto;
+  max-width: 100%;
+}
+
+.book-banner-simple-btn:hover {
+  transform: translateY(-2px);
+  background: #fff7ed; /* 호버 시 아주 연한 살구색 */
+  color: #c2410c; /* 더 진한 주황색 */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* ENGO 하단 와이드 배너 (사이즈 축소 수정됨) */
+.engo-bottom-banner {
+  width: 100%; 
+  margin-top: 32px; /* 상단 여백 축소 */
+  padding: 16px 20px; /* 내부 여백 축소 (기존 20px 28px) */
+  border-radius: 20px; /* 둥글기 약간 축소 */
+  background: linear-gradient(135deg, #4f46e5, #a855f7);
+  box-shadow: 0 8px 20px -5px rgba(79, 70, 229, 0.3);
+  color: #ffffff; 
+  text-decoration: none;
+  display: flex; 
+  align-items: center; 
+  gap: 16px; /* 간격 축소 */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.engo-bottom-banner:hover { 
+  transform: translateY(-3px); 
+  box-shadow: 0 15px 25px -10px rgba(79, 70, 229, 0.4); 
+}
+.engo-icon { 
+  width: 48px; /* 아이콘 크기 축소 (기존 56px) */
+  height: 48px; 
+  border-radius: 12px; 
+  background-color: #ffffff; 
+  object-fit: cover; 
+  border: 2px solid rgba(255, 255, 255, 0.3); 
+  flex-shrink: 0; 
+}
+.engo-content { 
+  display: flex; 
+  flex-direction: column; 
+  justify-content: center; 
+  gap: 2px; /* 텍스트 줄간격 축소 */
+}
+.engo-title { 
+  font-size: 1.05rem; /* 폰트 크기 축소 (기존 1.2rem) */
+  font-weight: 800; 
+  color: #ffffff; 
+  letter-spacing: -0.01em; 
+}
+.engo-desc { 
+  font-size: 0.85rem; /* 설명 폰트 축소 (기존 0.95rem) */
+  font-weight: 500; 
+  color: rgba(255, 255, 255, 0.9); 
+}
+.intro .engo-bottom-banner { 
+  grid-column: 1 / -1; 
+}
 
 /* ----------------------------------------------------
    BLOG SPECIFIC STYLES (문서형 디자인 - 흰색O, 테두리X)
@@ -391,4 +489,5 @@ main {
   .engo-icon { width: 40px; height: 40px; }
   .engo-title { font-size: 0.95rem; }
   .engo-desc { font-size: 0.8rem; }
+
 }

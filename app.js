@@ -371,6 +371,44 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  /* ------------------------------------------------
+     [추가] 인앱 브라우저(카톡, 인스타 등) 호환 복사 함수
+     ------------------------------------------------ */
+  function copyToClipboard(text) {
+    // 1. 최신 방식 시도 (Navigator API)
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).catch(() => {
+        // 실패 시 폴백(구형 방식) 실행
+        return fallbackCopyText(text);
+      });
+    } else {
+      // 2. 구형 방식(폴백) 실행
+      return Promise.resolve(fallbackCopyText(text));
+    }
+  }
+
+  function fallbackCopyText(text) {
+    try {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      // 화면 밖으로 숨김
+      textArea.style.position = "fixed";
+      textArea.style.left = "-9999px";
+      textArea.style.top = "0";
+      document.body.appendChild(textArea);
+      
+      textArea.focus();
+      textArea.select();
+      
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      return successful;
+    } catch (err) {
+      console.error("복사 실패", err);
+      return false;
+    }
+  }
+
   /* 4. 이벤트 핸들러 */
 
   if (dom.btns.todayVerse) {
@@ -393,7 +431,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 공유하기
+  // [수정됨] 공유하기 버튼
   if (dom.btns.share) {
     dom.btns.share.addEventListener("click", async () => {
       const targetType = myResultType || currentViewType;
@@ -405,6 +443,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const shareTitle = "FAITH MBTI 신앙 유형 테스트";
       const shareDesc = `나의 유형은 ${targetType} (${data.nameKo}) 입니다.`;
 
+      // 1. 카카오톡 공유 시도
       if (typeof Kakao !== "undefined" && Kakao.isInitialized && Kakao.isInitialized()) {
         try {
           Kakao.Share.sendDefault({
@@ -421,6 +460,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (e) { console.error(e); }
       }
       
+      // 2. Web Share API
       if (navigator.share) {
         try { 
           await navigator.share({ 
@@ -429,14 +469,17 @@ document.addEventListener('DOMContentLoaded', () => {
             url: baseUrl 
           }); 
           return; 
-        } catch(e) {}
+        } catch(e) { console.log("Share API 취소/에러", e); }
       }
       
-      try { 
-        await navigator.clipboard.writeText(`${shareTitle}\n${shareDesc}\n${baseUrl}`); 
-        alert("결과가 클립보드에 복사되었습니다."); 
+      // 3. 복사 (인앱 브라우저 호환)
+      const copyText = `${shareTitle}\n${shareDesc}\n${baseUrl}`;
+      const success = await copyToClipboard(copyText);
+      if (success !== false) {
+        alert("결과 링크가 복사되었습니다.\n원하는 곳에 붙여넣기 하세요!");
+      } else {
+        alert("공유하기를 지원하지 않는 브라우저입니다.\n링크를 직접 복사해 주세요.");
       }
-      catch (e) { alert("공유 기능을 사용할 수 없습니다."); }
     });
   }
 
@@ -929,6 +972,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // [수정됨] 멤버 초대 버튼
   if (dom.btns.invite) {
     dom.btns.invite.addEventListener("click", async () => {
       const baseUrl = "https://faiths.life";
@@ -937,6 +981,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const shareTitle = `${groupName} 신앙 유형 모임 초대`;
       const shareDesc = "함께 신앙 유형을 검사하고 결과를 나눠보세요!";
 
+      // 1. 카카오톡
       if (typeof Kakao !== "undefined" && Kakao.isInitialized && Kakao.isInitialized()) {
         try {
           Kakao.Share.sendDefault({
@@ -952,18 +997,23 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (e) { console.error(e); }
       }
 
+      // 2. Web Share API
       if (navigator.share) {
         try { await navigator.share({ title: shareTitle, text: shareDesc, url: baseUrl }); return; } catch(e) {}
       }
 
-      try { 
-        await navigator.clipboard.writeText(`${shareTitle}\n${shareDesc}\n${baseUrl}`); 
-        alert("초대 링크가 클립보드에 복사되었습니다."); 
+      // 3. 복사 (호환성 개선)
+      const copyText = `${shareTitle}\n${shareDesc}\n${baseUrl}`;
+      const success = await copyToClipboard(copyText);
+      if (success !== false) {
+        alert("초대 링크가 복사되었습니다.");
+      } else {
+        alert("링크 복사에 실패했습니다.");
       }
-      catch (e) { alert("공유 기능을 사용할 수 없습니다."); }
     });
   }
 
+  // [수정됨] 그룹 결과 복사 버튼
   if (dom.btns.churchCopy) {
     dom.btns.churchCopy.addEventListener("click", async () => {
       const members = currentChurchMembers;
@@ -982,6 +1032,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const fullText = `${shareHeader}\n\n${shareBody}`;
       
+      // 1. 카카오톡
       if (typeof Kakao !== "undefined" && Kakao.isInitialized && Kakao.isInitialized()) {
         try {
           Kakao.Share.sendDefault({
@@ -994,6 +1045,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (e) { console.error(e); }
       }
 
+      // 2. Web Share API
       if (navigator.share) {
         try { 
           await navigator.share({ 
@@ -1004,11 +1056,13 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch(e) {}
       }
 
-      try { 
-        await navigator.clipboard.writeText(fullText); 
-        alert("그룹 결과가 클립보드에 복사되었습니다."); 
+      // 3. 복사 (호환성 개선)
+      const success = await copyToClipboard(fullText);
+      if (success !== false) {
+        alert("그룹 결과가 복사되었습니다.\n메신저 등에 붙여넣기 하세요.");
+      } else {
+        alert("복사에 실패했습니다.");
       }
-      catch(e) { alert("공유 기능을 사용할 수 없습니다."); }
     });
   }
 
