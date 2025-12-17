@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <title>FAITH MBTI 신앙 유형 테스트</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
   <meta name="description" content="당신의 신앙 유형은 무엇인가요?" />
+  
   <meta property="og:type" content="website" />
   <meta property="og:title" content="FAITH MBTI 신앙 유형 테스트" />
   <meta property="og:description" content="당신의 신앙 유형은 무엇인가요?" />
@@ -13,13 +13,7 @@
   <meta property="og:locale" content="ko_KR" />
   <meta property="og:url" content="https://faiths.life" />
   <meta property="og:image" content="https://csy870617.github.io/faith-mbti/images/thumbnail.jpg" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="FAITH MBTI 신앙 유형 테스트" />
-  <meta name="twitter:description" content="당신의 신앙 유형은 무엇인가요?" />
-  <meta name="twitter:image" content="https://csy870617.github.io/faith-mbti/images/thumbnail.jpg" />
-
+  
   <link rel="stylesheet" href="style.css" />
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2078760660134095" crossorigin="anonymous"></script>
@@ -41,9 +35,7 @@
       if (typeof Kakao !== 'undefined' && !Kakao.isInitialized()) {
           Kakao.init("9bde8b67ddb17b795d596ab3bd943668");
       }
-    } catch (e) {
-      console.warn("Kakao SDK 로드 실패:", e);
-    }
+    } catch (e) { console.warn("Kakao SDK 로드 실패:", e); }
   </script>
   
   <script src="data.js" defer></script>
@@ -66,7 +58,6 @@
           <button id="font-up" aria-label="글자 크게">A+</button>
         </div>
       </div>
-
       <div class="logo-sub">하나님을 만나는 공동체 신앙 유형 테스트</div>
     </header>
 
@@ -77,13 +68,13 @@
             당신의 <span class="intro-highlight">신앙 유형</span>은 무엇인가요?
           </h1>
           <p class="intro-text">
-            이 테스트는 FAITH MBTI를 바탕으로, 내가 하나님을 어떻게 경험하고 표현하는지, 나만의 신앙 유형을 알아보는 테스트입니다.
+            이 테스트는 FAITH MBTI를 바탕으로, 내가 하나님을 어떻게 경험하고 표현하는지 알아보는 테스트입니다.
           </p>
 
           <div class="intro-tags">
             <span class="tag"><span class="tag-dot"></span> 40문항 · 7~10분</span>
             <a href="blog/index.html" class="tag" style="text-decoration: none; cursor: pointer;">
-              <span class="tag-dot"></span> 16가지 FAITH MBTI 유형 ➚
+              <span class="tag-dot"></span> 16가지 유형 보기 ➚
             </a>
           </div>
         </div>
@@ -94,18 +85,17 @@
               신앙 유형 검사 시작하기 <span>›</span>
             </button>
 
-            <button class="start-btn dev-btn" id="go-result-btn" style="margin-bottom: 24px;">
+            <button class="start-btn dev-btn" id="go-result-btn" style="margin-bottom: 20px;">
               🔍 결과 페이지 바로 보기 <span>›</span>
             </button>
 
-            <div class="church-extra-banner-box" style="margin-top:0;">
-              <div class="book-banner-simple" style="margin-top:0;">
+            <div class="church-extra-banner-box">
+              <div class="book-banner-simple">
                 <div class="book-banner-simple-text">
                   <div class="book-banner-simple-title">📚 당신을 위한 추천도서</div>
-                  <div class="book-banner-simple-title">“FAITH MBTI, 신앙에도 유형이 있다”</div>
                   <div class="book-banner-simple-sub">
-                    &#160;신앙 유형을 더 깊이 알고 싶은 사람<br/>
-                    &#160;공동체/소그룹/리더들을 위한 실전 가이드북
+                    “FAITH MBTI, 신앙에도 유형이 있다”<br/>
+                    공동체/리더를 위한 필독서
                   </div>
                 </div>
                 <a href="https://ebook-product.kyobobook.co.kr/dig/epd/ebook/E000012331585" target="_blank" rel="noopener noreferrer" class="book-banner-simple-btn">
@@ -115,14 +105,12 @@
             </div>
           </div>
         </div>
-        
         </section>
 
-       <section id="test-section" class="hidden">
+      <section id="test-section" class="hidden">
         <div class="progress-wrapper">
           <div class="progress-header">
             <span id="progress-label">문항 1 / 40</span>
-            <span id="axis-label" style="visibility:hidden;"></span>
           </div>
           <div class="progress-bar">
             <div id="progress-fill" class="progress-fill"></div>
@@ -236,7 +224,7 @@
                 <span style="color:#e94f57; font-weight:600;">'처음으로' 버튼을 누르면 검사 내용이 초기화됩니다.</span>
               </div>
               <div class="result-footer-right">
-                <button id="share-btn" class="btn-primary small">공유하기</button>
+                <button id="share-btn" class="btn-primary small">결과 공유하기</button>
                 <button id="church-btn" class="btn-primary small">우리교회 신앙 유형 그룹</button>
                 <button id="restart-btn" class="btn-secondary">처음으로</button>
               </div>
@@ -299,7 +287,7 @@
               </div>
               <div class="church-actions" style="margin-top:12px; display:flex; gap:8px;">
                 <button id="church-summary-btn" class="btn-primary small">공동체 유형 확인</button>
-                </div>
+              </div>
             </div>
 
             <div id="church-result-list" style="margin-top:12px;"></div>
@@ -336,5 +324,4 @@
     </footer>
   </div>
 </body>
-
 </html>

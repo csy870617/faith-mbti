@@ -24,8 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
       memberSave: document.getElementById("member-save-btn"),
       churchSummary: document.getElementById("church-summary-btn"),
       churchAnalysis: document.getElementById("church-analysis-btn"), 
-      invite: document.getElementById("invite-btn"),
-      inviteBottom: document.getElementById("invite-btn-bottom"), // 하단 초대 버튼
+      inviteBottom: document.getElementById("invite-btn-bottom"),
       churchCopy: document.getElementById("church-copy-btn"),
       fontUp: document.getElementById("font-up"),
       fontDown: document.getElementById("font-down"),
@@ -85,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
     churchAnalysisResult: document.getElementById("church-analysis-result"),
     churchViewToggle: document.getElementById("church-view-toggle"),
     churchViewContent: document.getElementById("church-view-content"),
-    churchAfterActions: document.getElementById("church-after-actions") // 분석/초대 버튼 컨테이너
+    churchAfterActions: document.getElementById("church-after-actions") 
   };
 
   let currentIndex = 0;
@@ -245,9 +244,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  /* =========================================
-     4. 결과 화면 렌더링
-     ========================================= */
   function renderResult(type) {
     if (typeof typeResults === 'undefined') return;
     const data = typeResults[type];
@@ -715,7 +711,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 공유하기
+  // [수정] 공유하기 버튼 (확인 팝업 없이 바로 공유)
   if (dom.btns.share) {
     dom.btns.share.addEventListener("click", async () => {
       const targetType = myResultType || currentViewType;
@@ -725,26 +721,34 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = typeResults[targetType];
       const shareTitle = "FAITH MBTI 신앙 유형 테스트";
       const shareDesc = `나의 유형은 ${targetType} (${data.nameKo}) 입니다.`;
+      const imageUrl = "https://csy870617.github.io/faith-mbti/images/thumbnail.jpg";
 
+      // 1. 카카오톡 공유 (즉시 실행)
       if (typeof Kakao !== "undefined" && Kakao.isInitialized && Kakao.isInitialized()) {
         try {
           Kakao.Share.sendDefault({
             objectType: "feed",
             content: {
-              title: shareTitle, description: shareDesc,
-              imageUrl: "https://csy870617.github.io/faith-mbti/images/thumbnail.jpg",
+              title: shareTitle,
+              description: shareDesc,
+              imageUrl: imageUrl,
               link: { mobileWebUrl: baseUrl, webUrl: baseUrl },
             },
             buttons: [{ title: "테스트 하러가기", link: { mobileWebUrl: baseUrl, webUrl: baseUrl } }]
           });
-          return; 
-        } catch (e) { console.error(e); }
+          return; // 성공 시 종료
+        } catch (e) { console.error("카카오 공유 오류", e); }
       }
       
+      // 2. Web Share API (모바일 공유창)
       if (navigator.share) {
-        try { await navigator.share({ title: shareTitle, text: shareDesc, url: baseUrl }); return; } catch(e) {}
+        try { 
+          await navigator.share({ title: shareTitle, text: shareDesc, url: baseUrl }); 
+          return; 
+        } catch(e) {}
       }
       
+      // 3. 링크 복사
       const success = await copyToClipboard(`${shareTitle}\n${shareDesc}\n${baseUrl}`);
       alert(success !== false ? "링크가 복사되었습니다." : "링크 복사에 실패했습니다.");
     });
@@ -800,7 +804,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const { churchName, members } = await loadChurchMembers(dom.inputs.viewChurch.value, dom.inputs.viewPw.value);
         renderChurchList(churchName, members);
         
-        // [수정] 데이터 로드 성공 시 하단 분석/초대 버튼 및 공유 버튼 표시
+        // [수정] 데이터 로드 성공 시 하단 버튼들 표시
         if (dom.churchAfterActions) dom.churchAfterActions.classList.remove("hidden");
         if (dom.btns.churchCopy) dom.btns.churchCopy.classList.remove("hidden");
 
@@ -823,7 +827,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // [수정] 초대 링크 복사 핸들러 (상단, 하단 버튼 공통 사용)
+  // 초대 링크 복사 (상/하단 공통)
   const handleInvite = async () => {
     const baseUrl = "https://faiths.life";
     const gName = dom.inputs.viewChurch.value.trim() || "우리교회";
@@ -845,8 +849,7 @@ document.addEventListener('DOMContentLoaded', () => {
     alert(success ? "초대 링크가 복사되었습니다." : "복사에 실패했습니다.");
   };
 
-  if (dom.btns.invite) dom.btns.invite.addEventListener("click", handleInvite);
-  if (dom.btns.inviteBottom) dom.btns.inviteBottom.addEventListener("click", handleInvite); // [추가]
+  if (dom.btns.inviteBottom) dom.btns.inviteBottom.addEventListener("click", handleInvite);
 
   // 그룹 결과 복사
   if (dom.btns.churchCopy) {
