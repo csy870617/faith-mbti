@@ -1,4 +1,4 @@
-/* style.css - 표준 웹 레이아웃 복귀 */
+/* style.css - Native Scroll Restoration */
 
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css");
 
@@ -9,7 +9,7 @@
   box-sizing: border-box; 
 }
 
-/* 터치 영역 최적화 (확대/축소 지연 방지) */
+/* 터치 최적화: 확대 지연 방지 */
 button, input, select, textarea, a, label, .scale-pill, .btn-type {
   touch-action: manipulation; 
   -webkit-tap-highlight-color: transparent;
@@ -19,13 +19,11 @@ button, input, select, textarea, a, label, .scale-pill, .btn-type {
   --primary-gradient: linear-gradient(135deg, #4f46e5, #a855f7);
 }
 
-/* 2. 레이아웃 구조 (근본 수정) */
+/* 2. 레이아웃 구조 (스크롤 락 해제) */
 html {
-  font-size: 100%;
-  /* 높이 강제 설정을 풉니다. */
-  height: auto;
+  width: 100%;
+  height: auto; /* 높이 제한 해제 */
   min-height: 100%;
-  /* iOS 텍스트 크기 자동 조절 방지 */
   -webkit-text-size-adjust: 100%;
 }
 
@@ -33,20 +31,18 @@ body {
   font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   color: #111827;
   
-  /* body는 문서 전체를 감싸는 컨테이너 역할만 수행 */
   width: 100%;
   min-height: 100vh;
   position: relative;
   
-  /* [중요] 스크롤 제어 속성 제거 -> 브라우저 기본 스크롤 사용 */
+  /* [핵심] 브라우저 기본 스크롤 사용 */
   overflow-y: visible;
-  /* 가로 스크롤만 방지 */
-  overflow-x: clip; 
+  overflow-x: hidden; 
   
   display: block;
   padding: 20px;
-  /* 하단 여백 확보 (모바일 바 가림 방지) */
-  padding-bottom: 80px;
+  /* 모바일 하단 주소창/네비게이션 바 고려한 여백 */
+  padding-bottom: 120px; 
   
   font-size: 1.125rem;
   line-height: 1.7;
@@ -54,7 +50,7 @@ body {
   word-wrap: break-word;
 }
 
-/* 배경 고정 (성능 최적화 방식 유지) */
+/* 배경 고정 (성능 최적화: transform 사용) */
 body::before {
   content: "";
   position: fixed;
@@ -63,11 +59,12 @@ body::before {
   background-size: cover;
   z-index: -1;
   pointer-events: none;
+  will-change: transform; /* 모바일 렌더링 힌트 */
 }
 
 .hidden { display: none !important; }
 
-/* 3. 앱 컨테이너 */
+/* 3. 앱 컨테이너 (단순 래퍼 역할만 수행) */
 .app {
   width: 100%;
   max-width: 1200px;
@@ -77,21 +74,18 @@ body::before {
   border-radius: 32px;
   box-shadow: 0 10px 40px rgba(15, 23, 42, 0.08);
   
-  /* Flex 제거하고 일반 Block 요소로 변경 */
+  /* [중요] Flex 제거 -> 높이 버그의 주범 */
   display: block;
-  /* 내용물 크기에 맞춰 늘어나도록 설정 */
-  height: auto; 
-  min-height: 500px; 
-  
+  height: auto;
   position: relative;
-  overflow: visible;
 }
 
 /* 4. 헤더 */
 header {
   padding: 24px 32px;
   border-bottom: 1px solid #f1f5f9;
-  display: flex;
+  /* 헤더 내부 정렬을 위해 Flex 사용 */
+  display: flex; 
   flex-direction: column;
   gap: 8px;
 }
@@ -120,7 +114,6 @@ header {
 main {
   padding: 40px 32px;
   width: 100%;
-  /* 높이 제한 없음 */
   height: auto;
   display: block;
 }
@@ -130,8 +123,8 @@ main {
   display: flex;
   justify-content: center;
   align-items: center;
-  /* 최소 높이를 주어 중앙 정렬 느낌 유지 */
-  min-height: 60vh;
+  /* 최소 높이만 지정하고 고정하지 않음 */
+  min-height: 60vh; 
   padding: 20px 0;
 }
 
@@ -160,7 +153,7 @@ main {
   padding: 32px;
   border: 1px solid #e2e8f0;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
-  margin-bottom: 24px; /* 카드 간 간격 */
+  margin-bottom: 24px;
 }
 .card:last-child { margin-bottom: 0; }
 
@@ -354,14 +347,14 @@ main {
 /* 9. 반응형 미디어 쿼리 */
 @media (min-width: 681px) and (max-width: 1024px) {
   .app { max-width: 100%; border-radius: 0; box-shadow: none; }
-  body { padding: 0; background: #ffffff; padding-bottom: 100px; }
+  body { padding: 0; background: #ffffff; padding-bottom: 120px; }
   main { padding: 32px; }
   .intro { gap: 32px; }
   .result-layout { grid-template-columns: 1fr 1.1fr; gap: 20px; }
 }
 
 @media (max-width: 680px) {
-  body { padding: 0; padding-bottom: 100px; /* 모바일에서 하단 여백 필수 */ }
+  body { padding: 0; padding-bottom: 140px; /* 모바일에서 하단 여백 필수 */ }
   .app { border-radius: 0; box-shadow: none; }
   header { padding: 16px 20px; }
   main { padding: 24px 20px; gap: 24px; }
