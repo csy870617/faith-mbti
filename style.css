@@ -16,7 +16,9 @@ button, input, select, textarea, a, .scale-pill, .logo, .card, .btn-type {
 
 html { 
   font-size: 100%; 
-  height: 100%;
+  /* [수정] 스크롤 멈춤 해결: 높이 제한 해제 */
+  height: auto;
+  min-height: 100%;
 }
 
 body {
@@ -26,11 +28,11 @@ body {
   background-size: cover;
   color: #111827;
   
-  /* [수정] 스크롤 안전 장치 및 부드러운 스크롤 */
+  /* [수정] 스크롤 멈춤 해결: 브라우저 기본 스크롤 사용 */
   min-height: 100vh;
-  overflow-y: auto; 
+  overflow-y: visible; 
   overflow-x: hidden;
-  -webkit-overflow-scrolling: touch; /* iOS 스크롤 가속 활성화 */
+  position: relative;
   
   display: block;
   padding: 20px;
@@ -49,6 +51,8 @@ body {
   background: #ffffff;
   border-radius: 32px;
   box-shadow: 0 10px 40px rgba(15, 23, 42, 0.08);
+  
+  /* [수정] 높이 계산 방식 변경 */
   min-height: calc(100vh - 40px);
   display: flex;
   flex-direction: column;
@@ -119,8 +123,8 @@ main > section {
   padding: 48px 32px;
   display: flex;
   flex-direction: column;
-  align-items: flex-start; /* 왼쪽 정렬 */
-  text-align: left;        /* 텍스트 왼쪽 정렬 */
+  align-items: flex-start;
+  text-align: left;
 }
 
 .intro-title {
@@ -207,6 +211,7 @@ main > section {
   flex-direction: column;
   gap: 4px;
   text-align: left;
+  flex: 1 1 auto;
 }
 .book-ad-badge {
   display: inline-block;
@@ -229,6 +234,7 @@ main > section {
   font-size: 0.85rem;
   color: #64748b;
   font-weight: 500;
+  line-height: 1.4;
 }
 
 @keyframes floatBook {
@@ -236,13 +242,16 @@ main > section {
   50% { transform: translateY(-6px); }
   100% { transform: translateY(0); }
 }
+/* [수정] 추천도서 이미지 크기 확대 및 스타일 개선 */
 .book-ad-img {
-  width: 70px;
+  width: 100px; /* 기존 70px -> 100px로 확대 */
   height: auto;
-  border-radius: 6px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  margin-left: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  margin-left: 20px;
   animation: floatBook 3s ease-in-out infinite; 
+  flex-shrink: 0;
+  object-fit: cover;
 }
 
 /* 하단 배너 (ENGO) */
@@ -351,7 +360,7 @@ main > section {
 
 .church-list-header { font-size: 1.1rem; font-weight: 800; color: #4f46e5; margin-top: 24px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
 
-/* [수정] 스크롤 최적화: 가로 스크롤 영역 부드럽게 */
+/* 스크롤 최적화: 가로 스크롤 영역 부드럽게 */
 .member-table-container { 
   overflow-x: auto; 
   margin-bottom: 24px; 
@@ -366,7 +375,7 @@ main > section {
 
 .analysis-bar-container { width: 100%; height: 12px; background-color: #f1f5f9; border-radius: 999px; overflow: hidden; display: flex; margin-top: 8px; }
 
-/* [수정] 스크롤 최적화: 팝업 내용 많을 때 스크롤 멈춤 방지 */
+/* 스크롤 최적화: 팝업 내용 많을 때 스크롤 멈춤 방지 */
 .analysis-report-container { 
   background-color: #f8fafc; 
   border-radius: 16px; 
@@ -420,6 +429,17 @@ main > section {
   .book-banner-simple { padding: 16px; gap: 12px; }
   .book-banner-simple-text { flex: 1 1 100%; }
   .book-banner-simple-btn { width: 100%; text-align: center; margin-top: 4px; padding: 12px; }
+
+  .book-ad-banner {
+    padding: 16px;
+    gap: 12px;
+  }
+  
+  /* [수정] 모바일에서 책 이미지 너비 조절 */
+  .book-ad-img {
+    width: 80px;
+    margin-left: 12px;
+  }
 
   #church-result-list thead { display: none; }
   #church-result-list table, #church-result-list tbody, #church-result-list tr, #church-result-list td { display: block; width: 100%; }
