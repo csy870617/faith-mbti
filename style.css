@@ -1,4 +1,4 @@
-/* style.css - Native Scroll Restoration */
+/* style.css - 인앱브라우저 터치/스크롤 호환성 수정 버전 */
 
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css");
 
@@ -9,7 +9,7 @@
   box-sizing: border-box; 
 }
 
-/* 터치 최적화: 확대 지연 방지 */
+/* 터치 최적화: 확대 지연 방지 및 터치 영역 명확화 */
 button, input, select, textarea, a, label, .scale-pill, .btn-type {
   touch-action: manipulation; 
   -webkit-tap-highlight-color: transparent;
@@ -19,12 +19,12 @@ button, input, select, textarea, a, label, .scale-pill, .btn-type {
   --primary-gradient: linear-gradient(135deg, #4f46e5, #a855f7);
 }
 
-/* 2. 레이아웃 구조 (스크롤 락 해제) */
+/* 2. 레이아웃 구조 (인앱브라우저 호환성 수정) */
 html {
   width: 100%;
-  height: auto; /* 높이 제한 해제 */
-  min-height: 100%;
+  height: 100%; /* [수정] 100%로 고정 */
   -webkit-text-size-adjust: 100%;
+  overflow: hidden; /* [수정] 이중 스크롤 방지를 위해 html 스크롤 잠금 */
 }
 
 body {
@@ -32,16 +32,16 @@ body {
   color: #111827;
   
   width: 100%;
-  min-height: 100vh;
+  height: 100%; /* [수정] body를 스크롤 컨테이너로 사용 */
   position: relative;
   
-  /* [핵심] 브라우저 기본 스크롤 사용 */
-  overflow-y: visible;
-  overflow-x: hidden; 
+  /* [중요] 인앱브라우저 스크롤 터치 먹통 해결 설정 */
+  overflow-y: auto; 
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch; /* iOS 부드러운 스크롤 활성화 */
   
   display: block;
   padding: 20px;
-  /* 모바일 하단 주소창/네비게이션 바 고려한 여백 */
   padding-bottom: 120px; 
   
   font-size: 1.125rem;
@@ -50,7 +50,7 @@ body {
   word-wrap: break-word;
 }
 
-/* 배경 고정 (성능 최적화: transform 사용) */
+/* 배경 고정 */
 body::before {
   content: "";
   position: fixed;
@@ -59,12 +59,12 @@ body::before {
   background-size: cover;
   z-index: -1;
   pointer-events: none;
-  will-change: transform; /* 모바일 렌더링 힌트 */
+  /* transform 제거 (일부 구형 웹뷰 호환성) */
 }
 
 .hidden { display: none !important; }
 
-/* 3. 앱 컨테이너 (단순 래퍼 역할만 수행) */
+/* 3. 앱 컨테이너 */
 .app {
   width: 100%;
   max-width: 1200px;
@@ -74,7 +74,6 @@ body::before {
   border-radius: 32px;
   box-shadow: 0 10px 40px rgba(15, 23, 42, 0.08);
   
-  /* [중요] Flex 제거 -> 높이 버그의 주범 */
   display: block;
   height: auto;
   position: relative;
@@ -84,7 +83,6 @@ body::before {
 header {
   padding: 24px 32px;
   border-bottom: 1px solid #f1f5f9;
-  /* 헤더 내부 정렬을 위해 Flex 사용 */
   display: flex; 
   flex-direction: column;
   gap: 8px;
@@ -123,7 +121,6 @@ main {
   display: flex;
   justify-content: center;
   align-items: center;
-  /* 최소 높이만 지정하고 고정하지 않음 */
   min-height: 60vh; 
   padding: 20px 0;
 }
@@ -218,7 +215,6 @@ main {
 .engo-content { display: flex; flex-direction: column; gap: 1px; text-align: left; }
 .engo-title { font-size: 1rem; font-weight: 800; color: #fff; }
 .engo-desc { font-size: 0.8rem; font-weight: 500; color: rgba(255, 255, 255, 0.9); }
-.intro .engo-bottom-banner { grid-column: 1 / -1; }
 
 /* 테스트 섹션 */
 .progress-wrapper { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
@@ -354,7 +350,7 @@ main {
 }
 
 @media (max-width: 680px) {
-  body { padding: 0; padding-bottom: 140px; /* 모바일에서 하단 여백 필수 */ }
+  body { padding: 0; padding-bottom: 140px; }
   .app { border-radius: 0; box-shadow: none; }
   header { padding: 16px 20px; }
   main { padding: 24px 20px; gap: 24px; }
@@ -367,10 +363,6 @@ main {
   .result-layout { grid-template-columns: 1fr; gap: 32px; }
   .result-main-column { position: static; }
   
-  .book-banner-simple { padding: 16px; gap: 12px; }
-  .book-banner-simple-text { flex: 1 1 100%; }
-  .book-banner-simple-btn { width: 100%; text-align: center; margin-top: 4px; padding: 12px; }
-
   .book-ad-banner { padding: 16px; gap: 12px; }
   .book-ad-img { width: 80px; margin-left: 12px; }
 

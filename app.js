@@ -1,4 +1,4 @@
-// app.js - 강제 스크롤 로직 제거 및 순수 기능 복구
+// app.js - 인앱브라우저 터치/스크롤 호환성 수정 버전
 
 import * as Utils from './utils.js';
 import * as Core from './core.js';
@@ -6,9 +6,15 @@ import * as Church from './church.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // [수정] 단순화된 스크롤 초기화 함수 (섹션 이동 시에만 사용)
+  // [추가] 인앱브라우저 터치 활성화를 위한 더미 리스너
+  // 일부 WebView는 touchstart 리스너가 없으면 터치 반응이 늦거나 무시됨
+  document.addEventListener('touchstart', function() {}, {passive: true});
+
+  // [수정] 스크롤 컨테이너가 body로 변경됨에 따른 초기화 로직 수정
   function scrollToTop() {
     window.scrollTo(0, 0);
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
   }
 
   /* =========================================
