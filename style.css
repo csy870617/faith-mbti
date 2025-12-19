@@ -5,9 +5,10 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* [수정] 터치 반응 속도 개선 (더블 탭 줌 방지) */
+/* 터치 반응 속도 개선 */
 button, input, select, textarea, a, .scale-pill, .logo, .card, .btn-type {
   touch-action: manipulation; 
+  -webkit-tap-highlight-color: transparent; /* 터치 시 파란 박스 제거 */
 }
 
 :root {
@@ -16,23 +17,29 @@ button, input, select, textarea, a, .scale-pill, .logo, .card, .btn-type {
 
 html { 
   font-size: 100%; 
-  /* [수정] 스크롤 멈춤 해결: 높이 제한 해제 */
+  /* [중요] 높이 강제 제한 해제 */
   height: auto;
   min-height: 100%;
 }
 
 body {
   font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
-  background: radial-gradient(circle at top, #f3f0ff, #f8fafc);
-  background-attachment: fixed;
-  background-size: cover;
   color: #111827;
   
-  /* [수정] 스크롤 멈춤 해결: 브라우저 기본 스크롤 사용 */
-  min-height: 100vh;
-  overflow-y: visible; 
-  overflow-x: hidden;
+  /* [핵심 수정] background-attachment: fixed 제거 (모바일 멈춤 원인) */
+  /* 배경은 아래 body::before에서 처리 */
   position: relative;
+  
+  /* [핵심 수정] 스크롤 영역 확보 */
+  min-height: 100vh;
+  /* 모바일 브라우저 주소창 대응 */
+  min-height: -webkit-fill-available; 
+  
+  overflow-y: auto; 
+  overflow-x: hidden;
+  
+  /* 부드러운 스크롤 */
+  -webkit-overflow-scrolling: touch; 
   
   display: block;
   padding: 20px;
@@ -40,6 +47,18 @@ body {
   line-height: 1.7;
   word-break: keep-all;
   word-wrap: break-word;
+}
+
+/* [추가] 배경을 별도 레이어로 분리하여 스크롤 성능 및 멈춤 해결 */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(circle at top, #f3f0ff, #f8fafc);
+  background-size: cover;
+  z-index: -1;
+  /* 모바일 성능 최적화 */
+  will-change: transform; 
 }
 
 .hidden { display: none !important; }
@@ -52,11 +71,16 @@ body {
   border-radius: 32px;
   box-shadow: 0 10px 40px rgba(15, 23, 42, 0.08);
   
-  /* [수정] 높이 계산 방식 변경 */
+  /* [수정] flex 높이 문제 해결: 내용만큼 늘어나도록 auto 설정 */
+  height: auto;
   min-height: calc(100vh - 40px);
+  
   display: flex;
   flex-direction: column;
   position: relative;
+  
+  /* 내부 스크롤 충돌 방지 */
+  overflow: visible; 
 }
 
 /* =========================================
@@ -102,8 +126,9 @@ main {
   padding: 40px 32px;
   display: flex; 
   flex-direction: column; 
-  flex: 1 0 auto; 
+  flex: 1 1 auto; /* flex-grow를 1로 설정하여 자연스럽게 늘어나게 함 */
   position: relative;
+  height: auto;
 }
 
 main > section {
@@ -242,9 +267,10 @@ main > section {
   50% { transform: translateY(-6px); }
   100% { transform: translateY(0); }
 }
-/* [수정] 추천도서 이미지 크기 확대 및 스타일 개선 */
+
+/* 이미지 크기 확대 및 스타일 */
 .book-ad-img {
-  width: 100px; /* 기존 70px -> 100px로 확대 */
+  width: 100px; 
   height: auto;
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
@@ -435,7 +461,7 @@ main > section {
     gap: 12px;
   }
   
-  /* [수정] 모바일에서 책 이미지 너비 조절 */
+  /* 모바일에서 책 이미지 너비 조절 */
   .book-ad-img {
     width: 80px;
     margin-left: 12px;
