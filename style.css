@@ -5,41 +5,39 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* 터치 반응 속도 개선 */
-button, input, select, textarea, a, .scale-pill, .logo, .card, .btn-type {
+/* [중요] 터치 조작 최적화: 버튼 등 상호작용 요소에만 적용 */
+button, input, select, textarea, a, label, .scale-pill, .btn-type {
   touch-action: manipulation; 
-  -webkit-tap-highlight-color: transparent; /* 터치 시 파란 박스 제거 */
+  -webkit-tap-highlight-color: transparent;
 }
 
 :root {
   --primary-gradient: linear-gradient(135deg, #4f46e5, #a855f7);
 }
 
+/* [핵심 수정 1] html, body 높이 및 스크롤 설정 초기화 */
 html { 
-  font-size: 100%; 
-  /* [중요] 높이 강제 제한 해제 */
-  height: auto;
+  font-size: 100%;
+  width: 100%;
+  /* 높이 강제 제거. auto로 두어 내용만큼 늘어나게 함 */
+  height: auto; 
   min-height: 100%;
+  /* iOS 스크롤 바운스 효과 방지 및 스크롤 부드럽게 */
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   color: #111827;
+  width: 100%;
   
-  /* [핵심 수정] background-attachment: fixed 제거 (모바일 멈춤 원인) */
-  /* 배경은 아래 body::before에서 처리 */
+  /* [핵심 수정 2] body에서 overflow 속성 제거 -> 브라우저 기본 스크롤 사용 */
+  overflow-y: visible;
+  /* 가로 스크롤 방지를 위해 hidden 대신 max-width 사용 */
+  overflow-x: clip; 
+  
   position: relative;
-  
-  /* [핵심 수정] 스크롤 영역 확보 */
   min-height: 100vh;
-  /* 모바일 브라우저 주소창 대응 */
-  min-height: -webkit-fill-available; 
-  
-  overflow-y: auto; 
-  overflow-x: hidden;
-  
-  /* 부드러운 스크롤 */
-  -webkit-overflow-scrolling: touch; 
   
   display: block;
   padding: 20px;
@@ -49,7 +47,7 @@ body {
   word-wrap: break-word;
 }
 
-/* [추가] 배경을 별도 레이어로 분리하여 스크롤 성능 및 멈춤 해결 */
+/* 배경 고정 레이어 (성능 최적화) */
 body::before {
   content: "";
   position: fixed;
@@ -57,12 +55,12 @@ body::before {
   background: radial-gradient(circle at top, #f3f0ff, #f8fafc);
   background-size: cover;
   z-index: -1;
-  /* 모바일 성능 최적화 */
-  will-change: transform; 
+  pointer-events: none; /* 터치 이벤트 방해 금지 */
 }
 
 .hidden { display: none !important; }
 
+/* [핵심 수정 3] .app 컨테이너 단순화 */
 .app {
   width: 100%;
   max-width: 1200px;
@@ -71,15 +69,12 @@ body::before {
   border-radius: 32px;
   box-shadow: 0 10px 40px rgba(15, 23, 42, 0.08);
   
-  /* [수정] flex 높이 문제 해결: 내용만큼 늘어나도록 auto 설정 */
-  height: auto;
+  /* flex 제거 -> block 레이아웃으로 변경하여 높이 버그 해결 */
+  display: block; 
   min-height: calc(100vh - 40px);
-  
-  display: flex;
-  flex-direction: column;
   position: relative;
   
-  /* 내부 스크롤 충돌 방지 */
+  /* 내부 요소가 삐져나가지 않도록 */
   overflow: visible; 
 }
 
@@ -89,10 +84,10 @@ body::before {
 header {
   padding: 24px 32px;
   border-bottom: 1px solid #f1f5f9;
+  /* Header는 Flex 유지하되 높이 고정 */
   display: flex;
   flex-direction: column;
   gap: 8px;
-  flex-shrink: 0;
 }
 
 .header-row {
@@ -124,22 +119,17 @@ header {
    ========================================= */
 main {
   padding: 40px 32px;
-  display: flex; 
-  flex-direction: column; 
-  flex: 1 1 auto; /* flex-grow를 1로 설정하여 자연스럽게 늘어나게 함 */
-  position: relative;
+  display: block; /* Flex 제거 */
+  width: 100%;
   height: auto;
 }
 
-main > section {
-  margin: auto 0;
-  width: 100%;
-}
-
+/* 섹션들을 중앙 정렬하기 위한 스타일 */
 .intro {
   display: flex;
   justify-content: center;
   align-items: center;
+  min-height: 60vh; /* 첫 화면 적당한 높이 확보 */
 }
 
 .intro .card {
@@ -268,7 +258,6 @@ main > section {
   100% { transform: translateY(0); }
 }
 
-/* 이미지 크기 확대 및 스타일 */
 .book-ad-img {
   width: 100px; 
   height: auto;
@@ -280,7 +269,6 @@ main > section {
   object-fit: cover;
 }
 
-/* 하단 배너 (ENGO) */
 .engo-bottom-banner {
   width: 100%; margin-top: 24px;
   padding: 14px 18px; border-radius: 20px;
@@ -295,6 +283,7 @@ main > section {
 .engo-content { display: flex; flex-direction: column; gap: 1px; text-align: left; }
 .engo-title { font-size: 1rem; font-weight: 800; color: #fff; }
 .engo-desc { font-size: 0.8rem; font-weight: 500; color: rgba(255, 255, 255, 0.9); }
+/* Intro에서만 사용될 때 */
 .intro .engo-bottom-banner { grid-column: 1 / -1; }
 
 /* =========================================
@@ -408,7 +397,7 @@ main > section {
   padding: 24px; 
   margin-top: 24px; 
   max-width: 100%;
-  overflow-y: visible; /* 내부 스크롤 대신 전체 스크롤 사용 */
+  overflow-y: visible; 
 }
 
 .analysis-section-flat { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px dashed #cbd5e1; }
@@ -461,7 +450,6 @@ main > section {
     gap: 12px;
   }
   
-  /* 모바일에서 책 이미지 너비 조절 */
   .book-ad-img {
     width: 80px;
     margin-left: 12px;
