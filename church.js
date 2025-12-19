@@ -2,19 +2,16 @@
 const CHURCH_COLLECTION = "faith_churches";
 let _firebaseDb = null, _firebaseFsModule = null, _firebaseAuthModule = null;
 
-// Firebase 초기화 및 익명 로그인 (규칙 통과를 위해 필수)
+// Firebase 초기화 및 익명 로그인
 export async function ensureFirebase() {
-  // 이미 초기화되었고, 로그인된 상태라면 기존 DB 반환
   if (_firebaseDb && _firebaseFsModule && _firebaseAuthModule) {
     return { db: _firebaseDb, fs: _firebaseFsModule };
   }
 
-  // 1. 모듈 로드 (App, Firestore, Auth)
   const appMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
   const fsMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
   const authMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
 
-  // 2. 앱 초기화
   const app = appMod.initializeApp({
     apiKey: "AIzaSyDAigdc0C7zzzOySBTFb527eeAN3jInIfQ",
     authDomain: "faith-mbti.firebaseapp.com",
@@ -25,11 +22,9 @@ export async function ensureFirebase() {
     measurementId: "G-RWMSVFRMRP"
   });
 
-  // 3. 익명 로그인 수행 (request.auth != null 조건을 만족시키기 위함)
   const auth = authMod.getAuth(app);
   await authMod.signInAnonymously(auth);
 
-  // 4. 모듈 및 DB 객체 캐싱
   _firebaseDb = fsMod.getFirestore(app);
   _firebaseFsModule = fsMod;
   _firebaseAuthModule = authMod;
@@ -37,7 +32,7 @@ export async function ensureFirebase() {
   return { db: _firebaseDb, fs: _firebaseFsModule };
 }
 
-// 결과 저장
+// 결과 저장 (중복 이름 체크 로직 추가)
 export async function saveMyResultToChurch(name, churchName, password, targetType) {
   const n = name.trim(), c = churchName.trim(), p = password.trim();
   if (!n || !c || !p) throw new Error("모든 항목을 입력해 주세요.");
@@ -50,11 +45,23 @@ export async function saveMyResultToChurch(name, churchName, password, targetTyp
 
   // 그룹 비밀번호 확인
   if (snap.exists() && snap.data().password !== p) throw new Error("비밀번호가 일치하지 않습니다.");
-  // 그룹이 없으면 새로 생성 (여기서도 쓰기 권한 필요하므로 로그인 필수)
+  // 그룹이 없으면 새로 생성
   if (!snap.exists()) await fs.setDoc(churchRef, { churchName: c, password: p, createdAt: fs.serverTimestamp ? fs.serverTimestamp() : Date.now() });
 
+  // [추가] 중복 이름 체크 로직
+  // members 컬렉션에서 해당 이름(n)이 있는지 확인
+  const membersRef = fs.collection(churchRef, "members");
+  const q = fs.query(membersRef, fs.where("name", "==", n));
+  const querySnapshot = await fs.getDocs(q);
+
+  if (!querySnapshot.empty) {
+    // 중복된 이름이 있다면 에러 발생 (app.js의 catch 블록에서 alert로 표시됨)
+    throw new Error("이미 입력된 이름입니다.\n나를 표현하는 다른 이름을 입력해주세요.");
+  }
+
+  // 중복이 없다면 저장 진행
   const data = window.typeResults[targetType];
-  await fs.addDoc(fs.collection(churchRef, "members"), {
+  await fs.addDoc(membersRef, {
     name: n, type: targetType, shortText: data.summary || data.nameKo || "",
     createdAt: fs.serverTimestamp ? fs.serverTimestamp() : Date.now()
   });
@@ -90,7 +97,7 @@ export async function deleteChurchMember(churchName, password, memberId) {
   await fs.deleteDoc(fs.doc(fs.collection(churchRef, "members"), memberId));
 }
 
-// 목록 렌더링 (UI 관련 함수는 그대로 유지)
+// 목록 렌더링
 export function renderChurchList(dom, churchName, members, onDeleteClick) {
   if (!dom.churchList) return;
   if (!members || !members.length) {
@@ -123,7 +130,7 @@ export function renderChurchList(dom, churchName, members, onDeleteClick) {
   });
 }
 
-// 공동체 분석 렌더링 (그대로 유지)
+// 공동체 분석 렌더링
 export function analyzeAndRenderCommunity(dom, members) {
   if (!members || members.length === 0) {
     alert("먼저 [공동체 유형 확인] 버튼을 눌러 데이터를 불러와 주세요.");

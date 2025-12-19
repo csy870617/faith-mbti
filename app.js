@@ -1,4 +1,4 @@
-// app.js - 인앱브라우저 터치/스크롤 호환성 수정 버전
+// app.js - 인앱브라우저 호환성 및 알림 메시지 수정 적용
 
 import * as Utils from './utils.js';
 import * as Core from './core.js';
@@ -6,11 +6,9 @@ import * as Church from './church.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // [추가] 인앱브라우저 터치 활성화를 위한 더미 리스너
-  // 일부 WebView는 touchstart 리스너가 없으면 터치 반응이 늦거나 무시됨
+  // 인앱브라우저 터치 활성화를 위한 더미 리스너
   document.addEventListener('touchstart', function() {}, {passive: true});
 
-  // [수정] 스크롤 컨테이너가 body로 변경됨에 따른 초기화 로직 수정
   function scrollToTop() {
     window.scrollTo(0, 0);
     document.body.scrollTop = 0;
@@ -243,7 +241,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const { db, fs } = await Church.ensureFirebase();
         const docRef = fs.doc(db, "faith_churches", cName);
         const snap = await fs.getDoc(docRef);
-        if (snap.exists()) { alert("이미 존재하는 그룹입니다."); return; }
+        // [수정] 이미 존재할 때 안내 문구 변경
+        if (snap.exists()) { 
+          alert("이미 존재하는 그룹입니다.\n그룹명이나 비밀번호를 바꿔주세요."); 
+          return; 
+        }
         await fs.setDoc(docRef, { churchName: cName, password: cPw, createdAt: Date.now() });
         alert(`'${cName}' 그룹이 생성되었습니다!`);
         proceedToGroup(cName, cPw);
