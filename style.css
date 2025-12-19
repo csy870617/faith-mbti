@@ -1,3 +1,5 @@
+/* style.css */
+
 /* =========================================
    1. RESET & GLOBAL
    ========================================= */
@@ -5,7 +7,7 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* [중요] 터치 조작 최적화: 버튼 등 상호작용 요소에만 적용 */
+/* 터치 최적화: pan-y를 명시하여 수직 스크롤 허용 */
 button, input, select, textarea, a, label, .scale-pill, .btn-type {
   touch-action: manipulation; 
   -webkit-tap-highlight-color: transparent;
@@ -15,14 +17,11 @@ button, input, select, textarea, a, label, .scale-pill, .btn-type {
   --primary-gradient: linear-gradient(135deg, #4f46e5, #a855f7);
 }
 
-/* [핵심 수정 1] html, body 높이 및 스크롤 설정 초기화 */
+/* [핵심 수정] 높이 설정 표준화 */
 html { 
   font-size: 100%;
   width: 100%;
-  /* 높이 강제 제거. auto로 두어 내용만큼 늘어나게 함 */
-  height: auto; 
-  min-height: 100%;
-  /* iOS 스크롤 바운스 효과 방지 및 스크롤 부드럽게 */
+  height: 100%; /* auto 대신 100%로 변경하여 기준점 잡기 */
   -webkit-text-size-adjust: 100%;
 }
 
@@ -31,23 +30,25 @@ body {
   color: #111827;
   width: 100%;
   
-  /* [핵심 수정 2] body에서 overflow 속성 제거 -> 브라우저 기본 스크롤 사용 */
-  overflow-y: visible;
-  /* 가로 스크롤 방지를 위해 hidden 대신 max-width 사용 */
-  overflow-x: clip; 
-  
+  /* [핵심 수정] 최소 높이 100% 및 여유 공간 확보 */
+  min-height: 100%;
   position: relative;
-  min-height: 100vh;
   
-  display: block;
+  /* [중요] 모바일 하단바 등에 내용이 가려지거나 스크롤이 꽉 끼는 것 방지 */
   padding: 20px;
+  padding-bottom: 100px; 
+  
+  /* 기본 스크롤 사용 */
+  overflow-y: visible;
+  overflow-x: hidden; 
+  
   font-size: 1.125rem;
   line-height: 1.7;
   word-break: keep-all;
   word-wrap: break-word;
 }
 
-/* 배경 고정 레이어 (성능 최적화) */
+/* 배경 고정 레이어 */
 body::before {
   content: "";
   position: fixed;
@@ -55,12 +56,12 @@ body::before {
   background: radial-gradient(circle at top, #f3f0ff, #f8fafc);
   background-size: cover;
   z-index: -1;
-  pointer-events: none; /* 터치 이벤트 방해 금지 */
+  pointer-events: none;
 }
 
 .hidden { display: none !important; }
 
-/* [핵심 수정 3] .app 컨테이너 단순화 */
+/* .app 컨테이너는 단순히 감싸는 역할만 수행 */
 .app {
   width: 100%;
   max-width: 1200px;
@@ -69,13 +70,9 @@ body::before {
   border-radius: 32px;
   box-shadow: 0 10px 40px rgba(15, 23, 42, 0.08);
   
-  /* flex 제거 -> block 레이아웃으로 변경하여 높이 버그 해결 */
   display: block; 
-  min-height: calc(100vh - 40px);
+  min-height: calc(100vh - 140px); /* padding 고려 */
   position: relative;
-  
-  /* 내부 요소가 삐져나가지 않도록 */
-  overflow: visible; 
 }
 
 /* =========================================
@@ -84,7 +81,6 @@ body::before {
 header {
   padding: 24px 32px;
   border-bottom: 1px solid #f1f5f9;
-  /* Header는 Flex 유지하되 높이 고정 */
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -119,17 +115,16 @@ header {
    ========================================= */
 main {
   padding: 40px 32px;
-  display: block; /* Flex 제거 */
+  display: block;
   width: 100%;
   height: auto;
 }
 
-/* 섹션들을 중앙 정렬하기 위한 스타일 */
 .intro {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 60vh; /* 첫 화면 적당한 높이 확보 */
+  min-height: 60vh;
 }
 
 .intro .card {
@@ -283,7 +278,6 @@ main {
 .engo-content { display: flex; flex-direction: column; gap: 1px; text-align: left; }
 .engo-title { font-size: 1rem; font-weight: 800; color: #fff; }
 .engo-desc { font-size: 0.8rem; font-weight: 500; color: rgba(255, 255, 255, 0.9); }
-/* Intro에서만 사용될 때 */
 .intro .engo-bottom-banner { grid-column: 1 / -1; }
 
 /* =========================================
@@ -375,7 +369,6 @@ main {
 
 .church-list-header { font-size: 1.1rem; font-weight: 800; color: #4f46e5; margin-top: 24px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
 
-/* 스크롤 최적화: 가로 스크롤 영역 부드럽게 */
 .member-table-container { 
   overflow-x: auto; 
   margin-bottom: 24px; 
@@ -390,7 +383,6 @@ main {
 
 .analysis-bar-container { width: 100%; height: 12px; background-color: #f1f5f9; border-radius: 999px; overflow: hidden; display: flex; margin-top: 8px; }
 
-/* 스크롤 최적화: 팝업 내용 많을 때 스크롤 멈춤 방지 */
 .analysis-report-container { 
   background-color: #f8fafc; 
   border-radius: 16px; 
@@ -428,7 +420,7 @@ main {
 }
 
 @media (max-width: 680px) {
-  body { padding: 0; }
+  body { padding: 0; padding-bottom: 100px; /* 모바일 하단 여백 추가 */ }
   .app { border-radius: 0; }
   header { padding: 16px 20px; }
   main { padding: 24px 20px; gap: 24px; }
