@@ -5,6 +5,11 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* [수정] 터치 반응 속도 개선 (더블 탭 줌 방지) */
+button, input, select, textarea, a, .scale-pill, .logo, .card, .btn-type {
+  touch-action: manipulation; 
+}
+
 :root {
   --primary-gradient: linear-gradient(135deg, #4f46e5, #a855f7);
 }
@@ -21,10 +26,11 @@ body {
   background-size: cover;
   color: #111827;
   
-  /* 스크롤 안전 장치 */
-  min-height: 100%;
+  /* [수정] 스크롤 안전 장치 및 부드러운 스크롤 */
+  min-height: 100vh;
   overflow-y: auto; 
   overflow-x: hidden;
+  -webkit-overflow-scrolling: touch; /* iOS 스크롤 가속 활성화 */
   
   display: block;
   padding: 20px;
@@ -174,7 +180,7 @@ main > section {
 .dev-btn { margin-top: 12px; background: #fff; border: 1px solid #e2e8f0; color: #64748b; box-shadow: none; font-size: 0.9rem; }
 
 /* =========================================
-   5. BANNERS (추천도서 배너 스타일 복구됨)
+   5. BANNERS
    ========================================= */
 .book-ad-banner {
   margin-top: 24px;
@@ -344,14 +350,32 @@ main > section {
 .church-auth-close { position: absolute; right: 0; top: 0; background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; padding: 0 8px; }
 
 .church-list-header { font-size: 1.1rem; font-weight: 800; color: #4f46e5; margin-top: 24px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-.member-table-container { overflow-x: auto; margin-bottom: 24px; border-top: 2px solid #f1f5f9; }
+
+/* [수정] 스크롤 최적화: 가로 스크롤 영역 부드럽게 */
+.member-table-container { 
+  overflow-x: auto; 
+  margin-bottom: 24px; 
+  border-top: 2px solid #f1f5f9; 
+  -webkit-overflow-scrolling: touch; 
+}
+
 #church-result-list table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
 #church-result-list th { background: #f8fafc; font-weight: 700; color: #64748b; padding: 12px 8px; border-bottom: 1px solid #e2e8f0; text-align: left; }
 #church-result-list td { padding: 12px 8px; border-bottom: 1px solid #f1f5f9; color: #334155; }
 #church-result-list tr:last-child td { border-bottom: none; }
 
 .analysis-bar-container { width: 100%; height: 12px; background-color: #f1f5f9; border-radius: 999px; overflow: hidden; display: flex; margin-top: 8px; }
-.analysis-report-container { background-color: #f8fafc; border-radius: 16px; padding: 24px; margin-top: 24px; }
+
+/* [수정] 스크롤 최적화: 팝업 내용 많을 때 스크롤 멈춤 방지 */
+.analysis-report-container { 
+  background-color: #f8fafc; 
+  border-radius: 16px; 
+  padding: 24px; 
+  margin-top: 24px; 
+  max-width: 100%;
+  overflow-y: visible; /* 내부 스크롤 대신 전체 스크롤 사용 */
+}
+
 .analysis-section-flat { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px dashed #cbd5e1; }
 .analysis-section-flat:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
 .analysis-header { font-size: 1.1rem; font-weight: 800; color: #1e293b; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }

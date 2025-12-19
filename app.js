@@ -37,7 +37,6 @@ document.addEventListener('DOMContentLoaded', () => {
       
       groupCreate: document.getElementById("group-create-btn"),
       groupLogin: document.getElementById("group-login-btn"),
-      // [수정] 뒤로가기 대신 닫기 버튼
       groupAuthClose: document.getElementById("church-auth-close-btn")
     },
     progress: {
@@ -109,13 +108,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
   Core.initFontControl(dom);
 
+  /* [추가] 브라우저 뒤로가기(popstate) 이벤트 핸들링 */
+  window.addEventListener('popstate', (event) => {
+    // 1. 검사 화면에서 뒤로가기
+    if (!dom.sections.test.classList.contains("hidden")) {
+      if (currentIndex > 0) {
+        currentIndex--;
+        Core.renderQuestion(dom, questions, currentIndex, answers, goNextOrResult);
+        // 강제로 현재 페이지 상태를 다시 푸시하여 URL 변경 방지 및 이전 문항 유지
+        history.pushState({ page: "test" }, "", "#test");
+      } else {
+        // 첫 문항이면 홈으로 이동
+        dom.sections.test.classList.add("hidden");
+        dom.sections.intro.classList.remove("hidden");
+      }
+    } 
+    // 2. 결과 화면에서 뒤로가기 -> 홈으로 이동
+    else if (!dom.sections.result.classList.contains("hidden")) {
+      dom.sections.result.classList.add("hidden");
+      dom.sections.intro.classList.remove("hidden");
+    }
+    // 3. 교회 화면에서 뒤로가기 -> 홈 또는 이전 섹션
+    else if (!dom.sections.church.classList.contains("hidden")) {
+      dom.sections.church.classList.add("hidden");
+      if (myResultType) dom.sections.result.classList.remove("hidden");
+      else dom.sections.intro.classList.remove("hidden");
+    }
+  });
+
+
   function goNextOrResult() {
     if (currentIndex < questions.length - 1) {
+      // [수정] 다음 문항 이동 시 히스토리 스택 추가
+      history.pushState({ page: "test" }, "", "#test");
       currentIndex++;
       Core.renderQuestion(dom, questions, currentIndex, answers, goNextOrResult);
     } else {
       dom.sections.test.classList.add("hidden");
       dom.sections.result.classList.remove("hidden");
+      
+      // [수정] 결과 화면 히스토리 스택 추가
+      history.pushState({ page: "result" }, "", "#result");
 
       const { type, scores, axisScores } = Core.calculateResult(window.originalQuestions, answers);
       
@@ -254,7 +287,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // [수정] 우측 상단 닫기 버튼 (로그인 화면 닫기)
   if (dom.btns.groupAuthClose) {
     dom.btns.groupAuthClose.addEventListener("click", () => {
       if (location.hash === "#church") {
@@ -269,6 +301,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (dom.btns.start) {
     dom.btns.start.addEventListener("click", () => {
+      // [수정] 검사 시작 시 히스토리 상태 추가
+      history.pushState({ page: "test" }, "", "#test");
+
       localStorage.removeItem('faith_result_v1');
       if (typeof window.originalQuestions === 'undefined') { alert("데이터 로딩 중..."); return; }
       questions = Utils.shuffle(window.originalQuestions);
@@ -286,14 +321,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (dom.btns.back) {
     dom.btns.back.addEventListener("click", () => {
-      if (currentIndex > 0) { 
-        currentIndex--; 
-        Core.renderQuestion(dom, questions, currentIndex, answers, goNextOrResult); 
-      } 
-      else { 
-        dom.sections.test.classList.add("hidden"); 
-        dom.sections.intro.classList.remove("hidden"); 
-      }
+      // [수정] 직접 로직을 수행하지 않고 브라우저 뒤로가기를 호출 (popstate 리스너가 처리)
+      history.back();
     });
   }
   if (dom.btns.skip) dom.btns.skip.addEventListener("click", goNextOrResult);
@@ -305,6 +334,8 @@ document.addEventListener('DOMContentLoaded', () => {
         myResultType = null; currentViewType = null;
         dom.sections.result.classList.add("hidden");
         dom.sections.intro.classList.remove("hidden");
+        // 홈으로 갈 때 해시 제거
+        history.replaceState(null, "", " "); 
       }
     });
   }
@@ -353,13 +384,6 @@ document.addEventListener('DOMContentLoaded', () => {
       dom.churchMainContent.classList.add("hidden");
     });
   }
-  window.addEventListener("popstate", () => {
-    if (!dom.sections.church.classList.contains("hidden")) {
-      dom.sections.church.classList.add("hidden");
-      if (myResultType) dom.sections.result.classList.remove("hidden");
-      else dom.sections.intro.classList.remove("hidden");
-    }
-  });
 
   if (dom.btns.churchMainClose) {
     dom.btns.churchMainClose.addEventListener("click", () => {
@@ -501,6 +525,9 @@ document.addEventListener('DOMContentLoaded', () => {
       dom.sections.test.classList.add("hidden");
       dom.sections.result.classList.remove("hidden");
       
+      // 결과 미리보기 시 히스토리 추가
+      history.pushState({ page: "result" }, "", "#result");
+      
       const sampleScores = { E: 20, I: 5, S: 20, N: 5, T: 20, F: 5, J: 20, P: 5 };
       const sampleAxis = { EI: 15, SN: 15, TF: 15, JP: 15 };
       Core.renderResultScreen(dom, "ENFJ", sampleScores, sampleAxis);
@@ -517,6 +544,10 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.sections.intro.classList.add("hidden");
         dom.sections.test.classList.add("hidden");
         dom.sections.result.classList.remove("hidden");
+        
+        // 저장된 결과 로드 시에도 히스토리 추가
+        if (location.hash !== "#result") history.replaceState({ page: "result" }, "", "#result");
+
         Core.renderResultScreen(dom, data.type, data.scores, data.axisScores);
         buildOtherTypesGrid();
       }
