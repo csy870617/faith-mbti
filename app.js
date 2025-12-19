@@ -6,18 +6,32 @@ import * as Church from './church.js';
 document.addEventListener('DOMContentLoaded', () => {
 
   /* =========================================
-     0. 화면 전환 시 스크롤 초기화 (먹통 방지 핵심 함수)
+     0. 화면/스크롤 제어 헬퍼 함수 (멈춤 해결 핵심)
      ========================================= */
+  
+  // 1. 섹션 전환 시 스크롤 초기화
   function scrollToTop() {
-    // 즉시 스크롤 이동
     window.scrollTo(0, 0);
     document.body.scrollTop = 0;
     document.documentElement.scrollTop = 0;
-    
-    // 모바일 브라우저 주소창/레이아웃 재계산 딜레이 대응
-    setTimeout(() => {
-      window.scrollTo(0, 0);
-    }, 10);
+    setTimeout(() => { window.scrollTo(0, 0); }, 10);
+  }
+
+  // 2. [추가] 동적 콘텐츠(말씀/인물 보기) 토글 시 레이아웃 강제 갱신
+  function refreshLayout() {
+    // 브라우저가 변경된 높이를 인지하도록 다음 프레임에 요청
+    requestAnimationFrame(() => {
+      // 강제 리플로우 (높이 계산 유발)
+      void document.body.offsetHeight;
+      
+      // 스크롤 엔진을 깨우기 위해 1픽셀 이동했다가 제자리로
+      // (화면이 깜빡이지 않도록 아주 빠르게 처리)
+      const currentY = window.scrollY;
+      window.scrollTo(0, currentY + 1);
+      setTimeout(() => {
+        window.scrollTo(0, currentY);
+      }, 0);
+    });
   }
 
   /* =========================================
@@ -131,23 +145,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!dom.sections.test.classList.contains("hidden")) {
       if (currentIndex > 0) {
         currentIndex--;
-        // 문항 이동 시에는 스크롤을 굳이 맨 위로 안 올려도 되지만, 
-        // 깔끔하게 하려면 scrollToTop()을 호출해도 됩니다.
         Core.renderQuestion(dom, questions, currentIndex, answers, goNextOrResult);
-        // 강제로 상태 푸시 (페이지 이탈 방지)
         history.pushState({ page: "test" }, "", "#test");
       } else {
-        // 첫 문항 -> 홈으로
         dom.sections.test.classList.add("hidden");
         dom.sections.intro.classList.remove("hidden");
-        scrollToTop(); // [필수] 홈으로 갈 때 스크롤 초기화
+        scrollToTop(); 
       }
     } 
     // 2. 결과 화면 -> 홈으로
     else if (!dom.sections.result.classList.contains("hidden")) {
       dom.sections.result.classList.add("hidden");
       dom.sections.intro.classList.remove("hidden");
-      scrollToTop(); // [필수]
+      scrollToTop();
     }
     // 3. 교회 화면 -> 홈 또는 결과
     else if (!dom.sections.church.classList.contains("hidden")) {
@@ -157,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         dom.sections.intro.classList.remove("hidden");
       }
-      scrollToTop(); // [필수]
+      scrollToTop();
     }
   });
 
@@ -167,16 +177,14 @@ document.addEventListener('DOMContentLoaded', () => {
      ========================================= */
   function goNextOrResult() {
     if (currentIndex < questions.length - 1) {
-      // 다음 문항
       history.pushState({ page: "test" }, "", "#test");
       currentIndex++;
       Core.renderQuestion(dom, questions, currentIndex, answers, goNextOrResult);
     } else {
-      // 결과 보기
       dom.sections.test.classList.add("hidden");
       dom.sections.result.classList.remove("hidden");
       
-      scrollToTop(); // [필수] 결과 화면 진입 시 최상단으로 이동
+      scrollToTop(); // 결과 화면 진입 시 최상단
 
       history.pushState({ page: "result" }, "", "#result");
 
@@ -211,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
           { E:0,I:0,S:0,N:0,T:0,F:0,J:0,P:0 }, 
           { EI:0,SN:0,TF:0,JP:0 } 
         );
-        scrollToTop(); // [선택] 다른 유형 보기 클릭 시에도 맨 위로 올려줌
+        scrollToTop(); 
         updateTypeButtonsActive();
       });
       dom.result.otherTypes.appendChild(btn);
@@ -243,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.churchMainContent.classList.remove("hidden");
     dom.churchCommunityArea.classList.add("hidden");
     
-    scrollToTop(); // [필수] 그룹 화면 진입 시 스크롤 초기화
+    scrollToTop(); 
   }
 
 
@@ -335,7 +343,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // 검사 시작
   if (dom.btns.start) {
     dom.btns.start.addEventListener("click", () => {
-      // 히스토리 추가
       history.pushState({ page: "test" }, "", "#test");
 
       localStorage.removeItem('faith_result_v1');
@@ -348,27 +355,24 @@ document.addEventListener('DOMContentLoaded', () => {
       dom.verse.box.classList.add("hidden");
       dom.bible.box.classList.add("hidden");
       
-      // 화면 전환
       dom.sections.intro.classList.add("hidden");
       dom.sections.test.classList.remove("hidden");
       dom.sections.result.classList.add("hidden");
       
-      scrollToTop(); // [필수] 검사 시작 시 최상단
+      scrollToTop(); 
       Core.renderQuestion(dom, questions, currentIndex, answers, goNextOrResult);
     });
   }
 
-  // 뒤로가기 버튼 (브라우저 히스토리 이용)
   if (dom.btns.back) {
     dom.btns.back.addEventListener("click", () => {
       history.back(); 
     });
   }
   
-  // 건너뛰기
   if (dom.btns.skip) dom.btns.skip.addEventListener("click", goNextOrResult);
 
-  // 재시작 (처음으로)
+  // 재시작
   if (dom.btns.restart) {
     dom.btns.restart.addEventListener("click", () => {
       if(confirm("초기화 하시겠습니까?")) {
@@ -378,9 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.sections.result.classList.add("hidden");
         dom.sections.intro.classList.remove("hidden");
         
-        scrollToTop(); // [필수] 홈으로 복귀 시 스크롤 초기화
-        
-        // 홈으로 갈 때 해시 제거
+        scrollToTop(); 
         history.replaceState(null, "", " "); 
       }
     });
@@ -419,7 +421,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 교회(그룹) 버튼
+  // 교회 버튼
   if (dom.btns.church && dom.sections.church) {
     dom.btns.church.addEventListener("click", () => {
       history.pushState({ page: "church" }, "", "#church");
@@ -429,14 +431,13 @@ document.addEventListener('DOMContentLoaded', () => {
       dom.sections.result.classList.add("hidden");
       dom.sections.church.classList.remove("hidden");
       
-      scrollToTop(); // [필수] 교회 섹션 진입 시 스크롤 초기화
+      scrollToTop(); 
 
       dom.churchAuthCard.classList.remove("hidden");
       dom.churchMainContent.classList.add("hidden");
     });
   }
 
-  // 교회 메인 닫기
   if (dom.btns.churchMainClose) {
     dom.btns.churchMainClose.addEventListener("click", () => {
       if (location.hash === "#church") {
@@ -453,7 +454,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 내 결과 저장하기
   if (dom.btns.memberSave) {
     dom.btns.memberSave.addEventListener("click", async () => {
       try {
@@ -468,11 +468,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   
-  // 공동체 유형 확인 (리스트 불러오기)
   if (dom.btns.churchSummary) {
     dom.btns.churchSummary.addEventListener("click", async () => {
       if (!dom.churchCommunityArea.classList.contains("hidden")) {
         dom.churchCommunityArea.classList.add("hidden");
+        // 닫을 때도 레이아웃 갱신
+        refreshLayout();
         return;
       }
 
@@ -481,7 +482,8 @@ document.addEventListener('DOMContentLoaded', () => {
         currentChurchMembers = members;
         
         dom.churchCommunityArea.classList.remove("hidden");
-        // 리스트가 펼쳐지면서 화면이 길어지므로 스크롤 체크는 브라우저에게 맡김 (Native Scroll)
+        // 열 때 레이아웃 갱신
+        refreshLayout();
 
         Church.renderChurchList(dom, churchName, members, async (btn) => {
            const pw = prompt("우리교회 비밀번호를 입력해 주세요.");
@@ -492,6 +494,7 @@ document.addEventListener('DOMContentLoaded', () => {
              const refreshed = await Church.loadChurchMembers(btn.dataset.church, pw);
              currentChurchMembers = refreshed.members;
              Church.renderChurchList(dom, refreshed.churchName, refreshed.members, (b) => btn.click()); 
+             refreshLayout(); // 리스트 변경 시에도 갱신
            } catch (e) { alert(e.message); }
         });
 
@@ -500,19 +503,19 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (e) { 
         alert(e.message); 
         dom.churchCommunityArea.classList.add("hidden");
+        refreshLayout();
       }
     });
   }
 
-  // 공동체 분석 버튼
   if (dom.btns.churchAnalysis) {
     dom.btns.churchAnalysis.addEventListener("click", () => {
       Church.analyzeAndRenderCommunity(dom, currentChurchMembers);
-      // 분석 결과가 나오면 스크롤이 길어질 수 있음 -> 사용자가 직접 스크롤
+      // 분석 결과 표시 후 갱신
+      setTimeout(refreshLayout, 100);
     });
   }
 
-  // 하단 초대 버튼
   const handleInvite = async () => {
     const baseUrl = "https://faiths.life";
     const gName = dom.inputs.viewChurch.value.trim() || "우리교회";
@@ -535,7 +538,6 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   if (dom.btns.inviteBottom) dom.btns.inviteBottom.addEventListener("click", handleInvite);
 
-  // 결과 텍스트 복사
   if (dom.btns.churchCopy) {
     dom.btns.churchCopy.addEventListener("click", async () => {
       const members = currentChurchMembers;
@@ -561,7 +563,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 오늘의 말씀 보기
+  // [수정] 오늘의 말씀 보기 (refreshLayout 적용)
   if (dom.btns.todayVerse) {
     dom.btns.todayVerse.addEventListener("click", () => {
       const type = currentViewType || myResultType;
@@ -571,19 +573,24 @@ document.addEventListener('DOMContentLoaded', () => {
       dom.verse.text.textContent = data.verseText;
       dom.verse.apply.textContent = data.verseApply || "";
       dom.verse.box.classList.toggle("hidden");
+      
+      // 토글 후 강제 레이아웃 갱신
+      refreshLayout();
     });
   }
   
-  // 성경 인물 보기/닫기
+  // [수정] 성경 인물 보기/닫기 (refreshLayout 적용)
   if (dom.btns.bibleToggle) {
     dom.btns.bibleToggle.addEventListener("click", () => {
       const isHidden = dom.bible.box.classList.contains("hidden");
       dom.bible.box.classList.toggle("hidden");
       dom.btns.bibleToggle.textContent = isHidden ? "📖 성경 인물 닫기" : "📖 성경 인물 보기";
+      
+      // 토글 후 강제 레이아웃 갱신
+      refreshLayout();
     });
   }
   
-  // 결과 페이지 미리보기 (개발용/바로가기)
   if (dom.btns.goResult) {
     dom.btns.goResult.addEventListener("click", () => {
       localStorage.removeItem('faith_result_v1');
@@ -593,7 +600,7 @@ document.addEventListener('DOMContentLoaded', () => {
       dom.sections.test.classList.add("hidden");
       dom.sections.result.classList.remove("hidden");
       
-      scrollToTop(); // [필수]
+      scrollToTop(); 
       
       history.pushState({ page: "result" }, "", "#result");
       
@@ -604,7 +611,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 저장된 결과 불러오기
   const savedData = localStorage.getItem('faith_result_v1');
   if (savedData) {
     try {
@@ -616,7 +622,6 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.sections.test.classList.add("hidden");
         dom.sections.result.classList.remove("hidden");
         
-        // 새로고침해도 스크롤은 위로
         scrollToTop(); 
 
         if (location.hash !== "#result") history.replaceState({ page: "result" }, "", "#result");
@@ -627,7 +632,6 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) { localStorage.removeItem('faith_result_v1'); }
   }
 
-  // 저장된 교회 로그인 정보 불러오기
   const savedChurch = localStorage.getItem('faith_church_name');
   const savedPw = localStorage.getItem('faith_church_pw');
   if (savedChurch && savedPw) {
