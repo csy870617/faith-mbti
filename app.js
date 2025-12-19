@@ -1,4 +1,4 @@
-// app.js - 순수 기능 복구 (No Scroll Hacks)
+// app.js - 강제 스크롤 로직 제거 및 순수 기능 복구
 
 import * as Utils from './utils.js';
 import * as Core from './core.js';
@@ -6,11 +6,14 @@ import * as Church from './church.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // 섹션 이동 시에만 사용할 단순 스크롤 초기화
+  // [수정] 단순화된 스크롤 초기화 함수 (섹션 이동 시에만 사용)
   function scrollToTop() {
     window.scrollTo(0, 0);
   }
 
+  /* =========================================
+     1. DOM 요소 캐싱
+     ========================================= */
   const dom = {
     sections: {
       intro: document.getElementById("intro-section"),
@@ -73,6 +76,11 @@ document.addEventListener('DOMContentLoaded', () => {
       verseEl: document.getElementById("bible-verse"),
       box: document.getElementById("bible-box")
     },
+    character: {
+      emoji: document.getElementById("character-emoji"),
+      title: document.getElementById("character-title"),
+      text: document.getElementById("character-text")
+    },
     verse: {
       box: document.getElementById("today-verse-box"),
       ref: document.getElementById("today-verse-box-ref"),
@@ -106,7 +114,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   Core.initFontControl(dom);
 
-  // 뒤로가기 핸들링
+  /* =========================================
+     2. 브라우저 뒤로가기(popstate) 핸들링
+     ========================================= */
   window.addEventListener('popstate', (event) => {
     if (!dom.sections.test.classList.contains("hidden")) {
       if (currentIndex > 0) {
@@ -135,7 +145,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 다음 문항 또는 결과
+  /* =========================================
+     3. 로직 함수들
+     ========================================= */
   function goNextOrResult() {
     if (currentIndex < questions.length - 1) {
       history.pushState({ page: "test" }, "", "#test");
@@ -144,7 +156,6 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       dom.sections.test.classList.add("hidden");
       dom.sections.result.classList.remove("hidden");
-      
       scrollToTop(); 
       history.pushState({ page: "result" }, "", "#result");
 
@@ -211,7 +222,9 @@ document.addEventListener('DOMContentLoaded', () => {
     scrollToTop(); 
   }
 
-  // --- 이벤트 리스너 ---
+  /* =========================================
+     4. 이벤트 리스너 설정
+     ========================================= */
 
   if (dom.btns.groupCreate) {
     dom.btns.groupCreate.addEventListener("click", async () => {
@@ -270,7 +283,6 @@ document.addEventListener('DOMContentLoaded', () => {
       currentIndex = 0; myResultType = null; currentViewType = null;
       dom.verse.box.classList.add("hidden");
       dom.bible.box.classList.add("hidden");
-      
       dom.sections.intro.classList.add("hidden");
       dom.sections.test.classList.remove("hidden");
       dom.sections.result.classList.add("hidden");
@@ -434,7 +446,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // [수정] 토글 버튼 (순수 CSS 제어 의존)
   if (dom.btns.todayVerse) {
     dom.btns.todayVerse.addEventListener("click", () => {
       const type = currentViewType || myResultType;
