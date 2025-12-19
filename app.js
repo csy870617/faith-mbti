@@ -1,4 +1,4 @@
-// app.js
+// app.js - 강제 스크롤 로직 제거 및 순수 기능 복구
 
 import * as Utils from './utils.js';
 import * as Core from './core.js';
@@ -6,28 +6,9 @@ import * as Church from './church.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  /* =========================================
-     0. 화면/스크롤 제어 헬퍼 함수
-     ========================================= */
-  
+  // [수정] 단순화된 스크롤 초기화 함수 (섹션 이동 시에만 사용)
   function scrollToTop() {
     window.scrollTo(0, 0);
-    document.body.scrollTop = 0;
-    document.documentElement.scrollTop = 0;
-    setTimeout(() => { window.scrollTo(0, 0); }, 10);
-  }
-
-  // [수정] 점프 현상 해결을 위해 스크롤 조작 코드 제거, 레이아웃 계산만 수행
-  function refreshLayout() {
-    requestAnimationFrame(() => {
-      // 강제 리플로우 (높이 계산 유발)
-      void document.body.offsetHeight;
-      
-      // 혹시 모를 렌더링 지연을 위해 100ms 후 한 번 더 체크 (스크롤 위치 이동 X)
-      setTimeout(() => {
-         void document.body.offsetHeight;
-      }, 100);
-    });
   }
 
   /* =========================================
@@ -399,14 +380,12 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.btns.churchSummary.addEventListener("click", async () => {
       if (!dom.churchCommunityArea.classList.contains("hidden")) {
         dom.churchCommunityArea.classList.add("hidden");
-        refreshLayout();
         return;
       }
       try {
         const { churchName, members } = await Church.loadChurchMembers(dom.inputs.viewChurch.value, dom.inputs.viewPw.value);
         currentChurchMembers = members;
         dom.churchCommunityArea.classList.remove("hidden");
-        refreshLayout();
 
         Church.renderChurchList(dom, churchName, members, async (btn) => {
            const pw = prompt("비밀번호를 입력해 주세요.");
@@ -417,14 +396,12 @@ document.addEventListener('DOMContentLoaded', () => {
              const refreshed = await Church.loadChurchMembers(btn.dataset.church, pw);
              currentChurchMembers = refreshed.members;
              Church.renderChurchList(dom, refreshed.churchName, refreshed.members, (b) => btn.click()); 
-             refreshLayout();
            } catch (e) { alert(e.message); }
         });
         if (dom.churchAfterActions) dom.churchAfterActions.classList.remove("hidden");
       } catch (e) { 
         alert(e.message); 
         dom.churchCommunityArea.classList.add("hidden");
-        refreshLayout();
       }
     });
   }
@@ -432,7 +409,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if (dom.btns.churchAnalysis) {
     dom.btns.churchAnalysis.addEventListener("click", () => {
       Church.analyzeAndRenderCommunity(dom, currentChurchMembers);
-      setTimeout(refreshLayout, 100);
     });
   }
 
@@ -479,7 +455,6 @@ document.addEventListener('DOMContentLoaded', () => {
       dom.verse.text.textContent = data.verseText;
       dom.verse.apply.textContent = data.verseApply || "";
       dom.verse.box.classList.toggle("hidden");
-      refreshLayout();
     });
   }
   
@@ -488,7 +463,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const isHidden = dom.bible.box.classList.contains("hidden");
       dom.bible.box.classList.toggle("hidden");
       dom.btns.bibleToggle.textContent = isHidden ? "📖 성경 인물 닫기" : "📖 성경 인물 보기";
-      refreshLayout();
     });
   }
   

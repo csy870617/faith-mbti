@@ -1,13 +1,15 @@
-/* style.css */
+/* style.css - 표준 웹 레이아웃 복귀 */
 
-/* =========================================
-   1. RESET & GLOBAL
-   ========================================= */
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css");
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+/* 1. 기본 초기화 */
+* { 
+  margin: 0; 
+  padding: 0; 
+  box-sizing: border-box; 
+}
 
-/* 터치 최적화: pan-y를 명시하여 수직 스크롤 허용 */
+/* 터치 영역 최적화 (확대/축소 지연 방지) */
 button, input, select, textarea, a, label, .scale-pill, .btn-type {
   touch-action: manipulation; 
   -webkit-tap-highlight-color: transparent;
@@ -17,30 +19,34 @@ button, input, select, textarea, a, label, .scale-pill, .btn-type {
   --primary-gradient: linear-gradient(135deg, #4f46e5, #a855f7);
 }
 
-/* [핵심 수정] 높이 설정 표준화 */
-html { 
+/* 2. 레이아웃 구조 (근본 수정) */
+html {
   font-size: 100%;
-  width: 100%;
-  height: 100%; /* auto 대신 100%로 변경하여 기준점 잡기 */
+  /* 높이 강제 설정을 풉니다. */
+  height: auto;
+  min-height: 100%;
+  /* iOS 텍스트 크기 자동 조절 방지 */
   -webkit-text-size-adjust: 100%;
 }
 
 body {
   font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   color: #111827;
-  width: 100%;
   
-  /* [핵심 수정] 최소 높이 100% 및 여유 공간 확보 */
-  min-height: 100%;
+  /* body는 문서 전체를 감싸는 컨테이너 역할만 수행 */
+  width: 100%;
+  min-height: 100vh;
   position: relative;
   
-  /* [중요] 모바일 하단바 등에 내용이 가려지거나 스크롤이 꽉 끼는 것 방지 */
-  padding: 20px;
-  padding-bottom: 100px; 
-  
-  /* 기본 스크롤 사용 */
+  /* [중요] 스크롤 제어 속성 제거 -> 브라우저 기본 스크롤 사용 */
   overflow-y: visible;
-  overflow-x: hidden; 
+  /* 가로 스크롤만 방지 */
+  overflow-x: clip; 
+  
+  display: block;
+  padding: 20px;
+  /* 하단 여백 확보 (모바일 바 가림 방지) */
+  padding-bottom: 80px;
   
   font-size: 1.125rem;
   line-height: 1.7;
@@ -48,7 +54,7 @@ body {
   word-wrap: break-word;
 }
 
-/* 배경 고정 레이어 */
+/* 배경 고정 (성능 최적화 방식 유지) */
 body::before {
   content: "";
   position: fixed;
@@ -61,23 +67,27 @@ body::before {
 
 .hidden { display: none !important; }
 
-/* .app 컨테이너는 단순히 감싸는 역할만 수행 */
+/* 3. 앱 컨테이너 */
 .app {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
+  
   background: #ffffff;
   border-radius: 32px;
   box-shadow: 0 10px 40px rgba(15, 23, 42, 0.08);
   
-  display: block; 
-  min-height: calc(100vh - 140px); /* padding 고려 */
+  /* Flex 제거하고 일반 Block 요소로 변경 */
+  display: block;
+  /* 내용물 크기에 맞춰 늘어나도록 설정 */
+  height: auto; 
+  min-height: 500px; 
+  
   position: relative;
+  overflow: visible;
 }
 
-/* =========================================
-   2. HEADER
-   ========================================= */
+/* 4. 헤더 */
 header {
   padding: 24px 32px;
   border-bottom: 1px solid #f1f5f9;
@@ -86,9 +96,7 @@ header {
   gap: 8px;
 }
 
-.header-row {
-  display: flex; justify-content: space-between; align-items: center; width: 100%;
-}
+.header-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
 
 .logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.5rem; letter-spacing: -0.02em; cursor: pointer; }
 .logo-badge {
@@ -100,9 +108,7 @@ header {
 }
 .logo-sub { font-size: 0.875rem; color: #64748b; font-weight: 500; }
 
-.font-controls {
-  display: flex; gap: 4px; background: #f1f5f9; padding: 4px; border-radius: 10px; flex-shrink: 0;
-}
+.font-controls { display: flex; gap: 4px; background: #f1f5f9; padding: 4px; border-radius: 10px; flex-shrink: 0; }
 .font-controls button {
   border: none; background: #ffffff; color: #64748b;
   font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 8px; cursor: pointer;
@@ -110,21 +116,23 @@ header {
 }
 .font-controls button:hover { background: #eef2ff; color: #4f46e5; }
 
-/* =========================================
-   3. LAYOUT & INTRO
-   ========================================= */
+/* 5. 메인 영역 */
 main {
   padding: 40px 32px;
-  display: block;
   width: 100%;
+  /* 높이 제한 없음 */
   height: auto;
+  display: block;
 }
 
+/* 첫 화면(인트로) */
 .intro {
   display: flex;
   justify-content: center;
   align-items: center;
+  /* 최소 높이를 주어 중앙 정렬 느낌 유지 */
   min-height: 60vh;
+  padding: 20px 0;
 }
 
 .intro .card {
@@ -137,10 +145,7 @@ main {
   text-align: left;
 }
 
-.intro-title {
-  font-size: 2.2rem;
-  font-weight: 800; letter-spacing: -0.03em; margin-bottom: 16px; line-height: 1.3;
-}
+.intro-title { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 16px; line-height: 1.3; }
 .intro-highlight { background: linear-gradient(120deg, #4f46e5, #a855f7); -webkit-background-clip: text; color: transparent; }
 .intro-text { font-size: 1.1rem; font-weight: 500; color: #475569; line-height: 1.6; margin-bottom: 32px; }
 
@@ -148,16 +153,17 @@ main {
 .tag { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; font-size: 0.9rem; border-radius: 999px; background: #f5f3ff; color: #5b21b6; font-weight: 600; text-decoration: none; }
 .tag-dot { width: 6px; height: 6px; background: #7c3aed; border-radius: 999px; }
 
-/* =========================================
-   4. CARDS & BUTTONS
-   ========================================= */
+/* 6. 공통 UI 요소 */
 .card {
   border-radius: 28px;
   background: radial-gradient(circle at top left, #ffffff, #f8fafc);
   padding: 32px;
   border: 1px solid #e2e8f0;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px; /* 카드 간 간격 */
 }
+.card:last-child { margin-bottom: 0; }
+
 .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: #1e293b; }
 
 .start-btn {
@@ -193,85 +199,26 @@ main {
 }
 .dev-btn { margin-top: 12px; background: #fff; border: 1px solid #e2e8f0; color: #64748b; box-shadow: none; font-size: 0.9rem; }
 
-/* =========================================
-   5. BANNERS
-   ========================================= */
+/* 배너 스타일 */
 .book-ad-banner {
-  margin-top: 24px;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 20px;
-  padding: 20px;
-  text-decoration: none;
-  color: inherit;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-  transition: all 0.2s ease;
+  margin-top: 24px; width: 100%; display: flex; align-items: center; justify-content: space-between;
+  background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 20px;
+  text-decoration: none; color: inherit; box-shadow: 0 4px 10px rgba(0,0,0,0.03); transition: all 0.2s ease;
 }
-.book-ad-banner:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.06);
-  border-color: #cbd5e1;
-}
-.book-ad-content {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  text-align: left;
-  flex: 1 1 auto;
-}
-.book-ad-badge {
-  display: inline-block;
-  background: #fff7ed;
-  color: #ea580c;
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 4px 8px;
-  border-radius: 6px;
-  width: fit-content;
-  margin-bottom: 4px;
-}
-.book-ad-title {
-  font-size: 1rem;
-  font-weight: 800;
-  color: #1e293b;
-  line-height: 1.3;
-}
-.book-ad-desc {
-  font-size: 0.85rem;
-  color: #64748b;
-  font-weight: 500;
-  line-height: 1.4;
-}
-
-@keyframes floatBook {
-  0% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-  100% { transform: translateY(0); }
-}
-
-.book-ad-img {
-  width: 100px; 
-  height: auto;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  margin-left: 20px;
-  animation: floatBook 3s ease-in-out infinite; 
-  flex-shrink: 0;
-  object-fit: cover;
-}
+.book-ad-banner:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); border-color: #cbd5e1; }
+.book-ad-content { display: flex; flex-direction: column; gap: 4px; text-align: left; flex: 1 1 auto; }
+.book-ad-badge { display: inline-block; background: #fff7ed; color: #ea580c; font-size: 0.75rem; font-weight: 700; padding: 4px 8px; border-radius: 6px; width: fit-content; margin-bottom: 4px; }
+.book-ad-title { font-size: 1rem; font-weight: 800; color: #1e293b; line-height: 1.3; }
+.book-ad-desc { font-size: 0.85rem; color: #64748b; font-weight: 500; line-height: 1.4; }
+@keyframes floatBook { 0% { transform: translateY(0); } 50% { transform: translateY(-6px); } 100% { transform: translateY(0); } }
+.book-ad-img { width: 100px; height: auto; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-left: 20px; animation: floatBook 3s ease-in-out infinite; flex-shrink: 0; object-fit: cover; }
 
 .engo-bottom-banner {
-  width: 100%; margin-top: 24px;
-  padding: 14px 18px; border-radius: 20px;
+  width: 100%; margin-top: 24px; padding: 14px 18px; border-radius: 20px;
   background: linear-gradient(135deg, #4f46e5, #a855f7);
   box-shadow: 0 8px 20px -5px rgba(79, 70, 229, 0.3);
   color: #ffffff; text-decoration: none;
-  display: flex; align-items: center; gap: 14px;
-  transition: transform 0.2s ease;
+  display: flex; align-items: center; gap: 14px; transition: transform 0.2s ease;
 }
 .engo-bottom-banner:hover { transform: translateY(-2px); }
 .engo-icon { width: 44px; height: 44px; border-radius: 12px; background: #fff; border: 2px solid rgba(255,255,255,0.3); object-fit: cover; flex-shrink: 0; }
@@ -280,9 +227,7 @@ main {
 .engo-desc { font-size: 0.8rem; font-weight: 500; color: rgba(255, 255, 255, 0.9); }
 .intro .engo-bottom-banner { grid-column: 1 / -1; }
 
-/* =========================================
-   6. TEST SECTION
-   ========================================= */
+/* 테스트 섹션 */
 .progress-wrapper { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
 .progress-header { display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 600; color: #64748b; }
 .progress-bar { width: 100%; height: 10px; background: #f1f5f9; border-radius: 999px; overflow: hidden; }
@@ -296,7 +241,6 @@ main {
 .question-code { font-size: 0.9rem; font-weight: 700; color: #8b5cf6; text-transform: uppercase; }
 .question-text { font-size: 1.5rem; font-weight: 700; color: #1e293b; line-height: 1.4; }
 .question-sub { font-size: 0.9rem; color: #64748b; }
-
 .scale-labels { display: flex; justify-content: space-between; font-size: 0.85rem; color: #64748b; margin-bottom: 12px; font-weight: 500; }
 .scale-inputs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
 .scale-option input { display: none; }
@@ -306,9 +250,7 @@ main {
 .nav-buttons { display: flex; gap: 12px; width: 100%; margin-top: 20px; }
 #skip-btn { margin-left: auto; color: #94a3b8; border: none; }
 
-/* =========================================
-   7. RESULT & CHURCH (Flat UI)
-   ========================================= */
+/* 결과 및 교회 섹션 */
 .type-pill { display: inline-block; padding: 6px 12px; background: #f5f3ff; color: #7c3aed; border-radius: 999px; font-size: 0.8rem; font-weight: 700; margin-bottom: 16px; }
 .result-layout { display: grid; grid-template-columns: 380px 1fr; gap: 24px; align-items: start; }
 .result-main-column { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 20px; }
@@ -357,7 +299,7 @@ main {
 .result-footer-right { display: flex; gap: 10px; flex-wrap: wrap; }
 .result-footer-right button { flex: 0 0 auto; width: auto; padding: 10px 16px; }
 
-/* CHURCH (Flat) */
+/* 교회 폼 */
 .church-form { display: grid; gap: 12px; margin-top: 16px; margin-bottom: 16px; }
 .church-form-group { display: flex; flex-direction: column; gap: 6px; font-size: 0.9rem; font-weight: 600; color: #475569; }
 .church-form-group input { padding: 10px 12px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 0.95rem; background: #ffffff; }
@@ -369,6 +311,7 @@ main {
 
 .church-list-header { font-size: 1.1rem; font-weight: 800; color: #4f46e5; margin-top: 24px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
 
+/* 내부 가로 스크롤 허용 (테이블 등) */
 .member-table-container { 
   overflow-x: auto; 
   margin-bottom: 24px; 
@@ -383,13 +326,13 @@ main {
 
 .analysis-bar-container { width: 100%; height: 12px; background-color: #f1f5f9; border-radius: 999px; overflow: hidden; display: flex; margin-top: 8px; }
 
+/* 팝업 컨테이너 */
 .analysis-report-container { 
   background-color: #f8fafc; 
   border-radius: 16px; 
   padding: 24px; 
   margin-top: 24px; 
   max-width: 100%;
-  overflow-y: visible; 
 }
 
 .analysis-section-flat { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px dashed #cbd5e1; }
@@ -408,24 +351,22 @@ main {
 .balance-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.7rem; font-weight: 700; margin-left: 6px; vertical-align: middle; }
 .badge-balanced { background: #dbeafe; color: #2563eb; }
 
-/* =========================================
-   8. MEDIA QUERIES
-   ========================================= */
+/* 9. 반응형 미디어 쿼리 */
 @media (min-width: 681px) and (max-width: 1024px) {
   .app { max-width: 100%; border-radius: 0; box-shadow: none; }
-  body { padding: 0; background: #ffffff; }
+  body { padding: 0; background: #ffffff; padding-bottom: 100px; }
   main { padding: 32px; }
   .intro { gap: 32px; }
   .result-layout { grid-template-columns: 1fr 1.1fr; gap: 20px; }
 }
 
 @media (max-width: 680px) {
-  body { padding: 0; padding-bottom: 100px; /* 모바일 하단 여백 추가 */ }
-  .app { border-radius: 0; }
+  body { padding: 0; padding-bottom: 100px; /* 모바일에서 하단 여백 필수 */ }
+  .app { border-radius: 0; box-shadow: none; }
   header { padding: 16px 20px; }
   main { padding: 24px 20px; gap: 24px; }
 
-  .intro { display: block; text-align: left; }
+  .intro { display: block; text-align: left; min-height: auto; }
   .intro .card { margin-top: 24px; padding: 32px 24px; }
   .intro-title { font-size: 1.7rem !important; margin-bottom: 12px; }
   .intro-tags { justify-content: flex-start; }
@@ -437,16 +378,10 @@ main {
   .book-banner-simple-text { flex: 1 1 100%; }
   .book-banner-simple-btn { width: 100%; text-align: center; margin-top: 4px; padding: 12px; }
 
-  .book-ad-banner {
-    padding: 16px;
-    gap: 12px;
-  }
-  
-  .book-ad-img {
-    width: 80px;
-    margin-left: 12px;
-  }
+  .book-ad-banner { padding: 16px; gap: 12px; }
+  .book-ad-img { width: 80px; margin-left: 12px; }
 
+  /* 테이블 반응형 카드 스타일 */
   #church-result-list thead { display: none; }
   #church-result-list table, #church-result-list tbody, #church-result-list tr, #church-result-list td { display: block; width: 100%; }
   #church-result-list tr { 
