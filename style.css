@@ -5,6 +5,16 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* ✨ 스크롤바 숨기기 (기능은 유지됨) */
+::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+body {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+
 :root {
   --primary-gradient: linear-gradient(135deg, #4f46e5, #a855f7);
 }
@@ -464,4 +474,5 @@ main > section {
   .logo { font-size: 1.2rem; }
   .intro-title { font-size: 1.5rem !important; }
   .result-main-title { font-size: 1.8rem; }
+
 }
