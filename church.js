@@ -32,30 +32,45 @@ export async function ensureFirebase() {
   return { db: _firebaseDb, fs: _firebaseFsModule };
 }
 
-// 결과 저장 (중복 이름 체크 로직 추가)
+/**
+ * 고유 그룹 ID 생성 (그룹명과 비밀번호를 조합)
+ * 띄어쓰기 하나라도 다르면 다른 ID가 생성됩니다.
+ */
+const getChurchId = (cName, pw) => `${cName}_${pw}`;
+
+// 결과 저장 (중복 이름 체크 로직 포함)
 export async function saveMyResultToChurch(name, churchName, password, targetType) {
-  const n = name.trim(), c = churchName.trim(), p = password.trim();
+  const n = name.trim();
+  // 그룹명과 비밀번호는 공백을 포함한 원본 값을 사용합니다.
+  const c = churchName; 
+  const p = password;
+
   if (!n || !c || !p) throw new Error("모든 항목을 입력해 주세요.");
   if (!targetType) throw new Error("먼저 검사를 완료하거나, '다른 유형 보기'에서 내 유형을 선택해 주세요.");
   if (typeof window.typeResults === 'undefined') throw new Error("데이터를 로드할 수 없습니다.");
 
   const { db, fs } = await ensureFirebase();
-  const churchRef = fs.doc(db, CHURCH_COLLECTION, c);
+  
+  // 고유 ID 적용
+  const churchId = getChurchId(c, p);
+  const churchRef = fs.doc(db, CHURCH_COLLECTION, churchId);
   const snap = await fs.getDoc(churchRef);
 
-  // 그룹 비밀번호 확인
-  if (snap.exists() && snap.data().password !== p) throw new Error("비밀번호가 일치하지 않습니다.");
-  // 그룹이 없으면 새로 생성
-  if (!snap.exists()) await fs.setDoc(churchRef, { churchName: c, password: p, createdAt: fs.serverTimestamp ? fs.serverTimestamp() : Date.now() });
+  // 그룹이 없으면 새로 생성 (조합 ID이므로 snap이 없으면 완전히 새로운 그룹임)
+  if (!snap.exists()) {
+    await fs.setDoc(churchRef, { 
+      churchName: c, 
+      password: p, 
+      createdAt: fs.serverTimestamp ? fs.serverTimestamp() : Date.now() 
+    });
+  }
 
-  // [추가] 중복 이름 체크 로직
-  // members 컬렉션에서 해당 이름(n)이 있는지 확인
+  // 중복 이름 체크 로직
   const membersRef = fs.collection(churchRef, "members");
   const q = fs.query(membersRef, fs.where("name", "==", n));
   const querySnapshot = await fs.getDocs(q);
 
   if (!querySnapshot.empty) {
-    // 중복된 이름이 있다면 에러 발생 (app.js의 catch 블록에서 alert로 표시됨)
     throw new Error("이미 입력된 이름입니다.\n나를 표현하는 다른 이름을 입력해주세요.");
   }
 
@@ -69,15 +84,15 @@ export async function saveMyResultToChurch(name, churchName, password, targetTyp
 
 // 멤버 목록 불러오기
 export async function loadChurchMembers(churchName, password) {
-  const c = churchName.trim(), p = password.trim();
+  const c = churchName, p = password;
   if (!c || !p) throw new Error("정보를 모두 입력해 주세요.");
 
   const { db, fs } = await ensureFirebase();
-  const churchRef = fs.doc(db, CHURCH_COLLECTION, c);
+  const churchId = getChurchId(c, p);
+  const churchRef = fs.doc(db, CHURCH_COLLECTION, churchId);
   const snap = await fs.getDoc(churchRef);
 
-  if (!snap.exists()) throw new Error("등록된 교회가 없습니다.");
-  if (snap.data().password !== p) throw new Error("비밀번호가 일치하지 않습니다.");
+  if (!snap.exists()) throw new Error("등록된 교회가 없거나 비밀번호가 틀렸습니다.");
 
   const q = fs.query(fs.collection(churchRef, "members"), fs.orderBy("createdAt", "asc"));
   const membersSnap = await fs.getDocs(q);
@@ -89,10 +104,11 @@ export async function loadChurchMembers(churchName, password) {
 // 멤버 삭제
 export async function deleteChurchMember(churchName, password, memberId) {
   const { db, fs } = await ensureFirebase();
-  const churchRef = fs.doc(db, CHURCH_COLLECTION, churchName.trim());
+  const churchId = getChurchId(churchName, password);
+  const churchRef = fs.doc(db, CHURCH_COLLECTION, churchId);
   const snap = await fs.getDoc(churchRef);
   
-  if (!snap.exists() || snap.data().password !== password.trim()) throw new Error("권한이 없습니다.");
+  if (!snap.exists()) throw new Error("권한이 없습니다.");
   
   await fs.deleteDoc(fs.doc(fs.collection(churchRef, "members"), memberId));
 }
