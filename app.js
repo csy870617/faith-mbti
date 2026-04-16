@@ -110,11 +110,14 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   let currentIndex = 0;
-  let questions = []; 
+  let questions = [];
   const answers = {};
   let myResultType = null;
   let currentViewType = null;
-  let currentChurchMembers = []; 
+  let currentChurchMembers = [];
+  // 본인 실제 점수/축점수를 보관 (다른 유형 보기 중에도 유지)
+  let myScores = null;
+  let myAxisScores = null;
 
   Core.initFontControl(dom);
 
@@ -169,6 +172,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       myResultType = type;
       currentViewType = type;
+      myScores = scores;
+      myAxisScores = axisScores;
 
       Core.renderResultScreen(dom, type, scores, axisScores);
       buildOtherTypesGrid();
@@ -187,11 +192,12 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.innerHTML = `<strong>${t}</strong>`;
       btn.addEventListener("click", () => {
         currentViewType = t;
-        Core.renderResultScreen(dom, t, 
-          { E:0,I:0,S:0,N:0,T:0,F:0,J:0,P:0 }, 
-          { EI:0,SN:0,TF:0,JP:0 } 
-        );
-        scrollToTop(); 
+        // 다른 유형을 볼 때에도 성향 분포/세부 점수는 '내 점수'를 유지한다.
+        // 점수 정보가 없는 경우(저장 데이터가 없거나 데모 진입)에만 0으로 표시한다.
+        const scoresForView = myScores || { E:0,I:0,S:0,N:0,T:0,F:0,J:0,P:0 };
+        const axisForView = myAxisScores || { EI:0,SN:0,TF:0,JP:0 };
+        Core.renderResultScreen(dom, t, scoresForView, axisForView);
+        scrollToTop();
         updateTypeButtonsActive();
       });
       dom.result.otherTypes.appendChild(btn);
@@ -233,33 +239,18 @@ document.addEventListener('DOMContentLoaded', () => {
   if (dom.btns.groupCreate) {
     dom.btns.groupCreate.addEventListener("click", async () => {
       // 띄어쓰기를 구분하기 위해 원본 값을 가져오고 trim은 검증용으로만 씁니다.
-      const cName = dom.inputs.setupChurch.value; 
+      const cName = dom.inputs.setupChurch.value;
       const cPw = dom.inputs.setupPw.value;
-      
+
       if (!cName.trim() || !cPw.trim()) return alert("그룹명과 비밀번호를 모두 입력해 주세요.");
       if (cName === cPw) return alert("비밀번호를 다르게 입력해주세요.");
 
       try {
-        const { db, fs } = await Church.ensureFirebase();
-        
-        // 이름과 비밀번호를 조합한 고유 ID 생성 (띄어쓰기가 다르면 ID가 달라짐)
-        const churchUniqueId = `${cName}_${cPw}`;
-        const docRef = fs.doc(db, "faith_churches", churchUniqueId);
-        const snap = await fs.getDoc(docRef);
-        
-        // 동일한 이름+비번 조합이 이미 있을 때만 오류 발생
-        if (snap.exists()) { 
-          alert("이미 동일한 설정으로 생성된 그룹이 있습니다.\n입장하기를 이용하거나 설정을 바꿔주세요."); 
-          return; 
+        const created = await Church.createChurchGroup(cName, cPw);
+        if (!created) {
+          alert("이미 동일한 설정으로 생성된 그룹이 있습니다.\n입장하기를 이용하거나 설정을 바꿔주세요.");
+          return;
         }
-        
-        // 새 그룹 생성
-        await fs.setDoc(docRef, { 
-          churchName: cName, 
-          password: cPw, 
-          createdAt: Date.now() 
-        });
-        
         alert(`'${cName}' 그룹이 생성되었습니다!`);
         proceedToGroup(cName, cPw);
       } catch (e) { console.error(e); alert("오류: " + e.message); }
@@ -271,16 +262,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const cName = dom.inputs.setupChurch.value;
       const cPw = dom.inputs.setupPw.value;
       if (!cName.trim() || !cPw.trim()) return alert("그룹명과 비밀번호를 입력해 주세요.");
-      
+
       try {
-        const { db, fs } = await Church.ensureFirebase();
-        // 로그인 시에도 고유 ID로 조회
-        const churchUniqueId = `${cName}_${cPw}`;
-        const docRef = fs.doc(db, "faith_churches", churchUniqueId);
-        const snap = await fs.getDoc(docRef);
-        
-        if (!snap.exists()) { alert("존재하지 않는 그룹이거나 비밀번호가 틀렸습니다."); return; }
-        
+        const ok = await Church.loginChurchGroup(cName, cPw);
+        if (!ok) { alert("존재하지 않는 그룹이거나 비밀번호가 틀렸습니다."); return; }
         proceedToGroup(cName, cPw);
       } catch (e) { console.error(e); alert("오류 발생"); }
     });
@@ -327,7 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.sections.result.classList.add("hidden");
         dom.sections.intro.classList.remove("hidden");
         scrollToTop(); 
-        history.replaceState(null, "", " "); 
+        history.replaceState(null, "", location.pathname);
       }
     });
   }
@@ -390,11 +375,13 @@ document.addEventListener('DOMContentLoaded', () => {
   if (dom.btns.memberSave) {
     dom.btns.memberSave.addEventListener("click", async () => {
       try {
+        // 저장은 반드시 '내 결과'로 수행. (다른 유형을 보는 중이면 본인 결과를 사용)
+        const saveType = myResultType || currentViewType;
         await Church.saveMyResultToChurch(
-          dom.inputs.memberName.value, 
-          dom.inputs.memberChurch.value, 
+          dom.inputs.memberName.value,
+          dom.inputs.memberChurch.value,
           dom.inputs.memberPw.value,
-          currentViewType || myResultType
+          saveType
         );
         alert("저장되었습니다."); dom.inputs.memberName.value = "";
       } catch (e) { alert(e.message); }
@@ -412,23 +399,26 @@ document.addEventListener('DOMContentLoaded', () => {
         currentChurchMembers = members;
         dom.churchCommunityArea.classList.remove("hidden");
 
-        Church.renderChurchList(dom, churchName, members, async (btn) => {
-           const pw = prompt("비밀번호를 입력해 주세요.");
-           if (!pw) return;
-           try {
-             await Church.deleteChurchMember(btn.dataset.church, pw, btn.dataset.id);
-             alert("삭제되었습니다.");
-             const refreshed = await Church.loadChurchMembers(btn.dataset.church, pw);
-             currentChurchMembers = refreshed.members;
-             Church.renderChurchList(dom, refreshed.churchName, refreshed.members, (b) => btn.click()); 
-           } catch (e) { alert(e.message); }
-        });
+        Church.renderChurchList(dom, churchName, members, handleMemberDelete);
         if (dom.churchAfterActions) dom.churchAfterActions.classList.remove("hidden");
-      } catch (e) { 
-        alert(e.message); 
+      } catch (e) {
+        alert(e.message);
         dom.churchCommunityArea.classList.add("hidden");
       }
     });
+  }
+
+  // 멤버 삭제 콜백 (재렌더 후에도 동일한 함수 참조를 재사용)
+  async function handleMemberDelete(btn) {
+    const pw = prompt("비밀번호를 입력해 주세요.");
+    if (!pw) return;
+    try {
+      await Church.deleteChurchMember(btn.dataset.church, pw, btn.dataset.id);
+      alert("삭제되었습니다.");
+      const refreshed = await Church.loadChurchMembers(btn.dataset.church, pw);
+      currentChurchMembers = refreshed.members;
+      Church.renderChurchList(dom, refreshed.churchName, refreshed.members, handleMemberDelete);
+    } catch (e) { alert(e.message); }
   }
 
   if (dom.btns.churchAnalysis) {
@@ -502,6 +492,8 @@ document.addEventListener('DOMContentLoaded', () => {
       history.pushState({ page: "result" }, "", "#result");
       const sampleScores = { E: 20, I: 5, S: 20, N: 5, T: 20, F: 5, J: 20, P: 5 };
       const sampleAxis = { EI: 15, SN: 15, TF: 15, JP: 15 };
+      myScores = sampleScores;
+      myAxisScores = sampleAxis;
       Core.renderResultScreen(dom, "ENFJ", sampleScores, sampleAxis);
       buildOtherTypesGrid();
     });
@@ -513,10 +505,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = JSON.parse(savedData);
       if (data.type) {
         myResultType = data.type; currentViewType = data.type;
+        myScores = data.scores || null;
+        myAxisScores = data.axisScores || null;
         dom.sections.intro.classList.add("hidden");
         dom.sections.test.classList.add("hidden");
         dom.sections.result.classList.remove("hidden");
-        scrollToTop(); 
+        scrollToTop();
         if (location.hash !== "#result") history.replaceState({ page: "result" }, "", "#result");
         Core.renderResultScreen(dom, data.type, data.scores, data.axisScores);
         buildOtherTypesGrid();
