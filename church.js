@@ -2,6 +2,25 @@
 const CHURCH_COLLECTION = "faith_churches";
 let _firebaseDb = null, _firebaseFsModule = null, _firebaseAuthModule = null;
 
+// HTML 이스케이프 유틸 (사용자 입력이 innerHTML로 들어갈 때 XSS 방지)
+function escapeHtml(str) {
+  if (str == null) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+// 비밀번호 SHA-256 해시 (브라우저 SubtleCrypto 사용)
+async function hashPassword(pw) {
+  const buf = new TextEncoder().encode(String(pw));
+  const digest = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(digest))
+    .map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 // Firebase 초기화 및 익명 로그인
 export async function ensureFirebase() {
   if (_firebaseDb && _firebaseFsModule && _firebaseAuthModule) {
@@ -33,10 +52,39 @@ export async function ensureFirebase() {
 }
 
 /**
- * 고유 그룹 ID 생성 (그룹명과 비밀번호를 조합)
- * 띄어쓰기 하나라도 다르면 다른 ID가 생성됩니다.
+ * 고유 그룹 ID 생성 (그룹명 + 비밀번호 해시)
+ * - 평문 비번이 Firestore document ID에 노출되지 않도록 해시로 변환합니다.
+ * - 기존(평문) 방식 groupId와의 충돌 방지를 위해 "h$" prefix를 붙입니다.
  */
-const getChurchId = (cName, pw) => `${cName}_${pw}`;
+async function getChurchIdNew(cName, pw) {
+  const h = await hashPassword(pw);
+  return `h$${cName}_${h}`;
+}
+
+// 레거시(평문) ID — 마이그레이션 기간 중 조회용
+function getChurchIdLegacy(cName, pw) {
+  return `${cName}_${pw}`;
+}
+
+/**
+ * 그룹 document 참조를 얻습니다.
+ * 우선 새 해시 ID로 찾고, 없으면 레거시 ID도 시도합니다.
+ * 반환: { docRef, snap, isLegacy }  snap.exists() 여부는 호출자가 확인.
+ */
+async function resolveChurchDoc(fs, db, cName, pw) {
+  const newId = await getChurchIdNew(cName, pw);
+  const newRef = fs.doc(db, CHURCH_COLLECTION, newId);
+  const newSnap = await fs.getDoc(newRef);
+  if (newSnap.exists()) return { docRef: newRef, snap: newSnap, isLegacy: false };
+
+  const legacyId = getChurchIdLegacy(cName, pw);
+  const legacyRef = fs.doc(db, CHURCH_COLLECTION, legacyId);
+  const legacySnap = await fs.getDoc(legacyRef);
+  if (legacySnap.exists()) return { docRef: legacyRef, snap: legacySnap, isLegacy: true };
+
+  // 없으면 새 ID 기준 refs 반환 (생성 시 사용)
+  return { docRef: newRef, snap: newSnap, isLegacy: false };
+}
 
 // 결과 저장 (중복 이름 체크 로직 포함)
 export async function saveMyResultToChurch(name, churchName, password, targetType) {
@@ -50,18 +98,17 @@ export async function saveMyResultToChurch(name, churchName, password, targetTyp
   if (typeof window.typeResults === 'undefined') throw new Error("데이터를 로드할 수 없습니다.");
 
   const { db, fs } = await ensureFirebase();
-  
-  // 고유 ID 적용
-  const churchId = getChurchId(c, p);
-  const churchRef = fs.doc(db, CHURCH_COLLECTION, churchId);
-  const snap = await fs.getDoc(churchRef);
 
-  // 그룹이 없으면 새로 생성 (조합 ID이므로 snap이 없으면 완전히 새로운 그룹임)
+  // 새 해시 ID 우선, 없으면 레거시 조회
+  const { docRef: churchRef, snap } = await resolveChurchDoc(fs, db, c, p);
+
+  // 그룹이 없으면 새로 생성 (해시된 비밀번호 저장)
   if (!snap.exists()) {
-    await fs.setDoc(churchRef, { 
-      churchName: c, 
-      password: p, 
-      createdAt: fs.serverTimestamp ? fs.serverTimestamp() : Date.now() 
+    const pwHash = await hashPassword(p);
+    await fs.setDoc(churchRef, {
+      churchName: c,
+      passwordHash: pwHash,
+      createdAt: fs.serverTimestamp()
     });
   }
 
@@ -78,8 +125,36 @@ export async function saveMyResultToChurch(name, churchName, password, targetTyp
   const data = window.typeResults[targetType];
   await fs.addDoc(membersRef, {
     name: n, type: targetType, shortText: data.summary || data.nameKo || "",
-    createdAt: fs.serverTimestamp ? fs.serverTimestamp() : Date.now()
+    createdAt: fs.serverTimestamp()
   });
+}
+
+// 그룹 생성 (이미 있으면 false 반환)
+export async function createChurchGroup(churchName, password) {
+  const c = churchName, p = password;
+  if (!c || !p) throw new Error("그룹명과 비밀번호를 모두 입력해 주세요.");
+
+  const { db, fs } = await ensureFirebase();
+  const { docRef, snap } = await resolveChurchDoc(fs, db, c, p);
+  if (snap.exists()) return false;
+
+  const pwHash = await hashPassword(p);
+  await fs.setDoc(docRef, {
+    churchName: c,
+    passwordHash: pwHash,
+    createdAt: fs.serverTimestamp()
+  });
+  return true;
+}
+
+// 그룹 로그인(존재 확인)
+export async function loginChurchGroup(churchName, password) {
+  const c = churchName, p = password;
+  if (!c || !p) throw new Error("그룹명과 비밀번호를 입력해 주세요.");
+
+  const { db, fs } = await ensureFirebase();
+  const { snap } = await resolveChurchDoc(fs, db, c, p);
+  return snap.exists();
 }
 
 // 멤버 목록 불러오기
@@ -88,9 +163,7 @@ export async function loadChurchMembers(churchName, password) {
   if (!c || !p) throw new Error("정보를 모두 입력해 주세요.");
 
   const { db, fs } = await ensureFirebase();
-  const churchId = getChurchId(c, p);
-  const churchRef = fs.doc(db, CHURCH_COLLECTION, churchId);
-  const snap = await fs.getDoc(churchRef);
+  const { docRef: churchRef, snap } = await resolveChurchDoc(fs, db, c, p);
 
   if (!snap.exists()) throw new Error("등록된 교회가 없거나 비밀번호가 틀렸습니다.");
 
@@ -104,12 +177,10 @@ export async function loadChurchMembers(churchName, password) {
 // 멤버 삭제
 export async function deleteChurchMember(churchName, password, memberId) {
   const { db, fs } = await ensureFirebase();
-  const churchId = getChurchId(churchName, password);
-  const churchRef = fs.doc(db, CHURCH_COLLECTION, churchId);
-  const snap = await fs.getDoc(churchRef);
-  
+  const { docRef: churchRef, snap } = await resolveChurchDoc(fs, db, churchName, password);
+
   if (!snap.exists()) throw new Error("권한이 없습니다.");
-  
+
   await fs.deleteDoc(fs.doc(fs.collection(churchRef, "members"), memberId));
 }
 
@@ -123,17 +194,19 @@ export function renderChurchList(dom, churchName, members, onDeleteClick) {
   const rows = members.map(m => {
     const typeData = (typeof window.typeResults !== 'undefined') ? window.typeResults[m.type] : null;
     const desc = typeData ? typeData.strengthShort : (m.shortText || "");
+    // 타입 코드는 A-Z 4자만 허용
+    const safeType = /^[A-Za-z]{4}$/.test(m.type || "") ? m.type.toUpperCase() : "";
     return `
     <tr>
-      <td style="font-weight:600;">${m.name || ""}</td>
-      <td><span class="type-pill" style="margin:0; padding:2px 8px; font-size:0.75rem;">${m.type || ""}</span></td>
-      <td style="font-size:0.85rem; color:#64748b;">${desc}</td>
-      <td style="text-align:right;"><button class="btn-secondary member-delete-btn" style="padding:4px 8px; font-size:0.75rem;" data-id="${m.id}" data-church="${churchName}">삭제</button></td>
+      <td style="font-weight:600;">${escapeHtml(m.name)}</td>
+      <td><span class="type-pill" style="margin:0; padding:2px 8px; font-size:0.75rem;">${escapeHtml(safeType)}</span></td>
+      <td style="font-size:0.85rem; color:#64748b;">${escapeHtml(desc)}</td>
+      <td style="text-align:right;"><button class="btn-secondary member-delete-btn" style="padding:4px 8px; font-size:0.75rem;" data-id="${escapeHtml(m.id)}" data-church="${escapeHtml(churchName)}">삭제</button></td>
     </tr>`;
   }).join('');
-    
+
   dom.churchList.innerHTML = `
-    <div class="church-list-header">🏠 ${churchName} <span style="font-size:0.9rem; font-weight:400; color:#64748b; margin-left:auto;">${members.length}명</span></div>
+    <div class="church-list-header">🏠 ${escapeHtml(churchName)} <span style="font-size:0.9rem; font-weight:400; color:#64748b; margin-left:auto;">${members.length}명</span></div>
     <div class="member-table-container">
       <table>
         <thead><tr><th>이름</th><th>유형</th><th>설명</th><th style="text-align:right;">관리</th></tr></thead>
@@ -167,7 +240,10 @@ export function analyzeAndRenderCommunity(dom, members) {
 
   let maxVal = 0;
   for (const v of Object.values(typeCounts)) if (v > maxVal) maxVal = v;
-  const maxTypes = Object.entries(typeCounts).filter(([t, v]) => v === maxVal).map(([t]) => t);
+  const maxTypes = Object.entries(typeCounts)
+    .filter(([t, v]) => v === maxVal)
+    .map(([t]) => /^[A-Za-z]{4}$/.test(t) ? t.toUpperCase() : "")
+    .filter(Boolean);
   const maxTypeDisplay = maxTypes.join(", ");
   const isTie = maxTypes.length > 1;
 
