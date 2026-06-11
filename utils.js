@@ -1,4 +1,19 @@
 // utils.js
+// localStorage 안전 접근 래퍼
+// (사생활 보호 모드/쿠키 차단 환경에서는 localStorage 접근만으로 예외가 발생해
+//  스크립트 전체가 중단될 수 있으므로 항상 try/catch로 감싼다)
+export function storageGet(key) {
+  try { return localStorage.getItem(key); } catch (e) { return null; }
+}
+
+export function storageSet(key, value) {
+  try { localStorage.setItem(key, value); return true; } catch (e) { return false; }
+}
+
+export function storageRemove(key) {
+  try { localStorage.removeItem(key); } catch (e) {}
+}
+
 // 배열 섞기 함수
 export function shuffle(array) {
   if (!array) return [];

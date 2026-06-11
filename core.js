@@ -1,12 +1,15 @@
 // core.js
+import { storageGet, storageSet } from './utils.js';
+
 // 폰트 조절 기능
 export function initFontControl(dom) {
-  let currentFontScale = parseFloat(localStorage.getItem("faith_font_scale")) || 1.0;
-  
+  let currentFontScale = parseFloat(storageGet("faith_font_scale")) || 1.0;
+  if (currentFontScale < 0.7 || currentFontScale > 1.3) currentFontScale = 1.0;
+
   function applyFontSize(scale) {
     scale = Math.round(scale * 10) / 10;
     document.documentElement.style.fontSize = `${Math.round(scale * 120)}%`;
-    localStorage.setItem("faith_font_scale", scale);
+    storageSet("faith_font_scale", scale);
     currentFontScale = scale;
   }
   applyFontSize(currentFontScale);
@@ -19,6 +22,7 @@ export function initFontControl(dom) {
 // 문항 렌더링
 export function renderQuestion(dom, questions, currentIndex, answers, onSelect) {
   const q = questions[currentIndex];
+  if (!q) return;
   const idx = currentIndex + 1;
   const total = questions.length;
 
@@ -39,6 +43,10 @@ function renderScale(dom, questionId, answers, onSelect) {
   const fragment = document.createDocumentFragment();
   const currentValue = answers[questionId] || null;
 
+  // pill 클릭 핸들러와 label이 전달하는 radio change 이벤트가
+  // 한 번의 탭에 모두 발생해 onSelect가 중복 호출(문항 건너뜀)되는 것을 방지
+  let selectionLocked = false;
+
   for (let i = 1; i <= 5; i++) {
     const label = document.createElement("label");
     label.className = "scale-option";
@@ -54,6 +62,8 @@ function renderScale(dom, questionId, answers, onSelect) {
     pill.textContent = i;
 
     const handleSelect = () => {
+      if (selectionLocked) return;
+      selectionLocked = true;
       answers[questionId] = i;
       onSelect(); // 다음으로 이동 콜백
     };
@@ -113,6 +123,7 @@ export function renderResultScreen(dom, type, scores, axisScores) {
 function renderResultText(dom, type) {
   if (typeof window.typeResults === 'undefined') return;
   const data = window.typeResults[type];
+  if (!data) return; // 저장 데이터 손상 등으로 알 수 없는 유형이 들어와도 중단되지 않도록
 
   if(dom.result.code) dom.result.code.textContent = type;
   if(dom.result.name) dom.result.name.textContent = `${data.nameKo} · ${data.nameEn}`;
@@ -120,7 +131,7 @@ function renderResultText(dom, type) {
 
   if(dom.result.badges) {
     dom.result.badges.innerHTML = "";
-    data.badges.forEach(b => {
+    (data.badges || []).forEach(b => {
       const span = document.createElement("span");
       span.className = "badge";
       span.textContent = b;
@@ -131,7 +142,7 @@ function renderResultText(dom, type) {
   const renderList = (el, items) => {
     if(!el) return;
     el.innerHTML = "";
-    items.forEach(item => {
+    (items || []).forEach(item => {
       const li = document.createElement("li");
       li.textContent = item;
       el.appendChild(li);
@@ -160,6 +171,7 @@ function renderResultText(dom, type) {
 
 function renderAxisUpgraded(dom, axisScores) {
   if(!dom.result.axis) return;
+  axisScores = axisScores || {}; // 구버전 저장 데이터에는 축 점수가 없을 수 있음
   const defs = [
     { key: "EI", left: "E", right: "I", label: "에너지 방향" },
     { key: "SN", left: "S", right: "N", label: "정보 인식" },
@@ -188,6 +200,7 @@ function renderAxisUpgraded(dom, axisScores) {
 
 function renderDetailScores(dom, scores) {
   if(!dom.result.detail) return;
+  scores = scores || {}; // 구버전 저장 데이터에는 세부 점수가 없을 수 있음
   const maxScore = 25;
   let html = "";
   ["E", "I", "S", "N", "T", "F", "J", "P"].forEach(k => {
@@ -217,6 +230,7 @@ function renderMatchCards(dom, type) {
 
   const top2 = [...all].sort((a, b) => b.sim - a.sim).slice(0, 2);
   const opposite = [...all].sort((a, b) => a.sim - b.sim)[0];
+  if (!opposite) return;
 
   if (dom.result.matchTop2) {
     dom.result.matchTop2.innerHTML = top2.map(t => `

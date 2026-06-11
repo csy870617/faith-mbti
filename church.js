@@ -1,6 +1,6 @@
 // church.js
 const CHURCH_COLLECTION = "faith_churches";
-let _firebaseDb = null, _firebaseFsModule = null, _firebaseAuthModule = null;
+let _firebasePromise = null;
 
 // HTML 이스케이프 유틸 (사용자 입력이 innerHTML로 들어갈 때 XSS 방지)
 function escapeHtml(str) {
@@ -22,33 +22,34 @@ async function hashPassword(pw) {
 }
 
 // Firebase 초기화 및 익명 로그인
-export async function ensureFirebase() {
-  if (_firebaseDb && _firebaseFsModule && _firebaseAuthModule) {
-    return { db: _firebaseDb, fs: _firebaseFsModule };
-  }
+// Promise를 캐싱해 버튼 연타 등 동시 호출 시 initializeApp이 중복 실행되어
+// "duplicate-app" 오류가 나는 것을 방지. 실패 시 캐시를 비워 다음에 재시도 가능.
+export function ensureFirebase() {
+  if (_firebasePromise) return _firebasePromise;
 
-  const appMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
-  const fsMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-  const authMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+  _firebasePromise = (async () => {
+    const appMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+    const fsMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+    const authMod = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
 
-  const app = appMod.initializeApp({
-    apiKey: "AIzaSyDAigdc0C7zzzOySBTFb527eeAN3jInIfQ",
-    authDomain: "faith-mbti.firebaseapp.com",
-    projectId: "faith-mbti",
-    storageBucket: "faith-mbti.firebasestorage.app",
-    messagingSenderId: "1065834838710",
-    appId: "1:1065834838710:web:33382f9a82f94d112e8417",
-    measurementId: "G-RWMSVFRMRP"
-  });
+    const app = appMod.initializeApp({
+      apiKey: "AIzaSyDAigdc0C7zzzOySBTFb527eeAN3jInIfQ",
+      authDomain: "faith-mbti.firebaseapp.com",
+      projectId: "faith-mbti",
+      storageBucket: "faith-mbti.firebasestorage.app",
+      messagingSenderId: "1065834838710",
+      appId: "1:1065834838710:web:33382f9a82f94d112e8417",
+      measurementId: "G-RWMSVFRMRP"
+    });
 
-  const auth = authMod.getAuth(app);
-  await authMod.signInAnonymously(auth);
+    const auth = authMod.getAuth(app);
+    await authMod.signInAnonymously(auth);
 
-  _firebaseDb = fsMod.getFirestore(app);
-  _firebaseFsModule = fsMod;
-  _firebaseAuthModule = authMod;
+    return { db: fsMod.getFirestore(app), fs: fsMod };
+  })();
 
-  return { db: _firebaseDb, fs: _firebaseFsModule };
+  _firebasePromise.catch(() => { _firebasePromise = null; });
+  return _firebasePromise;
 }
 
 /**
@@ -72,6 +73,10 @@ function getChurchIdLegacy(cName, pw) {
  * 반환: { docRef, snap, isLegacy }  snap.exists() 여부는 호출자가 확인.
  */
 async function resolveChurchDoc(fs, db, cName, pw) {
+  // Firestore document ID에는 '/'를 쓸 수 없어 그대로 두면 알 수 없는 내부 오류가 발생함
+  if (String(cName).includes("/")) {
+    throw new Error("그룹명에는 '/' 문자를 사용할 수 없습니다.");
+  }
   const newId = await getChurchIdNew(cName, pw);
   const newRef = fs.doc(db, CHURCH_COLLECTION, newId);
   const newSnap = await fs.getDoc(newRef);
@@ -192,10 +197,10 @@ export function renderChurchList(dom, churchName, members, onDeleteClick) {
     return;
   }
   const rows = members.map(m => {
-    const typeData = (typeof window.typeResults !== 'undefined') ? window.typeResults[m.type] : null;
-    const desc = typeData ? typeData.strengthShort : (m.shortText || "");
     // 타입 코드는 A-Z 4자만 허용
     const safeType = /^[A-Za-z]{4}$/.test(m.type || "") ? m.type.toUpperCase() : "";
+    const typeData = (typeof window.typeResults !== 'undefined') ? window.typeResults[safeType] : null;
+    const desc = typeData ? typeData.strengthShort : (m.shortText || "");
     return `
     <tr>
       <td style="font-weight:600;">${escapeHtml(m.name)}</td>
@@ -232,8 +237,9 @@ export function analyzeAndRenderCommunity(dom, members) {
   const typeCounts = {};
 
   members.forEach(m => {
-    const t = m.type; 
-    if (!t || t.length !== 4) return;
+    // 손상된 데이터(소문자/잘못된 코드)가 counts를 NaN으로 오염시키지 않도록 검증
+    const t = String(m.type || "").toUpperCase();
+    if (!/^[EI][SN][TF][JP]$/.test(t)) return;
     counts[t[0]]++; counts[t[1]]++; counts[t[2]]++; counts[t[3]]++;
     typeCounts[t] = (typeCounts[t] || 0) + 1;
   });
