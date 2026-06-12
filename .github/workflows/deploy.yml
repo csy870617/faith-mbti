@@ -35,6 +35,9 @@ jobs:
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
+        with:
+          # Pages 소스가 "branch" 방식이어도 자동으로 GitHub Actions 방식으로 전환
+          enablement: true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
