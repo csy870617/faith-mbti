@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const { type, scores, axisScores } = Core.calculateResult(window.originalQuestions, answers);
       const resultData = { type, scores, axisScores, date: new Date().getTime() };
-      localStorage.setItem('faith_result_v1', JSON.stringify(resultData));
+      Utils.storageSet('faith_result_v1', JSON.stringify(resultData));
 
       myResultType = type;
       currentViewType = type;
@@ -218,11 +218,11 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.inputs.viewPw.value = cPw;
 
     if (dom.inputs.autoLogin && dom.inputs.autoLogin.checked) {
-      localStorage.setItem('faith_church_name', cName);
-      localStorage.setItem('faith_church_pw', cPw);
+      Utils.storageSet('faith_church_name', cName);
+      Utils.storageSet('faith_church_pw', cPw);
     } else {
-      localStorage.removeItem('faith_church_name');
-      localStorage.removeItem('faith_church_pw');
+      Utils.storageRemove('faith_church_name');
+      Utils.storageRemove('faith_church_pw');
     }
 
     dom.churchAuthCard.classList.add("hidden");
@@ -286,7 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (dom.btns.start) {
     dom.btns.start.addEventListener("click", () => {
       history.pushState({ page: "test" }, "", "#test");
-      localStorage.removeItem('faith_result_v1');
+      Utils.storageRemove('faith_result_v1');
       if (typeof window.originalQuestions === 'undefined') { alert("데이터 로딩 중..."); return; }
       questions = Utils.shuffle(window.originalQuestions);
       for (let k in answers) delete answers[k];
@@ -307,7 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (dom.btns.restart) {
     dom.btns.restart.addEventListener("click", () => {
       if(confirm("초기화 하시겠습니까?")) {
-        localStorage.removeItem('faith_result_v1');
+        Utils.storageRemove('faith_result_v1');
         myResultType = null; currentViewType = null;
         dom.sections.result.classList.add("hidden");
         dom.sections.intro.classList.remove("hidden");
@@ -322,9 +322,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const targetType = myResultType || currentViewType;
       if (!targetType) return alert("공유할 유형이 없습니다.");
       const baseUrl = "https://faiths.life/";
-      const data = window.typeResults[targetType];
+      // 데이터 스크립트가 아직 로드되지 않았어도 공유 자체는 동작하도록 처리
+      const data = (typeof window.typeResults !== 'undefined') ? window.typeResults[targetType] : null;
       const shareTitle = "FAITH MBTI 신앙 유형 테스트";
-      const shareDesc = `나의 유형은 ${targetType} (${data.nameKo}) 입니다.`;
+      const shareDesc = data ? `나의 유형은 ${targetType} (${data.nameKo}) 입니다.` : `나의 유형은 ${targetType} 입니다.`;
       
       if (typeof Kakao !== "undefined" && Kakao.isInitialized && Kakao.isInitialized()) {
         try {
@@ -465,7 +466,8 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.btns.todayVerse.addEventListener("click", () => {
       const type = currentViewType || myResultType;
       if (!type) return;
-      const data = window.typeResults[type];
+      const data = (typeof window.typeResults !== 'undefined') ? window.typeResults[type] : null;
+      if (!data) return;
       dom.verse.ref.textContent = data.verseRef;
       dom.verse.text.textContent = data.verseText;
       dom.verse.apply.textContent = data.verseApply || "";
@@ -483,7 +485,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   if (dom.btns.goResult) {
     dom.btns.goResult.addEventListener("click", () => {
-      localStorage.removeItem('faith_result_v1');
+      Utils.storageRemove('faith_result_v1');
       myResultType = null; currentViewType = "ENFJ";
       dom.sections.intro.classList.add("hidden");
       dom.sections.test.classList.add("hidden");
@@ -499,11 +501,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  const savedData = localStorage.getItem('faith_result_v1');
+  const savedData = Utils.storageGet('faith_result_v1');
   if (savedData) {
     try {
       const data = JSON.parse(savedData);
-      if (data.type) {
+      // 알 수 없는 유형(손상된 저장 데이터)이면 무시하여 빈 결과 화면 노출 방지
+      if (data.type && typeof window.typeResults !== 'undefined' && window.typeResults[data.type]) {
         myResultType = data.type; currentViewType = data.type;
         myScores = data.scores || null;
         myAxisScores = data.axisScores || null;
@@ -515,11 +518,11 @@ document.addEventListener('DOMContentLoaded', () => {
         Core.renderResultScreen(dom, data.type, data.scores, data.axisScores);
         buildOtherTypesGrid();
       }
-    } catch (e) { localStorage.removeItem('faith_result_v1'); }
+    } catch (e) { Utils.storageRemove('faith_result_v1'); }
   }
 
-  const savedChurch = localStorage.getItem('faith_church_name');
-  const savedPw = localStorage.getItem('faith_church_pw');
+  const savedChurch = Utils.storageGet('faith_church_name');
+  const savedPw = Utils.storageGet('faith_church_pw');
   if (savedChurch && savedPw) {
     if (dom.inputs.setupChurch) dom.inputs.setupChurch.value = savedChurch;
     if (dom.inputs.setupPw) dom.inputs.setupPw.value = savedPw;
