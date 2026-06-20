@@ -155,7 +155,24 @@ document.addEventListener('DOMContentLoaded', () => {
   /* =========================================
      3. 로직 함수들
      ========================================= */
+
+  // 비동기 처리 중 같은 버튼이 다시 눌려 중복 요청/중복 저장(또는 중복 그룹 생성)이
+  // 발생하는 것을 막는 재진입 가드. 외형 변화 없이 처리 완료 전 재실행만 차단한다.
+  function runExclusive(btn, fn) {
+    if (btn && btn.dataset.busy === "1") return;
+    if (btn) btn.dataset.busy = "1";
+    Promise.resolve().then(fn).finally(() => { if (btn) btn.dataset.busy = "0"; });
+  }
+
+  // 한 번의 입력(합성 클릭, pill·skip 동시 입력 등)으로 여러 문항이 한꺼번에
+  // 넘어가는 것을 막는 가드. 다음 매크로태스크에서 풀리므로 일반 클릭 속도엔 영향 없음.
+  let isTransitioning = false;
+
   function goNextOrResult() {
+    if (isTransitioning) return;
+    isTransitioning = true;
+    setTimeout(() => { isTransitioning = false; }, 0);
+
     if (currentIndex < questions.length - 1) {
       history.pushState({ page: "test" }, "", "#test");
       currentIndex++;
@@ -237,7 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
      ========================================= */
 
   if (dom.btns.groupCreate) {
-    dom.btns.groupCreate.addEventListener("click", async () => {
+    dom.btns.groupCreate.addEventListener("click", () => runExclusive(dom.btns.groupCreate, async () => {
       // 띄어쓰기를 구분하기 위해 원본 값을 가져오고 trim은 검증용으로만 씁니다.
       const cName = dom.inputs.setupChurch.value;
       const cPw = dom.inputs.setupPw.value;
@@ -254,11 +271,11 @@ document.addEventListener('DOMContentLoaded', () => {
         alert(`'${cName}' 그룹이 생성되었습니다!`);
         proceedToGroup(cName, cPw);
       } catch (e) { console.error(e); alert("오류: " + e.message); }
-    });
+    }));
   }
 
   if (dom.btns.groupLogin) {
-    dom.btns.groupLogin.addEventListener("click", async () => {
+    dom.btns.groupLogin.addEventListener("click", () => runExclusive(dom.btns.groupLogin, async () => {
       const cName = dom.inputs.setupChurch.value;
       const cPw = dom.inputs.setupPw.value;
       if (!cName.trim() || !cPw.trim()) return alert("그룹명과 비밀번호를 입력해 주세요.");
@@ -268,7 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!ok) { alert("존재하지 않는 그룹이거나 비밀번호가 틀렸습니다."); return; }
         proceedToGroup(cName, cPw);
       } catch (e) { console.error(e); alert("오류 발생"); }
-    });
+    }));
   }
 
   if (dom.btns.groupAuthClose) {
@@ -374,7 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (dom.btns.memberSave) {
-    dom.btns.memberSave.addEventListener("click", async () => {
+    dom.btns.memberSave.addEventListener("click", () => runExclusive(dom.btns.memberSave, async () => {
       try {
         // 저장은 반드시 '내 결과'로 수행. (다른 유형을 보는 중이면 본인 결과를 사용)
         const saveType = myResultType || currentViewType;
@@ -386,11 +403,11 @@ document.addEventListener('DOMContentLoaded', () => {
         );
         alert("저장되었습니다."); dom.inputs.memberName.value = "";
       } catch (e) { alert(e.message); }
-    });
+    }));
   }
-  
+
   if (dom.btns.churchSummary) {
-    dom.btns.churchSummary.addEventListener("click", async () => {
+    dom.btns.churchSummary.addEventListener("click", () => runExclusive(dom.btns.churchSummary, async () => {
       if (!dom.churchCommunityArea.classList.contains("hidden")) {
         dom.churchCommunityArea.classList.add("hidden");
         return;
@@ -406,20 +423,26 @@ document.addEventListener('DOMContentLoaded', () => {
         alert(e.message);
         dom.churchCommunityArea.classList.add("hidden");
       }
-    });
+    }));
   }
 
   // 멤버 삭제 콜백 (재렌더 후에도 동일한 함수 참조를 재사용)
   async function handleMemberDelete(btn) {
+    if (btn && btn.dataset.busy === "1") return; // 삭제 처리 중 재클릭 방지
+    if (btn) btn.dataset.busy = "1";
     const pw = prompt("비밀번호를 입력해 주세요.");
-    if (!pw) return;
+    if (!pw) { if (btn) btn.dataset.busy = "0"; return; }
     try {
       await Church.deleteChurchMember(btn.dataset.church, pw, btn.dataset.id);
       alert("삭제되었습니다.");
       const refreshed = await Church.loadChurchMembers(btn.dataset.church, pw);
       currentChurchMembers = refreshed.members;
+      // 목록을 다시 그리면 이 btn 노드는 사라지므로 busy 플래그를 따로 해제할 필요가 없다.
       Church.renderChurchList(dom, refreshed.churchName, refreshed.members, handleMemberDelete);
-    } catch (e) { alert(e.message); }
+    } catch (e) {
+      if (btn) btn.dataset.busy = "0"; // 실패 시 동일 버튼으로 재시도 가능하도록 해제
+      alert(e.message);
+    }
   }
 
   if (dom.btns.churchAnalysis) {
