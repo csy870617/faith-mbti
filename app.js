@@ -343,23 +343,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = (typeof window.typeResults !== 'undefined') ? window.typeResults[targetType] : null;
       const shareTitle = "FAITH MBTI 신앙 유형 테스트";
       const shareDesc = data ? `나의 유형은 ${targetType} (${data.nameKo}) 입니다.` : `나의 유형은 ${targetType} 입니다.`;
-      
-      if (typeof Kakao !== "undefined" && Kakao.isInitialized && Kakao.isInitialized()) {
-        try {
-          Kakao.Share.sendDefault({
-            objectType: "feed",
-            content: {
-              title: shareTitle,
-              description: shareDesc,
-              imageUrl: "https://csy870617.github.io/faith-mbti/images/thumbnail.jpg",
-              link: { mobileWebUrl: baseUrl, webUrl: baseUrl },
-            },
-            buttons: [{ title: "테스트 하러가기", link: { mobileWebUrl: baseUrl, webUrl: baseUrl } }]
-          });
-          return;
-        } catch (e) { console.error(e); }
-      }
-      if (navigator.share) { try { await navigator.share({ title: shareTitle, text: shareDesc, url: baseUrl }); return; } catch(e) {} }
+
+      // 기본공유(OS 네이티브 공유) 우선
+      if (navigator.share) { try { await navigator.share({ title: shareTitle, text: shareDesc, url: baseUrl }); return; } catch(e) { if (e && e.name === "AbortError") return; } }
       const success = await Utils.copyToClipboard(`${shareTitle}\n${shareDesc}\n${baseUrl}`);
       alert(success ? "링크가 복사되었습니다." : "실패했습니다.");
     });
@@ -455,17 +441,8 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.btns.inviteBottom.addEventListener("click", async () => {
       const baseUrl = "https://faiths.life";
       const gName = dom.inputs.viewChurch.value || "우리교회";
-      if (typeof Kakao !== "undefined" && Kakao.isInitialized && Kakao.isInitialized()) {
-        try {
-          Kakao.Share.sendDefault({
-            objectType: "feed",
-            content: { title: `${gName} 신앙 유형 모임 초대`, description: "함께 검사하고 결과를 나눠보세요!", imageUrl: "https://csy870617.github.io/faith-mbti/images/thumbnail.jpg", link: { mobileWebUrl: baseUrl, webUrl: baseUrl } },
-            buttons: [{ title: "참여하기", link: { mobileWebUrl: baseUrl, webUrl: baseUrl } }]
-          });
-          return; 
-        } catch (e) {}
-      }
-      if (navigator.share) { try { await navigator.share({ title: `${gName} 초대`, text: "함께해요!", url: baseUrl }); return; } catch(e) {} }
+      // 기본공유(OS 네이티브 공유) 우선
+      if (navigator.share) { try { await navigator.share({ title: `${gName} 초대`, text: "함께해요!", url: baseUrl }); return; } catch(e) { if (e && e.name === "AbortError") return; } }
       const success = await Utils.copyToClipboard(`${gName} 초대\n${baseUrl}`);
       alert(success ? "초대 링크가 복사되었습니다." : "복사 실패");
     });
