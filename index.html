@@ -12,7 +12,7 @@
   <meta property="og:site_name" content="FAITHES" />
   <meta property="og:locale" content="ko_KR" />
   <meta property="og:url" content="https://faiths.life" />
-  <meta property="og:image" content="https://csy870617.github.io/faith-mbti/images/thumbnail.jpg" />
+  <meta property="og:image" content="https://faiths.life/images/thumbnail.jpg" />
   
   <link rel="stylesheet" href="style.css" />
 
@@ -23,7 +23,10 @@
       var ua = navigator.userAgent.toLowerCase();
       if (ua.match(/kakaotalk|line|inapp|naver|instagram/i)) {
         if (ua.match(/android/i)) {
-          location.href = 'intent://' + location.href.replace(/https?:\/\//i, '') + '#Intent;scheme=https;package=com.android.chrome;end';
+          // location.hash(#test/#result/#church)가 남아있으면 '#Intent;'와 겹쳐 인텐트 파싱이 깨지므로 제거하고,
+          // 크롬이 없는 기기에서도 빈 화면에 멈추지 않도록 fallback url을 함께 지정한다.
+          var target = (location.origin + location.pathname + location.search).replace(/https?:\/\//i, '');
+          location.href = 'intent://' + target + '#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' + encodeURIComponent(location.href) + ';end';
         }
       }
     })();

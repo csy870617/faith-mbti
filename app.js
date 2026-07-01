@@ -335,7 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (dom.btns.share) {
-    dom.btns.share.addEventListener("click", async () => {
+    dom.btns.share.addEventListener("click", () => runExclusive(dom.btns.share, async () => {
       const targetType = myResultType || currentViewType;
       if (!targetType) return alert("공유할 유형이 없습니다.");
       const baseUrl = "https://faiths.life/";
@@ -348,7 +348,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (navigator.share) { try { await navigator.share({ title: shareTitle, text: shareDesc, url: baseUrl }); return; } catch(e) { if (e && e.name === "AbortError") return; } }
       const success = await Utils.copyToClipboard(`${shareTitle}\n${shareDesc}\n${baseUrl}`);
       alert(success ? "링크가 복사되었습니다." : "실패했습니다.");
-    });
+    }));
   }
 
   if (dom.btns.church && dom.sections.church) {
@@ -438,18 +438,18 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (dom.btns.inviteBottom) {
-    dom.btns.inviteBottom.addEventListener("click", async () => {
+    dom.btns.inviteBottom.addEventListener("click", () => runExclusive(dom.btns.inviteBottom, async () => {
       const baseUrl = "https://faiths.life";
       const gName = dom.inputs.viewChurch.value || "우리교회";
       // 기본공유(OS 네이티브 공유) 우선
       if (navigator.share) { try { await navigator.share({ title: `${gName} 초대`, text: "함께해요!", url: baseUrl }); return; } catch(e) { if (e && e.name === "AbortError") return; } }
       const success = await Utils.copyToClipboard(`${gName} 초대\n${baseUrl}`);
       alert(success ? "초대 링크가 복사되었습니다." : "복사 실패");
-    });
+    }));
   }
 
   if (dom.btns.churchCopy) {
-    dom.btns.churchCopy.addEventListener("click", async () => {
+    dom.btns.churchCopy.addEventListener("click", () => runExclusive(dom.btns.churchCopy, async () => {
       const members = currentChurchMembers;
       if (!members || !members.length) return alert("데이터가 없습니다.");
       let body = "";
@@ -459,7 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       const success = await Utils.copyToClipboard(`우리교회 결과\n\n${body}`);
       alert(success ? "결과가 복사되었습니다." : "복사 실패");
-    });
+    }));
   }
 
   if (dom.btns.todayVerse) {

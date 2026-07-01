@@ -74,8 +74,12 @@ function getChurchIdLegacy(cName, pw) {
  */
 async function resolveChurchDoc(fs, db, cName, pw) {
   // Firestore document ID에는 '/'를 쓸 수 없어 그대로 두면 알 수 없는 내부 오류가 발생함
+  // (레거시 ID는 비밀번호를 그대로 포함하므로 비밀번호도 함께 검증해야 함)
   if (String(cName).includes("/")) {
     throw new Error("그룹명에는 '/' 문자를 사용할 수 없습니다.");
+  }
+  if (String(pw).includes("/")) {
+    throw new Error("비밀번호에는 '/' 문자를 사용할 수 없습니다.");
   }
   const newId = await getChurchIdNew(cName, pw);
   const newRef = fs.doc(db, CHURCH_COLLECTION, newId);
@@ -235,6 +239,9 @@ export function analyzeAndRenderCommunity(dom, members) {
   const total = members.length;
   const counts = { E:0, I:0, S:0, N:0, T:0, F:0, J:0, P:0 };
   const typeCounts = {};
+  // 유형 형식이 잘못된 데이터는 counts에서 제외되므로, 비율 계산의 분모도
+  // 전체 인원(total)이 아닌 유효 인원(validCount)을 써야 퍼센트 합이 어긋나지 않는다.
+  let validCount = 0;
 
   members.forEach(m => {
     // 손상된 데이터(소문자/잘못된 코드)가 counts를 NaN으로 오염시키지 않도록 검증
@@ -242,7 +249,9 @@ export function analyzeAndRenderCommunity(dom, members) {
     if (!/^[EI][SN][TF][JP]$/.test(t)) return;
     counts[t[0]]++; counts[t[1]]++; counts[t[2]]++; counts[t[3]]++;
     typeCounts[t] = (typeCounts[t] || 0) + 1;
+    validCount++;
   });
+  const ratioBase = validCount || 1;
 
   let maxVal = 0;
   for (const v of Object.values(typeCounts)) if (v > maxVal) maxVal = v;
@@ -290,26 +299,26 @@ export function analyzeAndRenderCommunity(dom, members) {
       <div class="analysis-section-flat">
         <div class="analysis-header">⚖️ 에너지 균형</div>
         <div style="background:#f8fafc; padding:16px; border-radius:12px; border:1px solid #e2e8f0;">
-          ${renderBarEnhanced("관계 에너지", "외향 E", counts.E, "내향 I", counts.I, total)}
-          ${renderBarEnhanced("인식 스타일", "현실 S", counts.S, "이상 N", counts.N, total)}
-          ${renderBarEnhanced("판단 기준", "이성 T", counts.T, "감성 F", counts.F, total)}
-          ${renderBarEnhanced("생활 패턴", "계획 J", counts.J, "유연 P", counts.P, total)}
+          ${renderBarEnhanced("관계 에너지", "외향 E", counts.E, "내향 I", counts.I, ratioBase)}
+          ${renderBarEnhanced("인식 스타일", "현실 S", counts.S, "이상 N", counts.N, ratioBase)}
+          ${renderBarEnhanced("판단 기준", "이성 T", counts.T, "감성 F", counts.F, ratioBase)}
+          ${renderBarEnhanced("생활 패턴", "계획 J", counts.J, "유연 P", counts.P, ratioBase)}
         </div>
       </div>
 
       <div class="analysis-section-flat">
         <div class="analysis-header">🗣️ 모임 스타일</div>
-        <div class="content-box-flat">${getMeetingStyle(counts, total)}</div>
+        <div class="content-box-flat">${getMeetingStyle(counts, ratioBase)}</div>
       </div>
 
       <div class="analysis-section-flat">
         <div class="analysis-header">💎 배려가 필요한 '숨은 보석'</div>
-        <div class="content-box-flat" style="background:#fff7ed; border-color:#ffedd5;">${getMinorityCare(counts, total)}</div>
+        <div class="content-box-flat" style="background:#fff7ed; border-color:#ffedd5;">${getMinorityCare(counts, ratioBase)}</div>
       </div>
 
       <div class="analysis-section-flat">
         <div class="analysis-header">🌱 성장 가이드</div>
-        <div class="content-box-flat" style="background:#f0fdf4; border-color:#dcfce7;">${getDetailedGrowthGuide(counts, total)}</div>
+        <div class="content-box-flat" style="background:#f0fdf4; border-color:#dcfce7;">${getDetailedGrowthGuide(counts, ratioBase)}</div>
       </div>
       <button id="close-analysis-btn" class="close-analysis-btn">분석 결과 닫기 ✖</button>
     </div>`;
