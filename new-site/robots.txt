@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://csy870617.github.io/faith-type-test/sitemap.xml
